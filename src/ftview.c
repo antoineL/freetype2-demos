@@ -42,7 +42,7 @@
 
     for ( g = 1; g <= gammas; g += 1 )
     {
-      double gamma = g/10.0;
+      double ggamma = g/10.0;
       char   temp[6];
       int    y = y0 + (yside+1)*(g-1);
       int    nx, ny;
@@ -57,7 +57,7 @@
       grSetPixelMargin( x0-32, y + (yside-8)/2 );
       grGotoxy( 0, 0 );
 
-      sprintf( temp, "%.1f", gamma );
+      sprintf( temp, "%.1f", ggamma );
       grWrite( temp );
 
       for ( ny = 0; ny < yside; ny++, line += bit.pitch )
@@ -67,7 +67,7 @@
         for ( nx = 0; nx < levels; nx++, dst += 3*xside )
         {
           double  p   = nx/(double)(levels-1);
-          int     gm  = 255.0*pow( p, gamma );
+          int     gm  = 255.0*pow( p, ggamma );
 
           memset( dst, gm, xside*3 );
         }
@@ -564,23 +564,23 @@
       return 1;
 
     case grKEY( 'g' ):
-      if ( gamma <= 0 )
-        gamma = 0;
-      else gamma -= 0.1;
+      if ( the_gamma <= 0 )
+        the_gamma = 0;
+      else the_gamma -= 0.1;
 
-      grSetGlyphGamma( gamma );
+      grSetGlyphGamma( the_gamma );
 
-      sprintf( Header, "gamma changed to %.1f %s", gamma, gamma == 0.0 ? "(sRGB mode)" : "" );
+      sprintf( Header, "gamma changed to %.1f %s", the_gamma, the_gamma == 0.0 ? "(sRGB mode)" : "" );
       new_header = Header;
       break;
 
     case grKEY( 'G' ):
-      if ( gamma >= 3.0 )
-        gamma = 3.0;
-      else gamma += 0.1;
+      if ( the_gamma >= 3.0 )
+        the_gamma = 3.0;
+      else the_gamma += 0.1;
 
-      grSetGlyphGamma( gamma );
-      sprintf( Header, "gamma changed to %.1f %s", gamma, gamma == 0.0 ? "(sRGB mode)" : "" );
+      grSetGlyphGamma( the_gamma );
+      sprintf( Header, "gamma changed to %.1f %s", the_gamma, the_gamma == 0.0 ? "(sRGB mode)" : "" );
       new_header = Header;
       break;
 

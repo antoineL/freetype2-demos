@@ -15,6 +15,7 @@ Library  $(COMMON_LIB) : common.c ;
 if $(UNIX)
 {
   CCDEFS += UNIX ;
+  LINKLIBS += -lm ;
 }
 
 PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ;
@@ -30,7 +31,7 @@ GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ;
 
   for t in $(GRAPHIC_PROGRAMS)
   {
-    LINKLIBS on $(t)$(SUFEXE) = $(GRAPH_LINKLIBS) ;
+    LINKLIBS on $(t)$(SUFEXE) = $(LINKLIBS) $(GRAPH_LINKLIBS) ;
     LinkLibraries  $(t) : $(GRAPH_LIB) ;
   }
 }

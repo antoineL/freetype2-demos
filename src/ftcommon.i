@@ -75,7 +75,7 @@
   int  Fail;
 
   int     graph_init  = 0;
-  double  gamma       = 1.0;
+  double  the_gamma   = 1.0;
 
   int  render_mode = 0;
   int  debug       = 0;
@@ -148,7 +148,7 @@
     if ( !surface )
       PanicZ( "could not allocate display surface\n" );
 
-    grSetGlyphGamma( gamma );
+    grSetGlyphGamma( the_gamma );
 
     graph_init = 1;
   }

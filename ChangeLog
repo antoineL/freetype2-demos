@@ -1,3 +1,16 @@
+2004-03-20  Steve Hartwell  <shspamsink@comcast.net>
+
+	Updated to make it compile with newer MacOS versions.
+
+	* graph/mac: Don't include Windows.h but MacWindows.h.
+	Include SIOUX.h only if __MWERKS__ is defined.
+	(refresh_rectangle): Updated.
+	(listen_event): Remove `theEventMask'.
+	Updated.
+	Make code conditional to __MWERKS__ which is related to SIOUX.
+	(init_surface): Handle gr_pixel_mode_rgb24.
+	Updated.
+
 2004-02-20  Werner Lemberg  <wl@gnu.org>
 
 	Add `light' render mode to ftview (using key `L').

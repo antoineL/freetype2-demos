@@ -1,4 +1,4 @@
-/* memtest.c */
+/* ftmemchk.c */
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -112,8 +112,8 @@ void  forget_my_block( void*  base )
 }
 
 
-FT_CALLBACK_DEF(void*)  my_alloc( FT_Memory  memory,
-                                  long       size )
+FT_CALLBACK_DEF( void* )  my_alloc( FT_Memory  memory,
+                                    long       size )
 {
   void*  p = malloc(size);
   if (p)
@@ -124,7 +124,8 @@ FT_CALLBACK_DEF(void*)  my_alloc( FT_Memory  memory,
 }
 
 
-FT_CALLBACK_DEF(void)   my_free( FT_Memory memory, void*  block )
+FT_CALLBACK_DEF( void )  my_free( FT_Memory  memory,
+                                  void*      block )
 {
   memory=memory;
   forget_my_block(block);
@@ -132,10 +133,10 @@ FT_CALLBACK_DEF(void)   my_free( FT_Memory memory, void*  block )
 }
 
 
-FT_CALLBACK_DEF(void*)  my_realloc( FT_Memory memory,
-                                    long      cur_size,
-                                    long      new_size,
-                                    void*     block )
+FT_CALLBACK_DEF( void* )  my_realloc( FT_Memory  memory,
+                                      long       cur_size,
+                                      long       new_size,
+                                      void*      block )
 {
   void*  p;
 
@@ -205,8 +206,8 @@ static void  dump_mem( void )
 
   static void  Usage( char*  name )
   {
-    printf( "memtest: simple memory tester -- part of the FreeType project\n" );
-    printf( "-------------------------------------------------------------\n" );
+    printf( "ftmemchk: simple memory tester -- part of the FreeType project\n" );
+    printf( "--------------------------------------------------------------\n" );
     printf( "\n" );
     printf( "Usage: %s ppem fontname[.ttf|.ttc] [fontname2..]\n", name );
     printf( "\n" );

@@ -1,13 +1,19 @@
+2001-06-27  Werner Lemberg  <wl@gnu.org>
+
+	* src/memtest.c: s/memtest/ftmemchk/.
+
 2001-06-27  David Turner  <david@freetype.org>
 
-	* src/ftcommon.i, src/ftmemchk.c: changes due to the modification of
-	the FT_CALLBACK_DEF macro definition
+	* src/ftcommon.i, src/ftmemchk.c: Changes due to the modification of
+	the FT_CALLBACK_DEF macro definition.
 
 2001-06-24  David Turner  <david@freetype.org>
 
-    * src/ftmemchk.c, src/memtest.c, Makefile, src/Jamfile: renamed the
-    test program "memtest" to "ftmemchk".
+	Renamed the test program "memtest" to "ftmemchk".
 
+	* src/memtest.c: Renamed to ...
+	* src/ftmemchk.c: This file.
+	* Makefile, src/Jamfile: Updated.
 
 	* Version 2.0.3 released.
 	=========================

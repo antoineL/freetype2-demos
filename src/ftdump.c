@@ -57,7 +57,7 @@
   usage( char*  execname )
   {
     fprintf( stderr, "\n" );
-    fprintf( stderr, "ftview: simple font dumper -- part of the FreeType project\n" );
+    fprintf( stderr, "ftdump: simple font dumper -- part of the FreeType project\n" );
     fprintf( stderr, "-----------------------------------------------------------\n" );
     fprintf( stderr, "\n" );
     fprintf( stderr, "Usage: %s fontname[.ttf|.ttc]\n", execname );

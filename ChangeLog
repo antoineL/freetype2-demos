@@ -1,3 +1,11 @@
+2003-11-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/testname.c: Include ft2build.h.
+
+2003-10-22  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdump.c (usage): Fix typo.
+
 2003-10-17  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftmulti.c (main): Call `FT_Done_Face'.

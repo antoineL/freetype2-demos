@@ -2,6 +2,8 @@
 
 	* graph/x11/grx11.c [__VMS]: Include vms_x_fix.h.
 
+	* vms_make.com: Updated.
+
 2004-08-29  Werner Lemberg  <wl@gnu.org>
 
 	* graph/gblender.c (gblender_lookup, gblender_lookup_channel):

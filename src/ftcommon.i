@@ -585,10 +585,7 @@
       PanicZ( "invalid glyph format returned!" );
 
     bitmap = (FT_BitmapGlyph)glyf;
-    if ( FT_Bitmap_Convert( glyf->library, &bitmap->bitmap, &ft_bitmap, 1 ) )
-      source = &bitmap->bitmap;
-    else
-      source = &ft_bitmap;
+    source = &bitmap->bitmap;
 
     target->rows   = source->rows;
     target->width  = source->width;
@@ -604,6 +601,15 @@
     case FT_PIXEL_MODE_GRAY:
       target->mode  = gr_pixel_mode_gray;
       target->grays = source->num_grays;
+      break;
+
+    case FT_PIXEL_MODE_GRAY2:
+    case FT_PIXEL_MODE_GRAY4:
+      (void)FT_Bitmap_Convert( library, source, &ft_bitmap, 1 );
+      target->pitch  = ft_bitmap.pitch;
+      target->buffer = ft_bitmap.buffer;
+      target->mode   = gr_pixel_mode_gray;
+      target->grays  = ft_bitmap.num_grays;
       break;
 
     case FT_PIXEL_MODE_LCD:

@@ -28,9 +28,6 @@
 #include <stdarg.h>
 
 
-/* define if you want to use a SBits cache instead of an image one !! */
-#undef     USE_SBITS_CACHE
-
   /* forward declarations */
   extern void  PanicZ( const char*  message );
 
@@ -172,6 +169,10 @@
   FT_GlyphSlot     glyph;        /* the glyph slot                  */
 
   FTC_Image_Desc   current_font;
+
+  /* do we need to dump cache statistics ?? */
+  int              dump_cache_stats = 0;
+  int              use_sbits_cache  = 0;
 
   int  num_glyphs;            /* number of glyphs   */
   int  ptsize;                /* current point size */
@@ -356,15 +357,13 @@
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
-#ifdef USE_SBITS_CACHE
     error = FTC_SBit_Cache_New( manager, &sbits_cache );
     if (error)
       PanicZ( "could not initialize small bitmap cache" );
-#else
+
     error = FTC_Image_Cache_New( manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
-#endif
   }
 
 
@@ -414,6 +413,7 @@
   }   
 
 
+
   static
   FT_Error  get_glyph_bitmap( FT_ULong   glyph_index,
                               grBitmap*  target,
@@ -424,7 +424,7 @@
   {
     FT_Error  error;
 
-#ifdef USE_SBITS_CACHE
+    if (use_sbits_cache)
     {
       FTC_SBit  sbit;
       
@@ -435,8 +435,6 @@
                                      &sbit );
       if ( !error )
       {
-        FT_Pos          x_top, y_top;
-
         target->rows   = sbit->height;
         target->width  = sbit->width;
         target->pitch  = sbit->pitch;
@@ -463,7 +461,7 @@
         *y_advance = sbit->yadvance;
       }
     }
-#else
+    else
     {
       FT_Glyph  glyph;
       
@@ -508,7 +506,6 @@
         *y_advance = (glyph->advance.y+0x8000) >> 16;
       }
     }
-#endif
     return 0;
   }
 

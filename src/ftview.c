@@ -188,6 +188,8 @@
     grWriteln( "  f         : toggle force auto-hinting" );
     grWriteln( "  space     : toggle rendering mode" );
     grLn();
+    grWriteln( "  c         : toggle between cache modes" );
+    grLn();
     grWriteln( "  n         : next font" );
     grWriteln( "  p         : previous font" );
     grLn();
@@ -230,6 +232,12 @@
       new_header = antialias ? (char *)"anti-aliasing is now on"
                              : (char *)"anti-aliasing is now off";
       set_current_image_type();
+      return 1;
+
+    case grKEY( 'c' ):
+      use_sbits_cache = !use_sbits_cache;
+      new_header = use_sbits_cache ? (char *)"now using sbits cache"
+                                   : (char *)"now using normal cache";
       return 1;
 
     case grKEY( 'f' ):
@@ -328,6 +336,7 @@
 #endif
     fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
     fprintf( stderr,  "  -f index  specify first glyph index to display\n" );
+    fprintf( stderr,  "  -D        dump cache usage statistics\n" );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -350,7 +359,7 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "df:l:r:" );
+      option = getopt( argc, argv, "Ddf:l:r:" );
 
       if ( option == -1 )
         break;
@@ -361,6 +370,10 @@
         debug = 1;
         break;
 
+      case 'D':
+        dump_cache_stats = 1;
+        break;
+        
       case 'f':
         first_glyph = atoi( optarg );
         break;
@@ -495,17 +508,18 @@
       grWriteCellString( &bit, 0, 8, Header, fore_color );
       grRefreshSurface( surface );
 
-#if 1
-      /* dump simple cache manager statistics */
-      fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
-                       " [ %d, %ld, %f ]\n",
-                       manager->num_nodes,
-                       manager->num_bytes,
+      if (dump_cache_stats)
+      {
+        /* dump simple cache manager statistics */
+        fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
+                         " [ %d, %ld, %f ]\n",
+                         manager->num_nodes,
+                         manager->num_bytes,
                        
-                       manager->num_nodes > 0 
-                          ? manager->num_bytes*1.0/manager->num_nodes
-                          : 0.0 );
-#endif
+                         manager->num_nodes > 0 
+                            ? manager->num_bytes*1.0/manager->num_nodes
+                            : 0.0 );
+      }
 
       grListenSurface( surface, 0, &event );
       if ( !( key = Process_Event( &event ) ) )

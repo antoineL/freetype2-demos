@@ -5,6 +5,11 @@
   const unsigned char*  src_line = blit->src_line;
   unsigned char*        dst_line = blit->dst_line;
 
+  /* make compiler happy */
+  (r)=(r);
+  (g)=(g);
+  (b)=(b);
+
   do
   {
     const unsigned char*  src = src_line + (blit->src_x);
@@ -26,7 +31,7 @@
       else
       {
         GBlenderPixel  back;
-        
+
         GDST_READ(dst,back);
 
         GBLENDER_LOOKUP( blender, back );
@@ -47,6 +52,6 @@
     dst_line += blit->dst_pitch;
   }
   while (--h > 0);
-  
+
   GBLENDER_CLOSE(blender);
 

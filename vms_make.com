@@ -5,7 +5,7 @@ $! In case of problems with the build you might want to contact me at
 $! zinser@decus.de (preferred) or zinser@sysdev.deutsche-boerse.com (Work)
 $!
 $!------------------------------------------------------------------------------
-$! 
+$!
 $! Just some general constants
 $!
 $ Make   = ""
@@ -49,7 +49,7 @@ $ exit
 $!
 $!------------------------------------------------------------------------------
 $!
-$! If MMS/MMK are available dump out the descrip.mms if required 
+$! If MMS/MMK are available dump out the descrip.mms if required
 $!
 $CREA_MMS:
 $ write sys$output "Creating descrip.mms..."
@@ -62,10 +62,10 @@ $ deck
 #    (zinser@decus.de (preferred) or zinser@sysdev.deutsche-boerse.com (work))
 
 
-.FIRST 
+.FIRST
 
         define freetype [-.include.freetype]
-        
+
 CC = cc
 
 # location of src for Test programs
@@ -82,7 +82,9 @@ GRAPHOBJ = $(OBJDIR)grblit.obj,  \
            $(OBJDIR)grfont.obj,  \
            $(OBJDIR)grinit.obj,  \
            $(OBJDIR)grdevice.obj,\
-           $(OBJDIR)grx11.obj
+           $(OBJDIR)grx11.obj,   \
+           $(OBJDIR)gblender.obj, \
+           $(OBJDIR)gblender_blit.obj
 
 # C flags
 CFLAGS = $(CCOPT)$(INCLUDES)/obj=$(OBJDIR)
@@ -102,14 +104,14 @@ ftdump.exe    : $(OBJDIR)ftdump.obj,$(OBJDIR)common.obj
 testnames.exe : $(OBJDIR)testnames.obj
         link $(LOPTS) $(OBJDIR)testnames.obj,[]ft2demos.opt/opt
 ftview.exe    : $(OBJDIR)ftview.obj,$(OBJDIR)common.obj,$(GRAPHOBJ)
-        link $(LOPTS) $(OBJDIR)ftview.obj,common.obj,$(GRAPHOBJ),[]ft2demos.opt/opt                              
+        link $(LOPTS) $(OBJDIR)ftview.obj,common.obj,$(GRAPHOBJ),[]ft2demos.opt/opt
 ftmulti.exe   : $(OBJDIR)ftmulti.obj,$(OBJDIR)common.obj,$(GRAPHOBJ)
         link $(LOPTS) $(OBJDIR)ftmulti.obj,common.obj,$(GRAPHOBJ),[]ft2demos.opt/opt
 ftstring.exe  : $(OBJDIR)ftstring.obj,$(OBJDIR)common.obj,$(GRAPHOBJ)
         link $(LOPTS) $(OBJDIR)ftstring.obj,common.obj,$(GRAPHOBJ),[]ft2demos.opt/opt
 fttimer.exe   : $(OBJDIR)fttimer.obj
-        link $(LOPTS) $(OBJDIR)fttimer.obj,[]ft2demos.opt/opt                    
-                
+        link $(LOPTS) $(OBJDIR)fttimer.obj,[]ft2demos.opt/opt
+
 $(OBJDIR)common.obj    : $(SRCDIR)common.c , $(SRCDIR)common.h
 $(OBJDIR)ftbench.obj   : $(SRCDIR)ftbench.c
 $(OBJDIR)ftlint.obj    : $(SRCDIR)ftlint.c
@@ -120,9 +122,11 @@ $(OBJDIR)ftview.obj    : $(SRCDIR)ftview.c
 $(OBJDIR)grblit.obj    : $(GRAPHSRC)grblit.c
 $(OBJDIR)grobjs.obj    : $(GRAPHSRC)grobjs.c
 $(OBJDIR)grfont.obj    : $(GRAPHSRC)grfont.c
+$(OBJDIR)gblender.obj  : $(GRAPHSRC)gblender.c
+$(OBJDIR)gblender_blit.obj : $(GRAPHSRC)gblender_blit.c
 $(OBJDIR)grinit.obj    : $(GRAPHSRC)grinit.c
         set def $(GRAPHSRC)
-        $(CC)$(CCOPT)/include=([.x11],[])/define=(DEVICE_X11)/obj=[-.obj] grinit.c 
+        $(CC)$(CCOPT)/include=([.x11],[])/define=(DEVICE_X11)/obj=[-.obj] grinit.c
         set def [-]
 $(OBJDIR)grx11.obj     : $(GRX11SRC)grx11.c
         set def $(GRX11SRC)
@@ -137,13 +141,13 @@ CLEAN :
        delete $(OBJDIR)*.obj;*,[]ft2demos.opt;*
 # EOF
 $ eod
-$ anal/rms/fdl descrip.mms 
-$ open/write mmsf ccop.mms 
+$ anal/rms/fdl descrip.mms
+$ open/write mmsf ccop.mms
 $ write mmsf "CCOPT = ", ccopt
 $ write mmsf "LOPTS = ", lopts
 $ close mmsf
 $ convert/fdl=descrip.fdl ccop.mms ccop.mms
-$ copy ccop.mms,descrip.mms;-1 descrip.mms 
+$ copy ccop.mms,descrip.mms;-1 descrip.mms
 $ return
 $!------------------------------------------------------------------------------
 $!

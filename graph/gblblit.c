@@ -286,7 +286,7 @@ gblender_blit_init( GBlenderBlit           blit,
 
  /* nothing to blit
   */
-  if ( src_width <= 0 || dst_width <= 0 )
+  if ( src_width <= 0 || src_height <= 0 )
   {
     blit->blit_func = _gblender_blit_dummy;
     return -1;

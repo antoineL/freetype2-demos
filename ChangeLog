@@ -1,3 +1,7 @@
+2004-10-18  Werner Lemberg  <wl@gnu.org>
+
+	* graph/gblblit.c (gblender_blit_init): Fix blit test.
+
 2004-09-08  Jouk Jansen <joukj@hrem.stm.tudelft.nl>
 
 	* graph/x11/grx11.c [__VMS]: Include vms_x_fix.h.

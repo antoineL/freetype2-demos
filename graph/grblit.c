@@ -12,6 +12,8 @@
 #include "grblit.h"
 #include "grobjs.h"
 
+#define  GRAY8
+
   static
   int  compute_clips( grBlitter*  blit,
                       int         x_offset,
@@ -845,6 +847,82 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifdef GRAY8
+  static
+  void  blit_gray8_to_555( grBlitter*  blit,
+                           grColor     color )
+  {
+    int             y;
+    int             sr = (color.chroma[0] << 8) & 0x7C00;
+    int             sg = (color.chroma[1] << 2) & 0x03E0;
+    int             sb = (color.chroma[2]     ) & 0x001F;
+    unsigned char*  read;
+    unsigned char*  write;
+    long            color2;
+
+    read   = blit->read  + blit->xread;
+    write  = blit->write + 2*blit->xwrite;
+
+    color2 = color.value;
+    extract565( color2, color );
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        unsigned char    val;
+
+        val = *_read;
+        if (val)
+        {
+          unsigned short* pixel = (unsigned short*)_write;
+
+          if (val >= 254 )
+          {
+            pixel[0] = (short)color2;
+          }
+          else if ( val >= 2 )
+          {
+            /* compose gray value */
+            int   pix = (int)*pixel;
+            int   dr  = pix & 0x7C00;
+            int   dg  = pix & 0x03E0;
+            int   db  = pix & 0x001F;
+
+            dr  = pix & 0x7C00;
+            dr += ((sr-dr)*val) >> 8;
+            dr &= 0xF800;
+            
+            dg  = pix & 0x03E0;
+            dg += ((sg-dg)*val) >> 8;
+            dg &= 0x7E0;
+
+            db  = pix & 0x001F;
+            db += ((sb-db)*val) >> 8;
+            db += 0x001F;
+
+            *pixel = (short)( dr | dg | db );
+          }
+        }
+        _write +=2;
+        _read  ++;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+   
+  }                           
+#endif /* GRAY8 */
+
   static
   void  blit_gray_to_555( grBlitter*  blit,
                           grColor     color,
@@ -913,6 +991,81 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifdef GRAY8
+  static
+  void  blit_gray8_to_565( grBlitter*  blit,
+                           grColor     color )
+  {
+    int             y;
+    int             sr = (color.chroma[0] << 8) & 0xF800;
+    int             sg = (color.chroma[1] << 2) & 0x07E0;
+    int             sb = (color.chroma[2]     ) & 0x001F;
+    unsigned char*  read;
+    unsigned char*  write;
+    long            color2;
+
+    read   = blit->read  + blit->xread;
+    write  = blit->write + 2*blit->xwrite;
+
+    color2 = color.value;
+    extract565( color2, color );
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        unsigned char    val;
+
+        val = *_read;
+        if (val)
+        {
+          unsigned short* pixel = (unsigned short*)_write;
+
+          if (val >= 254 )
+          {
+            pixel[0] = (short)color2;
+          }
+          else if ( val >= 2 )
+          {
+            /* compose gray value */
+            int   pix = (int)*pixel;
+            int   dr  = pix & 0xF800;
+            int   dg  = pix & 0x07E0;
+            int   db  = pix & 0x001F;
+
+            dr  = pix & 0xF800;
+            dr += ((sr-dr)*val) >> 8;
+            dr &= 0xF800;
+            
+            dg  = pix & 0x07E0;
+            dg += ((sg-dg)*val) >> 8;
+            dg &= 0x7E0;
+            
+            db  = pix & 0x001F;
+            db += ((sb-db)*val) >> 8;
+            db += 0x001F;
+
+            *pixel = (short)( dr | dg | db );
+          }
+        }
+        _write +=2;
+        _read  ++;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }                           
+#endif
+  
   static
   void  blit_gray_to_565( grBlitter*  blit,
                           grColor     color,
@@ -979,6 +1132,70 @@
 /* <Function> blit_gray_to_24                                             */
 /*                                                                        */
 /**************************************************************************/
+
+#ifdef GRAY8
+  static void
+  blit_gray8_to_24( grBlitter*  blit,
+                    grColor     color )
+  {
+    int             y;
+    int             sr = color.chroma[0];
+    int             sg = color.chroma[1];
+    int             sb = color.chroma[2];
+    unsigned char*  read;
+    unsigned char*  write;
+
+    read   = blit->read  + blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        unsigned char    val;
+
+        val = *_read;
+        if (val)
+        {
+          if (val >= 254)
+          {
+            _write[0] = (unsigned char)sr;
+            _write[1] = (unsigned char)sg;
+            _write[2] = (unsigned char)sb;
+          }
+          else if ( val >= 2 )
+          {
+            int  dr = _write[0];
+            int  dg = _write[1];
+            int  db = _write[2];
+            
+            dr += ((sr-dr)*val) >> 8;
+            dg += ((sg-dg)*val) >> 8;
+            db += ((sb-db)*val) >> 8;
+
+            _write[0] = (unsigned char)dr;
+            _write[1] = (unsigned char)dg,
+            _write[2] = (unsigned char)db;
+          }
+        }
+        _write += 3;
+        _read  ++;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }                    
+#endif /* GRAY8 */
+
 
   static
   void  blit_gray_to_24( grBlitter*  blit,
@@ -1109,11 +1326,91 @@
   }
 
 
+  static
+  void  blit_gray8_to_32( grBlitter*  blit,
+                          grColor     color )
+  {
+    blit_gray_to_32( blit, color, 255 );
+  }                          
+
+
 /**************************************************************************/
 /*                                                                        */
 /* <Function> blit_lcd_to_24                                              */
 /*                                                                        */
 /**************************************************************************/
+
+#ifdef GRAY8
+  static void
+  blit_lcd8_to_24( grBlitter*  blit,
+                   grColor     color )
+  {
+    int             y;
+    int             sr = color.chroma[0];
+    int             sg = color.chroma[1];
+    int             sb = color.chroma[2];
+    unsigned char*  read;
+    unsigned char*  write;
+
+    read   = blit->read  + 3*blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        int    val0, val1, val2;
+
+        val0 = _read[0];
+        val1 = _read[1];
+        val2 = _read[2];
+
+        if ( val0 | val1 | val2 )
+        {
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == 255  )
+          {
+            _write[0] = (unsigned char)sr;
+            _write[1] = (unsigned char)sg;
+            _write[2] = (unsigned char)sb;
+          }
+          else
+          {
+            /* compose gray value */
+            int   dr, dg, db;
+            
+            dr  = _write[0];
+            dr += (sr-dr)*val0 >> 8;
+            
+            dg  = _write[1];
+            dg += (sg-dg)*val1 >> 8;
+            
+            db  = _write[1];
+            db += (sb-db)*val2 >> 8;
+            
+            _write[0] = dr;
+            _write[1] = dg;
+            _write[2] = db;
+          }
+        }
+        _write += 3;
+        _read  += 3;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+#endif /* GRAY8 */
 
   static void
   blit_lcd_to_24( grBlitter*  blit,
@@ -1180,6 +1477,78 @@
     while (y > 0);
   }
 
+
+#ifdef GRAY8
+  static void
+  blit_lcd28_to_24( grBlitter*  blit,
+                    grColor     color )
+  {
+    int             y;
+    int             sr = color.chroma[0];
+    int             sg = color.chroma[1];
+    int             sb = color.chroma[2];
+    unsigned char*  read;
+    unsigned char*  write;
+
+    read   = blit->read  + 3*blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        int    val0, val1, val2;
+
+        val0 = _read[2];
+        val1 = _read[1];
+        val2 = _read[0];
+
+        if ( val0 | val1 | val2 )
+        {
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == 255  )
+          {
+            _write[0] = (unsigned char)sr;
+            _write[1] = (unsigned char)sg;
+            _write[2] = (unsigned char)sb;
+          }
+          else
+          {
+            /* compose gray value */
+            int   dr, dg, db;
+            
+            dr  = _write[0];
+            dr += (sr-dr)*val0 >> 8;
+            
+            dg  = _write[1];
+            dg += (sg-dg)*val1 >> 8;
+            
+            db  = _write[1];
+            db += (sb-db)*val2 >> 8;
+            
+            _write[0] = dr;
+            _write[1] = dg;
+            _write[2] = db;
+          }
+        }
+        _write += 3;
+        _read  += 3;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+#endif /* GRAY8 */
 
   static void
   blit_lcd2_to_24( grBlitter*  blit,
@@ -1426,8 +1795,37 @@
     blit_gray_to_32
   };
 
+#ifdef GRAY8
+  typedef  void (*grGray8GlyphBlitter)( grBlitter*  blit,
+                                        grColor     color );
 
-  extern int
+  static
+  const grGray8GlyphBlitter  gr_gray8_blitters[gr_pixel_mode_max] =
+  {
+    0,
+    0,
+    0,
+    0,
+    0,
+    blit_gray8_to_555,
+    blit_gray8_to_565,
+    blit_gray8_to_24,
+    blit_gray8_to_32
+  };
+#endif
+
+
+#include "gblender_blit.h"
+
+  static double    gr_glyph_gamma = 1.2;
+
+  void  grSetGlyphGamma( double  gamma )
+  {
+    gr_glyph_gamma = gamma;
+  }
+
+
+  int
   grBlitGlyphToBitmap( grBitmap*  target,
                        grBitmap*  glyph,
                        grPos      x,
@@ -1445,6 +1843,87 @@
       return -1;
     }
 
+   /* short cut to alpha blender for certain glyph types
+    */
+    {
+      GBlenderSourceFormat  src_format;
+      GBlenderTargetFormat  dst_format;
+      int                   width, height;
+      GBlenderBlitRec       gblit[1];
+      GBlenderPixel         gcolor;
+      static GBlenderRec    gblender[1];
+      static double         gblender_gamma = -100.0;
+      
+      if ( glyph->grays != 256 )
+        goto DefaultBlit;
+      
+      switch ( glyph->mode )
+      {
+      case gr_pixel_mode_gray:  src_format = GBLENDER_SOURCE_GRAY8; break;
+      case gr_pixel_mode_lcd:   src_format = GBLENDER_SOURCE_HRGB;  break;
+      case gr_pixel_mode_lcdv:  src_format = GBLENDER_SOURCE_VRGB;  break;
+      case gr_pixel_mode_lcd2:  src_format = GBLENDER_SOURCE_HBGR;  break;
+      case gr_pixel_mode_lcdv2: src_format = GBLENDER_SOURCE_VBGR;  break;
+      
+      default:
+          goto DefaultBlit;
+      }
+      
+      width  = glyph->width;
+      height = glyph->rows;
+      
+      if ( glyph->mode == gr_pixel_mode_lcd  ||
+           glyph->mode == gr_pixel_mode_lcd2 )
+        width /= 3;
+      
+      if ( glyph->mode == gr_pixel_mode_lcdv  ||
+           glyph->mode == gr_pixel_mode_lcdv2 )
+        height /= 3;
+      
+      switch ( target->mode )
+      {
+      case gr_pixel_mode_rgb32: dst_format  = GBLENDER_TARGET_RGB32; break;
+      case gr_pixel_mode_rgb24: dst_format  = GBLENDER_TARGET_RGB24; break;
+      case gr_pixel_mode_rgb565: dst_format = GBLENDER_TARGET_RGB565; break;
+      default:
+          goto DefaultBlit;
+      }
+      
+     /* initialize blender when needed, i.e. when gamma changes
+      */
+      if ( gblender_gamma != gr_glyph_gamma  )
+      {
+        gblender_gamma = gr_glyph_gamma;
+        gblender_init( gblender, gblender_gamma );
+      }
+
+      if ( gblender_blit_init( gblit, gblender, 
+                               x, y,
+                               src_format,
+                               glyph->buffer,
+                               glyph->pitch,
+                               width,
+                               height,
+                               dst_format,
+                               target->buffer,
+                               target->pitch,
+                               target->width,
+                               target->rows ) < 0 )
+      {
+        /* nothing to do */
+        return 0;
+      }
+      
+      gcolor = ((GBlenderPixel)color.chroma[0] << 16) |
+               ((GBlenderPixel)color.chroma[1] << 8 ) |
+               ((GBlenderPixel)color.chroma[2]      ) ;
+               
+      gblender_blit_run( gblit, gcolor );
+      return 1;
+    }
+
+  DefaultBlit:
+  
     /* set up blitter and compute clipping.  Return immediately if needed */
     blit.source = *glyph;
     blit.target = *target;
@@ -1516,17 +1995,29 @@
             return -1;
           }
 
+#ifdef GRAY8
+          if ( source_grays == 256 )
+            gr_gray8_blitters[mode]( &blit, color );
+          else
+#endif /* GRAY8 */           
           gr_color_blitters[mode]( &blit, color, source_grays - 1 );
         }
       }
       break;
 
     case gr_pixel_mode_lcd:
-      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      if ( mode == gr_pixel_mode_rgb24 )
       {
-        blit_lcd_to_24( &blit, color, glyph->grays-1 );
-        break;
+#ifdef GRAY8
+        if ( glyph->grays == 256 )
+          blit_lcd8_to_24( &blit, color );
+        else
+#endif
+        if ( glyph->grays > 1 )
+          blit_lcd_to_24( &blit, color, glyph->grays-1 );
       }
+      break;
+      
 
     case gr_pixel_mode_lcdv:
       if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
@@ -1536,18 +2027,25 @@
       }
 
     case gr_pixel_mode_lcd2:
-      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      if ( mode == gr_pixel_mode_rgb24 )
       {
-        blit_lcd2_to_24( &blit, color, glyph->grays-1 );
-        break;
+#ifdef GRAY8      
+        if ( glyph->grays == 256 )
+          blit_lcd28_to_24( &blit, color );
+        else
+#endif        
+        if ( glyph->grays > 1 )
+          blit_lcd2_to_24( &blit, color, glyph->grays-1 );
       }
+      break;
 
     case gr_pixel_mode_lcdv2:
-      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
-      {
-        blit_lcdv2_to_24( &blit, color, glyph->grays-1 );
-        break;
-      }
+     if ( mode == gr_pixel_mode_rgb24 )
+     {
+       if ( glyph->grays > 1 )
+         blit_lcdv2_to_24( &blit, color, glyph->grays-1 );
+     }
+     break;
 
     default:
       /* we don't support the blitting of bitmaps of the following  */

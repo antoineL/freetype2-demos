@@ -17,6 +17,64 @@
 
 
 #include "ftcommon.i"
+#include <math.h>
+
+
+
+  static FT_Error
+  Render_GammaGrid( void )
+  {
+    int   g;
+    int   yside  = 11;
+    int   xside  = 10;
+    int   levels = 17;
+    int   gammas = 30;
+    int   x0     = (bit.width - levels*xside)/2;
+    int   y0     = (bit.rows  - gammas*(yside+1))/2;
+    int   pitch  = bit.pitch;
+
+    if ( pitch < 0 )
+      pitch = -pitch;
+
+    memset( bit.buffer, 100, pitch*bit.rows );
+
+    grGotobitmap( &bit );
+
+    for ( g = 1; g <= gammas; g += 1 )
+    {
+      double gamma = g/10.0;
+      char   temp[6];
+      int    y = y0 + (yside+1)*(g-1);
+      int    nx, ny;
+
+      unsigned char*  line = bit.buffer + y*bit.pitch;
+
+      if ( bit.pitch < 0 )
+        line -= bit.pitch*(bit.rows-1);
+
+      line += x0*3;
+
+      grSetPixelMargin( x0-32, y + (yside-8)/2 );
+      grGotoxy( 0, 0 );
+
+      sprintf( temp, "%.1f", gamma );
+      grWrite( temp );
+
+      for ( ny = 0; ny < yside; ny++, line += bit.pitch )
+      {
+        unsigned char*  dst = line;
+
+        for ( nx = 0; nx < levels; nx++, dst += 3*xside )
+        {
+          double  p   = nx/(double)(levels-1);
+          int     gm  = 255.0*pow( p, gamma );
+
+          memset( dst, gm, xside*3 );
+        }
+      }
+    }
+    return 0;
+  }
 
 
   static FT_Error
@@ -452,13 +510,17 @@
     grWriteln( "  h         : toggle outline hinting" );
     grWriteln( "  b         : toggle embedded bitmaps" );
     grWriteln( "  l         : toggle low precision rendering" );
-    grWriteln( "  f         : toggle force auto-hinting" );
+    grWriteln( "  f         : toggle forced auto-hinting" );
     grWriteln( "  space     : toggle rendering mode" );
     grLn();
     grWriteln( "  c         : toggle between cache modes" );
     grLn();
     grWriteln( "  n         : next font" );
     grWriteln( "  p         : previous font" );
+    grLn();
+    grWriteln( "  g         : decrease gamma by 0.1" );
+    grWriteln( "  G         : increase gamma by 0.1" );
+    grWriteln( "  K         : display gamma grid" );
     grLn();
     grWriteln( "  Up        : increase pointsize by 1 unit" );
     grWriteln( "  Down      : decrease pointsize by 1 unit" );
@@ -500,6 +562,27 @@
                              : (char *)"anti-aliasing is now off";
       set_current_image_type();
       return 1;
+
+    case grKEY( 'g' ):
+      if ( gamma <= 0 )
+        gamma = 0;
+      else gamma -= 0.1;
+
+      grSetGlyphGamma( gamma );
+
+      sprintf( Header, "gamma changed to %.1f %s", gamma, gamma == 0.0 ? "(sRGB mode)" : "" );
+      new_header = Header;
+      break;
+
+    case grKEY( 'G' ):
+      if ( gamma >= 3.0 )
+        gamma = 3.0;
+      else gamma += 0.1;
+
+      grSetGlyphGamma( gamma );
+      sprintf( Header, "gamma changed to %.1f %s", gamma, gamma == 0.0 ? "(sRGB mode)" : "" );
+      new_header = Header;
+      break;
 
     case grKEY( 'L' ):
       lcd_mode = ( lcd_mode + 1 ) % 6;
@@ -567,6 +650,11 @@
       new_header = hinted ? (char *)"glyph hinting is now active"
                           : (char *)"glyph hinting is now ignored";
       set_current_image_type();
+      break;
+
+    case grKEY( 'K' ):
+      render_mode = 4;
+      new_header = (char*)"rendering gamma grid";
       break;
 
     case grKEY( ' ' ):
@@ -818,31 +906,38 @@
           error = Render_Stroke( Num );
           break;
 
+        case 4:
+          error = Render_GammaGrid();
+          render_mode = 0;
+          break;
+
         default:
           error = Render_Waterfall( ptsize );
         }
 
-        if ( size )
-          sprintf( Header, "%s %s (file `%s')",
-            face->family_name,
-            face->style_name,
-            ft_basename( ((PFont)current_font.face_id)->filepathname ) );
-        else
+        if ( !new_header )
         {
-          if ( error == FT_Err_Invalid_Pixel_Size )
-            sprintf( Header, "Invalid pixel size (file `%s')",
-              ft_basename( ((PFont)current_font.face_id)->filepathname ) );
-          else if ( error == FT_Err_Invalid_PPem )
-            sprintf( Header, "Invalid ppem value (file `%s')",
+          if ( size )
+            sprintf( Header, "%s %s (file `%s')",
+              face->family_name,
+              face->style_name,
               ft_basename( ((PFont)current_font.face_id)->filepathname ) );
           else
-            sprintf( Header, "File `%s': error 0x%04x",
-              ft_basename( ((PFont)current_font.face_id)->filepathname ),
-              (FT_UShort)error );
-        }
+          {
+            if ( error == FT_Err_Invalid_Pixel_Size )
+              sprintf( Header, "Invalid pixel size (file `%s')",
+                ft_basename( ((PFont)current_font.face_id)->filepathname ) );
+            else if ( error == FT_Err_Invalid_PPem )
+              sprintf( Header, "Invalid ppem value (file `%s')",
+                ft_basename( ((PFont)current_font.face_id)->filepathname ) );
+            else
+              sprintf( Header, "File `%s': error 0x%04x",
+                ft_basename( ((PFont)current_font.face_id)->filepathname ),
+                (FT_UShort)error );
+          }
 
-        if ( !new_header )
           new_header = Header;
+        }
 
         grWriteCellString( &bit, 0, 0, new_header, fore_color );
         new_header = 0;

@@ -17,17 +17,23 @@ GRAPH_LIB      := $(OBJ_DIR)/graph.$(SA)
 GRAPH := $(TOP_DIR_2)/graph
 
 GRAPH_H := $(GRAPH)/graph.h    \
+           $(GRAPH)/grevents.h \
+           $(GRAPH)/grfont.h   \
            $(GRAPH)/grtypes.h  \
            $(GRAPH)/grobjs.h   \
            $(GRAPH)/grdevice.h \
-           $(GRAPH)/grblit.h
+           $(GRAPH)/grblit.h   \
+           $(GRAPH)/gblender.h \
+           $(GRAPH)/gblender_blit.h
 
 
 GRAPH_OBJS := $(OBJ_DIR)/grblit.$(SO)   \
               $(OBJ_DIR)/grobjs.$(SO)   \
               $(OBJ_DIR)/grfont.$(SO)   \
               $(OBJ_DIR)/grdevice.$(SO) \
-              $(OBJ_DIR)/grinit.$(SO)
+              $(OBJ_DIR)/grinit.$(SO)   \
+              $(OBJ_DIR)/gblender.$(SO) \
+              $(OBJ_DIR)/gblender_blit.$(SO)
 
 
 # Default value for COMPILE_GRAPH_LIB;

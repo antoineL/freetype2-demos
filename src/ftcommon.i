@@ -74,7 +74,8 @@
 
   int  Fail;
 
-  int  graph_init  = 0;
+  int     graph_init  = 0;
+  double  gamma       = 1.0;
 
   int  render_mode = 0;
   int  debug       = 0;
@@ -147,6 +148,8 @@
     if ( !surface )
       PanicZ( "could not allocate display surface\n" );
 
+    grSetGlyphGamma( gamma );
+
     graph_init = 1;
   }
 
@@ -207,7 +210,6 @@
   {
     const char*  filepathname;
     int          face_index;
-    int          cmap_index;
 
     int          num_indices;
 
@@ -407,14 +409,9 @@
                          font->face_index,
                          aface );
     if ( encoding == FT_ENCODING_NONE || error )
-      goto Fail;
+      return error;
 
-    error = FT_Select_Charmap( *aface, encoding );
-    if ( !error )
-      font->cmap_index = FT_Get_Charmap_Index( (*aface)->charmap );
-
-  Fail:
-    return error;
+    return FT_Select_Charmap( *aface, encoding );
   }
 
 
@@ -533,12 +530,7 @@
   static FT_UInt
   get_glyph_index( FT_UInt32  charcode )
   {
-    FTC_FaceID  face_id = current_font.face_id;
-    PFont       font    = (PFont)face_id;
-
-
-    return FTC_CMapCache_Lookup( cmap_cache, face_id,
-                                 font->cmap_index, charcode );
+    return FTC_CMapCache_Lookup( cmap_cache, current_font.face_id, 0, charcode );
   }
 
 

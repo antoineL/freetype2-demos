@@ -18,7 +18,7 @@ if $(UNIX)
 }
 
 PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ;
-GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
+GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ;
 {
   local  t ;
 

@@ -1,3 +1,15 @@
+2004-05-20  David Turner    <david@freetype.org>
+
+        * graph/gblender*.[hc], graph/grblit.c, graph/grfont.c, graph/grfont.h,
+        graph/graph.h: adding support for fast gamma-corrected alpha-blending
+
+        * src/ftview.c, src/ftcommon.i, src/ftgamma.c: adding support for
+        gamma-corrected alpha-blending in the "ftview" program. Use the
+        keys "g" and "G" to change the Gamma.
+
+        TRY IT, IT TOTALLY ROCKS !!
+
+
 2004-05-19  George Williams  <gww@silcom.com>
 
 	* src/ftmulti.c (main): Use default axis values.

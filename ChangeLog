@@ -1,16 +1,21 @@
+2002-08-04  Vincent Caron  <v.caron@zerodeux.net>
+
+	* src/ftcommon.i (Text), src/ftmulti.c (Text): s/jumped/jumps/.
+	* src/ftview.c (Render_Waterfall): Remove unused variable.
+
 2002-07-03  David Turner  <david@freetype.org>
 
-    * src/ftcommon.i, src/ftview.c: adding a "waterfall" rendering mode
-    (accessible by cycling modes with the space bar)
+	* src/ftcommon.i, src/ftview.c: Adding a "waterfall" rendering mode
+	(accessible by cycling modes with the space bar).
 
 2002-07-01  David Turner  <david@freetype.org>
 
-    * src/ftbench.c: adding the "-p" option to pre-load font files in memory.
-    This is a very useful thing to quantify the performance improvements
-    achieved by many of FreeType internal optimizations regarding stream
-    i/o.
+	* src/ftbench.c: Adding the "-p" option to pre-load font files in
+	memory.  This is a very useful thing to quantify the performance
+	improvements achieved by many of FreeType internal optimizations
+	regarding stream i/o.
 
-    * src/ftstring.c (reset_transform): Fix Werner's incorrect fix :-)
+	* src/ftstring.c (reset_transform): Fix Werner's incorrect fix.
 
 2002-06-25  Werner Lemberg  <wl@gnu.org>
 

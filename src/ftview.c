@@ -176,7 +176,7 @@
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     FT_Pointer  glyf;
-    int         i, pix_size;
+    int         pix_size;
     grBitmap    bit3;
 
     unsigned char         text[256];

@@ -868,6 +868,7 @@ typedef  unsigned long   uint32;
     Cursor              busy;
     const grX11Format*  format;
     int                 scanline_pad;
+    Visual*             visual;
 
   } grX11Device;
 
@@ -889,23 +890,20 @@ typedef  unsigned long   uint32;
   static int
   gr_x11_device_init( void )
   {
-    grX11Device*  dev = &x11dev;
-
-
     memset( &x11dev, 0, sizeof ( x11dev ) );
 
     XrmInitialize();
 
 
-    dev->display = XOpenDisplay( "" );
-    if ( !dev->display )
+    x11dev.display = XOpenDisplay( "" );
+    if ( !x11dev.display )
     {
       fprintf( stderr, "cannot open X11 display\n" );
       return -1;
     }
 
-    dev->idle = XCreateFontCursor( dev->display, XC_left_ptr );
-    dev->busy = XCreateFontCursor( dev->display, XC_watch );
+    x11dev.idle = XCreateFontCursor( x11dev.display, XC_left_ptr );
+    x11dev.busy = XCreateFontCursor( x11dev.display, XC_watch );
 
     {
       int          count;
@@ -914,7 +912,7 @@ typedef  unsigned long   uint32;
       XVisualInfo  templ;
 
 
-      formats = XListPixmapFormats( dev->display, &count );
+      formats = XListPixmapFormats( x11dev.display, &count );
 
 #ifdef TEST
       printf( "available pixmap formats\n" );
@@ -943,9 +941,10 @@ typedef  unsigned long   uint32;
             XVisualInfo*  visual;
 
 
+            templ.screen = DefaultScreen( x11dev.display );
             templ.depth = format->depth;
-            visuals     = XGetVisualInfo( dev->display,
-                                          VisualDepthMask,
+            visuals      = XGetVisualInfo( x11dev.display,
+                                           VisualScreenMask | VisualDepthMask,
                                           &templ,
                                           &count2 );
 
@@ -1004,8 +1003,9 @@ typedef  unsigned long   uint32;
                        visual->green_mask     == cur_format->x_green_mask     &&
                        visual->blue_mask      == cur_format->x_blue_mask      )
                   {
-                    dev->format       = cur_format;
-                    dev->scanline_pad = format->scanline_pad;
+                    x11dev.format       = cur_format;
+                    x11dev.scanline_pad = format->scanline_pad;
+                    x11dev.visual       = visual->visual;
                     return 0;
                   }
                 }
@@ -1260,9 +1260,8 @@ typedef  unsigned long   uint32;
 
     screen = DefaultScreen( display );
 
-    surface->colormap = DefaultColormap( display, screen );
-    surface->depth    = DefaultDepth( display, screen );
-    surface->visual   = DefaultVisual( display, screen );
+    surface->depth    = x11dev.format->x_depth;
+    surface->visual   = x11dev.visual;
 
     surface->format      = format = x11dev.format;
     surface->root.bitmap = *bitmap;
@@ -1326,19 +1325,35 @@ typedef  unsigned long   uint32;
                                     (char*)pximage->buffer,
                                     pximage->width,
                                     pximage->rows,
-                                    8,
+                                    x11dev.scanline_pad,
                                     0 );
     if ( !surface->ximage )
       return 0;
 
     {
+      XColor                color, dummy;
       XTextProperty         xtp;
       XSizeHints            xsh;
       XSetWindowAttributes  xswa;
+      long                  xswa_mask = CWBackPixel | CWEventMask | CWCursor;
 
-
-      xswa.border_pixel     = BlackPixel( display, screen );
+      if (surface->visual == DefaultVisual( display, screen ) )
+      {
       xswa.background_pixel = WhitePixel( display, screen );
+        surface->colormap     = DefaultColormap( display, screen );
+      }
+      else
+      {
+        xswa_mask             |= CWColormap | CWBorderPixel;
+        xswa.colormap         = XCreateColormap( display, 
+                                                 RootWindow( display, screen ), 
+                                                 surface->visual, 
+                                                 AllocNone );
+        XAllocNamedColor( display, xswa.colormap, "white", &color, &dummy );
+        xswa.background_pixel = color.pixel;
+        surface->colormap     = xswa.colormap;
+      }
+
       xswa.cursor           = x11dev.busy;
 
       xswa.event_mask = KeyPressMask | ExposureMask;
@@ -1353,13 +1368,12 @@ typedef  unsigned long   uint32;
                                     format->x_depth,
                                     InputOutput,
                                     surface->visual,
-                                    CWBackPixel | CWBorderPixel |
-                                    CWEventMask | CWCursor,
+                                    xswa_mask,
                                     &xswa );
 
       XMapWindow( display, surface->win );
 
-      surface->gc = XCreateGC( display, RootWindow( display, screen ),
+      surface->gc = XCreateGC( display, surface->win,
                                0L, NULL );
       XSetForeground( display, surface->gc, xswa.border_pixel     );
       XSetBackground( display, surface->gc, xswa.background_pixel );

@@ -518,9 +518,8 @@
     grWriteln( "  n         : next font" );
     grWriteln( "  p         : previous font" );
     grLn();
-    grWriteln( "  g         : decrease gamma by 0.1" );
-    grWriteln( "  G         : increase gamma by 0.1" );
-    grWriteln( "  K         : display gamma grid" );
+    grWriteln( "  g         : increase gamma by 0.1" );
+    grWriteln( "  v         : decrease gamma by 0.1" );
     grLn();
     grWriteln( "  Up        : increase pointsize by 1 unit" );
     grWriteln( "  Down      : decrease pointsize by 1 unit" );
@@ -564,21 +563,22 @@
       return 1;
 
     case grKEY( 'g' ):
-      if ( the_gamma <= 0 )
-        the_gamma = 0;
-      else the_gamma -= 0.1;
-
-      grSetGlyphGamma( the_gamma );
-
-      sprintf( Header, "gamma changed to %.1f %s", the_gamma, the_gamma == 0.0 ? "(sRGB mode)" : "" );
-      new_header = Header;
-      break;
-
-    case grKEY( 'G' ):
       if ( the_gamma >= 3.0 )
         the_gamma = 3.0;
-      else the_gamma += 0.1;
+      else
+        the_gamma += 0.1;
 
+      goto SetGamma;
+
+    case grKEY( 'v' ):
+      if ( the_gamma <= 0 )
+        the_gamma = 0;
+      else
+        the_gamma -= 0.1;
+
+      goto SetGamma;
+
+    SetGamma:
       grSetGlyphGamma( the_gamma );
       sprintf( Header, "gamma changed to %.1f %s", the_gamma, the_gamma == 0.0 ? "(sRGB mode)" : "" );
       new_header = Header;

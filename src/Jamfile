@@ -11,7 +11,7 @@ COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 
 Library  $(COMMON_LIB) : common.c ;
 
-PROGRAMS = ftlint ftdump memtest fttimer memtest ;
+PROGRAMS = ftlint ftdump ftmemchk fttimer ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
 
 #PROGRAMS = ;

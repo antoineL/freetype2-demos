@@ -195,7 +195,7 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint memtest ftdump
+  EXES := ftlint ftmemchk ftdump
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring fttimer
@@ -234,7 +234,7 @@ else
   $(OBJ_)compos.$(SO): $(SRC_DIR_)compos.c
 	  $(COMPILE) $T$@ $<
 
-  $(OBJ_)memtest.$(SO): $(SRC_DIR_)memtest.c
+  $(OBJ_)ftmemchk.$(SO): $(SRC_DIR_)ftmemchk.c
 	  $(COMPILE) $T$@ $<
 
   $(OBJ_)fttry.$(SO): $(SRC_DIR_)fttry.c
@@ -297,7 +297,7 @@ else
   $(BIN_)ftlint$E: $(OBJ_)ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
-  $(BIN_)memtest$E: $(OBJ_)memtest.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_)ftmemchk$E: $(OBJ_)ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
   $(BIN_)compos$E: $(OBJ_)compos.$(SO) $(FTLIB) $(COMMON_OBJ)

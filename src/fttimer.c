@@ -226,7 +226,7 @@
 
     /* Initialize engine */
 
-    if ( (error = FT_Init_FreeType( &library )) )
+    if ( (error = FT_Init_FreeType( &library )) != 0 )
       Panic( "Error while initializing engine" );
 
     /* Load face */
@@ -295,7 +295,7 @@
       {
         for ( Num = 0; Num < cur_glyph; Num++ )
         {
-          if ( (error = ConvertRaster( Num )) )
+          if ( (error = ConvertRaster( Num )) != 0 )
             Fail++;
 
           else

@@ -1,6 +1,6 @@
 2000-12-09  Werner Lemberg  <wl@gnu.org>
 
-	* Makefile: Added $(LDFLAGS) for `unix' link target.
+	* Makefile: Added $(LDFLAGS) variable for `unix' link target.
 
 2000-12-01  David Turner  <david.turner@freetype.org>
 

@@ -112,7 +112,7 @@ else
   ifeq ($(PLATFORM),unix)
     CC   = $(CCraw)
     LINK = $(BUILD)/libtool --mode=link $(CC) $T$@ $< \
-           $(FTLIB) $(EFENCE)
+           $(LDFLAGS) $(FTLIB) $(EFENCE)
   else
     ifeq ($(PLATFORM),unixdev)
       LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) -lm $(LDFLAGS)

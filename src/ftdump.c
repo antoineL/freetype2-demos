@@ -293,7 +293,7 @@
                     FT_UInt   string_len,
                     FT_UInt   indent )
   {
-    FT_Int   ch;
+    FT_Int   ch = 0;
     FT_UInt  i, j;
 
 

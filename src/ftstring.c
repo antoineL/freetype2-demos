@@ -305,7 +305,7 @@
 
 
           FT_Get_Kerning( face, prev_index, glyph->glyph_index,
-                          hinted ? ft_kerning_default : ft_kerning_unfitted,
+                          hinted ? FT_KERNING_DEFAULT : FT_KERNING_UNFITTED,
                           &kern );
 
           origin_x += kern.x;
@@ -404,8 +404,8 @@
         {
           /* convert to a bitmap - destroy native image */
           error = FT_Glyph_To_Bitmap( &image,
-                                      antialias ? ft_render_mode_normal
-                                                : ft_render_mode_mono,
+                                      antialias ? FT_RENDER_MODE_NORMAL
+                                                : FT_RENDER_MODE_MONO,
                                       0, 1 );
           if ( !error )
           {

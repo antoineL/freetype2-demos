@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2001, 2002 by                                      */
+/*  Copyright 1996-2000, 2001, 2002, 2003 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -181,7 +181,7 @@
   int  num_indices;           /* number of glyphs or characters */
   int  ptsize;                /* current point size             */
 
-  FT_Encoding  encoding = ft_encoding_none;
+  FT_Encoding  encoding = FT_ENCODING_NONE;
 
   int  hinted    = 1;         /* is glyph hinting active?    */
   int  antialias = 1;         /* is anti-aliasing active?    */
@@ -221,6 +221,7 @@
   {
     ".ttf",
     ".ttc",
+    ".otf",
     ".pfa",
     ".pfb",
     0
@@ -317,7 +318,7 @@
           continue;
       }
 
-      if ( encoding != ft_encoding_none )
+      if ( encoding != FT_ENCODING_NONE )
       {
         error = FT_Select_Charmap( face, encoding );
         if ( error )
@@ -330,9 +331,30 @@
       font = (PFont)malloc( sizeof ( *font ) );
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
-      font->num_indices  = encoding != ft_encoding_none ? 0x10000L
-                                                        : face->num_glyphs;
 
+      switch ( encoding )
+      {
+      case FT_ENCODING_NONE:
+        font->num_indices = face->num_glyphs;
+        break;
+
+      case FT_ENCODING_UNICODE:
+        font->num_indices = 0x110000L;
+        break;
+
+      case FT_ENCODING_MS_SYMBOL:
+      case FT_ENCODING_ADOBE_LATIN_1:
+      case FT_ENCODING_ADOBE_STANDARD:
+      case FT_ENCODING_ADOBE_EXPERT:
+      case FT_ENCODING_ADOBE_CUSTOM:
+      case FT_ENCODING_APPLE_ROMAN:
+        font->num_indices = 0x100L;
+        break;
+
+      default:
+        font->num_indices = 0x10000L;
+      }
+	
       strcpy( (char*)font->filepathname, filename );
 
       FT_Done_Face( face );
@@ -378,7 +400,7 @@
                          font->filepathname,
                          font->face_index,
                          aface );
-    if ( encoding == ft_encoding_none || error )
+    if ( encoding == FT_ENCODING_NONE || error )
       return error;
 
     return FT_Select_Charmap( *aface, encoding );
@@ -486,8 +508,8 @@
     desc.face_id    = current_font.font.face_id;
 
     desc.type       = FTC_CMAP_BY_ENCODING;
-    desc.u.encoding = encoding != ft_encoding_none ? encoding
-                                                   : ft_encoding_unicode;
+    desc.u.encoding = encoding != FT_ENCODING_NONE ? encoding
+                                                   : FT_ENCODING_UNICODE;
 
     return FTC_CMapCache_Lookup( cmap_cache, &desc, charcode );
   }
@@ -504,7 +526,7 @@
   {
     *aglyf = NULL;
 
-    if ( encoding != ft_encoding_none )
+    if ( encoding != FT_ENCODING_NONE )
       Index = get_glyph_index( Index );
 
     /* use the SBits cache to store small glyph bitmaps; this is a lot */

@@ -1,3 +1,13 @@
+2003-04-24  Anthony Fok  <anthony@thizlinux.com>
+
+	* src/ftcommon.i: Replace `ft_encoding_*' with `FT_ENCODING_*'.
+	(file_suffixes): Add `.otf'.
+	(install_font_file): Set font->num_indices depending on encoding.
+	* src/ftmulti.c, src/ftstring.c, src/fttimer.c, src/ftview.c:
+	Replace `ft_encoding_*' with `FT_ENCODING_*'.
+	* src/testnames.c: Replace `ft_render_mode_mono' with
+	`FT_RENDER_MODE_MONO'.
+
 2003-04-09  David Turner  <david@freetype.org>
 
 	* Jamfile: Set FT2_TOP.

@@ -135,7 +135,7 @@
 
 
       gindex = *(unsigned char*)p;
-      if ( encoding == ft_encoding_none )
+      if ( encoding == FT_ENCODING_NONE )
         gindex = get_glyph_index( gindex );
 
       /* if a cmap is active, `get_glyph_bitmap' will convert the */
@@ -230,7 +230,7 @@
 
 
         gindex = *(unsigned char*)p;
-        if ( encoding == ft_encoding_none )
+        if ( encoding == FT_ENCODING_NONE )
           gindex = get_glyph_index( gindex );
 
         /* if a cmap is active, `get_glyph_bitmap' will convert the */
@@ -550,7 +550,7 @@
     argc -= optind;
     argv += optind;
 
-    Header_format = encoding != ft_encoding_none
+    Header_format = encoding != FT_ENCODING_NONE
                       ? "at %d points, first char code = 0x%x"
                       : "at %d points, first glyph index = %d";
 

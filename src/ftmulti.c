@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000 by                                                  */
+/*  Copyright 1996-2000, 2003 by                                            */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -48,7 +48,7 @@
   FT_Size       size;         /* the font size               */
   FT_GlyphSlot  glyph;        /* the glyph slot              */
 
-  FT_Encoding   encoding = ft_encoding_none;
+  FT_Encoding   encoding = FT_ENCODING_NONE;
 
   FT_Error      error;        /* error returned by FreeType? */
 
@@ -180,8 +180,8 @@
     /* first, render the glyph image into a bitmap */
     if (glyph->format != ft_glyph_format_bitmap)
     {
-      error = FT_Render_Glyph( glyph, antialias ? ft_render_mode_normal
-                                                : ft_render_mode_mono );
+      error = FT_Render_Glyph( glyph, antialias ? FT_RENDER_MODE_NORMAL
+                                                : FT_RENDER_MODE_MONO );
       if (error) return error;                               
                                
     }
@@ -676,7 +676,7 @@
     if ( error )
       goto Display_Font;
 
-    if ( encoding != ft_encoding_none )
+    if ( encoding != FT_ENCODING_NONE )
     {
       error = FT_Select_Charmap( face, encoding );
       if ( error )

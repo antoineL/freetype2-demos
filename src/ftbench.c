@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2002 by                                                       */
+/*  Copyright 2002, 2003, 2004 by                                           */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -223,7 +223,7 @@ cmap_cache_test(FT_UInt idx,
 {
   FT_UNUSED( idx );
 
-  return !FTC_CMapCache_Lookup( cmap_cache, (void*)1, 0, charcode );
+  return !FTC_CMapCache_Lookup( cmap_cache, (FTC_FaceID)1, 0, charcode );
 }
 
 
@@ -413,7 +413,7 @@ main(int argc,
       bench( cmap_cache_test,  "CMap cache", 0);
     }
 
-    font_type.face_id = (void*)1;
+    font_type.face_id = (FTC_FaceID)1;
     font_type.width   = (short) size;
     font_type.height  = (short) size;
 

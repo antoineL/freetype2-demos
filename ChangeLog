@@ -1,3 +1,8 @@
+2004-04-10  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftbench.c (cmap_cache_test, main): Use proper cast for
+	`face_id'.
+
 2004-03-26  Ulrich  <ulrich@infopuls.com>
 
 	* graph/x11/grx11.c (grX11DeviceRec): Add `visual' member.

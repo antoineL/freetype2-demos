@@ -350,6 +350,7 @@
   }
 
 
+
   static
   void  convert_gray_to_any( grXSurface*  surface,
                              int          x,
@@ -369,34 +370,51 @@
     int        byteord = surface->ximage->byte_order;
 
 
-    while ( h > 0 )
+    if ( byteord == LSBFirst )
     {
-      byte*  twrite = write;
-      byte*  tread  = read;
-      byte*  limit  = tread + w;
-
-
-      for ( ; tread < limit; twrite += depth, tread++ )
+      while ( h > 0 )
       {
-        unsigned long  pix = palette[*tread].pixel;
-        int            i;
-
-
-        if ( byteord == LSBFirst )
+        byte*  twrite = write;
+        byte*  tread  = read;
+        byte*  limit  = tread + w;
+  
         {
-          for ( i = 0; i < depth; ++i, pix >>= 8 )
-            twrite[i] = (byte)( pix & 0xFF );
+          for ( ; tread < limit; twrite += depth, tread++ )
+          {
+            unsigned long  pix = palette[*tread].pixel;
+            int            i;
+  
+            for ( i = 0; i < depth; ++i, pix >>= 8 )
+              twrite[i] = (byte)( pix & 0xFF );
+          }
         }
-        else
-        {
-          for ( i = depth - 1; i >= 0; --i, pix >>= 8 )
-            twrite[i] = (byte)( pix & 0xFF );
-        }
+        write += target->pitch;
+        read  += source->pitch;
+        h--;
       }
-
-      write += target->pitch;
-      read  += source->pitch;
-      h--;
+    }
+    else
+    {
+      while ( h > 0 )
+      {
+        byte*  twrite = write;
+        byte*  tread  = read;
+        byte*  limit  = tread + w;
+  
+        {
+          for ( ; tread < limit; twrite += depth, tread++ )
+          {
+            unsigned long  pix = palette[*tread].pixel;
+            int            i;
+  
+            for ( i = depth - 1; i >= 0; --i, pix >>= 8 )
+              twrite[i] = (byte)( pix & 0xFF );
+          }
+        }
+        write += target->pitch;
+        read  += source->pitch;
+        h--;
+      }
     }
   }
 

@@ -223,40 +223,31 @@
   void  blit_mono_to_pal8( grBlitter*  blit,
                            grColor     color )
   {
-    int             x, y;
-    unsigned int    left_mask;
+    int             x, y, shift;
     unsigned char*  read;
     unsigned char*  write;
 
     read  = blit->read  + (blit->xread >> 3);
     write = blit->write +  blit->xwrite;
-
-    left_mask = 0x80 >> (blit->xread & 7);
+    shift = blit->xread & 7;
 
     y = blit->height;
     do
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned int    mask   = left_mask;
-      unsigned int    val    = *_read;
-
-      if (mask != 0x80)
-        val = *_read++;
+      unsigned long    val    = (*_read++ | 0x100) << shift;
 
       x = blit->width;
       do
       {
-        if ( mask == 0x80 )
-          val = *_read++;
+        if (val & 0x10000)
+          val = *_read++ | 0x100;
 
-        if ( val & mask )
+        if ( val & 0x80 )
           *_write = (unsigned char)color.value;
 
-        mask >>= 1;
-        if ( mask == 0 )
-          mask = 0x80;
-
+        val <<= 1;
         _write++;
         x--;
       } while ( x > 0 );
@@ -278,8 +269,7 @@
   void  blit_mono_to_pal4( grBlitter*  blit,
                            grColor     color )
   {
-    int             x, y, phase;
-    unsigned int    left_mask;
+    int             x, y, phase,shift;
     unsigned char*  read;
     unsigned char*  write;
     unsigned char   col;
@@ -290,25 +280,24 @@
     write = blit->write + (blit->xwrite >> 1);
 
     /* now begin blit */
-    left_mask = 0x80 >> (blit->xread & 7);
-    phase     = blit->xwrite & 1;
+    shift = blit->xread & 7;
+    phase = blit->xwrite & 1;
 
     y = blit->height;
     do
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned int    mask   = left_mask;
       int             _phase = phase;
-      unsigned int    val    = *_read;
+      unsigned long    val    = (*_read++ | 0x100) << shift;
 
       x = blit->width;
       do
       {
-        if ( mask == 0x80 )
-          val = *_read++;
-
-        if ( val & mask )
+        if (val & 0x10000)
+          val = *_read++ | 0x100;
+           
+        if ( val & 0x80 )
         {
           if ( _phase )
             *_write = (*_write & 0xF0) | col;
@@ -316,9 +305,7 @@
             *_write = (*_write & 0x0F) | (col << 4);
         }
 
-        mask >>= 1;
-        if ( mask == 0 )
-          mask = 0x80;
+        val <<= 1;
 
         _write += _phase;
         _phase ^= 1;
@@ -342,37 +329,31 @@
   void  blit_mono_to_rgb16( grBlitter*  blit,
                             grColor     color )
   {
-    int              x, y;
-    unsigned int     left_mask;
+    int              x, y,shift;
     unsigned char*   read;
     unsigned char*   write;
 
     read  = blit->read + (blit->xread >> 3);
     write = blit->write + blit->xwrite*2;
-
-    left_mask = 0x80 >> (blit->xread & 7);
+    shift = blit->xread & 7;
 
     y = blit->height;
     do
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned int    mask   = left_mask;
-      unsigned int    val    = *_read;
+      unsigned long    val    = (*_read++ | 0x100) << shift;
 
       x = blit->width;
       do
       {
-        if ( mask == 0x80 )
-          val = *_read++;
+        if (val & 0x10000)
+          val = *_read++ | 0x100;
 
-        if ( val & mask )
+        if ( val & 0x80 )
           *(short*)_write = (short)color.value;
 
-        mask >>= 1;
-        if ( mask == 0 )
-          mask = 0x80;
-
+        val   <<= 1;
         _write +=2;
         x--;
       } while ( x > 0 );
@@ -394,41 +375,35 @@
   void  blit_mono_to_rgb24( grBlitter*  blit,
                             grColor     color )
   {
-    int             x, y;
-    unsigned int    left_mask;
+    int             x, y,shift;
     unsigned char*  read;
     unsigned char*  write;
 
     read  = blit->read  + (blit->xread >> 3);
     write = blit->write + blit->xwrite*3;
-
-    left_mask = 0x80 >> (blit->xread & 7);
+    shift = blit->xread & 7;
 
     y = blit->height;
     do
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned int    mask   = left_mask;
-      unsigned int    val    = *_read;
+      unsigned long    val   = (*_read++ | 0x100) << shift;
 
       x = blit->width;
       do
       {
-        if ( mask == 0x80 )
-          val = *_read++;
+        if (val & 0x10000)
+          val = *_read++ | 0x100;
 
-        if ( val & mask )
+        if ( val & 0x80 )
         {
           _write[0] = color.chroma[0];
           _write[1] = color.chroma[1];
           _write[2] = color.chroma[2];
         }
 
-        mask >>= 1;
-        if ( mask == 0 )
-          mask = 0x80;
-
+        val   <<= 1;
         _write += 3;
         x--;
       } while ( x > 0 );
@@ -450,31 +425,28 @@
   void  blit_mono_to_rgb32( grBlitter*  blit,
                             grColor     color )
   {
-    int             x, y;
-    unsigned int    left_mask;
+    int             x, y,shift;
     unsigned char*  read;
     unsigned char*  write;
 
     read  = blit->read  + (blit->xread >> 3);
     write = blit->write + blit->xwrite*4;
-
-    left_mask = 0x80 >> (blit->xread & 7);
+    shift = blit->xread & 7;
 
     y = blit->height;
     do
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned int    mask   = left_mask;
-      unsigned int    val    = *_read;
+      unsigned long   val    = (*_read | 0x100L) << shift;
 
       x = blit->width;
       do
       {
-        if ( mask == 0x80 )
-          val = *_read++;
+        if (val & 0x10000)
+          val = (*_read | 0x100L);
 
-        if ( val & mask )
+        if ( val & 0x80 )
         {
    /* this could be greatly optimised as a *(long*)_write = color.value */
    /* but this wouldn't work on 64-bits systems... stupid C types!      */
@@ -484,10 +456,7 @@
           _write[3] = color.chroma[3];
         }
 
-        mask >>= 1;
-        if ( mask == 0 )
-          mask = 0x80;
-
+        val   <<= 1;
         _write += 4;
         x--;
       } while ( x > 0 );

@@ -24,7 +24,7 @@ endif
 # defined by default as $(TOP)/config.mk
 #
 ifndef CONFIG_MK
-  PROJECT := freetype
+  PROJECT   := freetype
   CONFIG_MK := $(TOP)/config.mk
 endif
 
@@ -87,13 +87,23 @@ else
 
   FTLIB := $(LIB_DIR)$(SEP)$(LIBRARY).$A
 
+  # "-lm" is required to compile on some Unix systems
+  #
+  ifeq ($(PLATFORM),unix)
+    MATH := -lm
+  endif
+
+  ifeq ($(PLATFORM),unixdev )
+    MATH := -lm
+  endif
+
   # the default commands used to link the executables. These can
   # be re-defined for platform-specific stuff.
   #
   ifeq ($(PLATFORM),unix)
     CC   = $(CCraw)
     LINK = $(BUILD)/libtool --mode=link $(CC) $T$@ $< \
-           $(FTLIB) $(EFENCE) -lm
+           $(FTLIB) $(EFENCE)
   else
     ifeq ($(PLATFORM),unixdev)
       LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) -lm $(LDFLAGS)
@@ -307,7 +317,7 @@ else
 	  $(GRAPH_LINK)
 
   $(BIN_)ftstring$E: $(OBJ_)ftstring.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+	  $(GRAPH_LINK) $(MATH)
 
   $(BIN_)fttimer$E: $(OBJ_)fttimer.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)

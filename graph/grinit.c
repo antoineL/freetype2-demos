@@ -21,6 +21,9 @@
 #include "grmac.h"
 #endif
 
+#ifdef DEVICE_ALLEGRO
+#include "allegro/gralleg.h"
+#endif
 
  /**********************************************************************
   *

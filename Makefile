@@ -88,14 +88,18 @@ else
   FTLIB := $(LIB_DIR)$(SEP)$(LIBRARY).$A
 
   # the default commands used to link the executables. These can
-  # be re-defined for platform-specific stuff..
+  # be re-defined for platform-specific stuff.
   #
   ifeq ($(PLATFORM),unix)
     CC   = $(CCraw)
     LINK = $(BUILD)/libtool --mode=link $(CC) $T$@ $< \
            $(FTLIB) $(EFENCE) -lm
   else
-    LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) $(LDFLAGS)
+    ifeq ($(PLATFORM),unixdev)
+      LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) -lm $(LDFLAGS)
+    else
+      LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) $(LDFLAGS)
+    endif
   endif
   
   COMMON_LINK = $(LINK) $(COMMON_OBJ)

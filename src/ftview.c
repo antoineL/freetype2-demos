@@ -33,8 +33,8 @@
                                      &face, &size );
     if ( error )
     {
-      /* this should never happen! */
-      return 0;
+      /* probably a non-existent bitmap font size */
+      return error;
     }
 
     step_x = size->metrics.x_ppem + 4;
@@ -131,8 +131,8 @@
                                      &face, &size );
     if ( error )
     {
-      /* this should never happen! */
-      return 0;
+      /* probably a non-existent bitmap font size */
+      return error;
     }
 
     step_x = size->metrics.x_ppem + 4;
@@ -505,20 +505,34 @@
 
       if ( num_fonts >= 1 )
       {
+        FT_Error  error = FT_Err_Ok;;
+
+
         switch ( render_mode )
         {
         case 0:
-          Render_Text( Num );
+          error = Render_Text( Num );
           break;
             
         default:
-          Render_All( Num );
+          error = Render_All( Num );
         }
 
-        sprintf( Header, "%s %s (file `%s')",
-          face->family_name,
-          face->style_name,
-          ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
+        if ( face )
+          sprintf( Header, "%s %s (file `%s')",
+            face->family_name,
+            face->style_name,
+            ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
+        else
+        {
+          if ( error == FT_Err_Invalid_Pixel_Size )
+            sprintf( Header, "Invalid pixel size (file `%s')",
+              ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
+          else
+            sprintf( Header, "File `%s': error 0x%04x",
+              ft_basename( ( (PFont)current_font.font.face_id)->filepathname ),
+              (FT_UShort)error );
+        }
 
         if ( !new_header )
           new_header = Header;

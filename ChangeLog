@@ -1,3 +1,7 @@
+2004-05-19  George Williams  <gww@silcom.com>
+
+	* src/ftmulti.c (main): Use default axis values.
+
 2004-05-09  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdump.c (put_unicode_be16): Initialize `ch'.

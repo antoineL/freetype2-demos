@@ -730,10 +730,8 @@
 
       for ( n = 0; n < (int)multimaster->num_axis; n++ )
       {
-        design_pos[n] =
-          n < requested_cnt  ?
-            requested_pos[n] :
-            ( multimaster->axis[n].minimum + multimaster->axis[n].maximum ) / 2;
+        design_pos[n] = n < requested_cnt ? requested_pos[n]
+                                          : multimaster->axis[n].def;
         if ( design_pos[n] < multimaster->axis[n].minimum )
           design_pos[n] = multimaster->axis[n].minimum;
         else if ( design_pos[n] > multimaster->axis[n].maximum )

@@ -51,87 +51,17 @@
     while ( i < num_glyphs )
 #endif
     {
-
-#ifndef USE_SBITS_CACHE
-      FT_Glyph  glyph;
-      
-      
-      error = FTC_Image_Cache_Lookup( image_cache,
-                                      &current_font,
-                                      i,
-                                      &glyph );
-      if ( !error )
+      int  x_top, y_top, left, top, x_advance, y_advance;
+ 
+      error = get_glyph_bitmap( i, &bit3, &left, &top, &x_advance, &y_advance );
+      if (!error)
       {
-        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
-        FT_Bitmap*      source = &bitmap->bitmap;
-        FT_Pos          x_top, y_top;
-        
-
-        if ( glyph->format != ft_glyph_format_bitmap )
-          PanicZ( "invalid glyph format returned!" );
-          
-        bit3.rows   = source->rows;
-        bit3.width  = source->width;
-        bit3.pitch  = source->pitch;
-        bit3.buffer = source->buffer;
-
-        switch ( source->pixel_mode )
-        {
-        case ft_pixel_mode_mono:
-          bit3.mode  = gr_pixel_mode_mono;
-          break;
-
-        case ft_pixel_mode_grays:
-          bit3.mode  = gr_pixel_mode_gray;
-          bit3.grays = source->num_grays;
-          break;
-
-        default:
-          continue;
-        }
-
-        x_top = x + bitmap->left;
-        y_top = y - bitmap->top;
-#else
-      FTC_SBit  sbit;
-      
-      
-      error = FTC_SBit_Cache_Lookup( sbits_cache,
-                                     &current_font,
-                                     i,
-                                     &sbit );
-      if ( !error )
-      {
-        FT_Pos          x_top, y_top;
-
-        bit3.rows       = sbit->height;
-        bit3.width      = sbit->width;
-        bit3.pitch      = sbit->pitch;
-        bit3.buffer     = sbit->buffer;
-
-        switch ( sbit->format )
-        {
-        case ft_pixel_mode_mono:
-          bit3.mode  = gr_pixel_mode_mono;
-          break;
-
-        case ft_pixel_mode_grays:
-          bit3.mode  = gr_pixel_mode_gray;
-          bit3.grays = 256;
-          break;
-
-        default:
-          continue;
-        }
-
-        x_top = x + sbit->left;
-        y_top = y - sbit->top;
-#endif
-
         /* now render the bitmap into the display surface */
+        x_top = x + left;
+        y_top = y - top;
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
-        x += ( glyph->advance.x >> 16 ) + 1;
+        x += x_advance + 1;
 
         if ( x + size->metrics.x_ppem > bit.width )
         {
@@ -189,88 +119,23 @@
 
     while ( *p )
     {
-#ifndef USE_SBITS_CACHE
-      FT_Glyph  glyph;
+      int      left, top, x_advance, y_advance, x_top, y_top;
+      FT_UInt  gindex;
       
-      
-      error = FTC_Image_Cache_Lookup( image_cache,
-                                      &current_font,
-                                      i,
-                                      &glyph );
-      if ( !error )
+      gindex = FT_Get_Char_Index( face, (unsigned)*p );
+ 
+      error = get_glyph_bitmap( gindex, &bit3, &left, &top,
+                                 &x_advance, &y_advance );
+      if (!error)
       {
-        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
-        FT_Bitmap*      source = &bitmap->bitmap;
-        FT_Pos          x_top, y_top;
-        
-
-        if ( glyph->format != ft_glyph_format_bitmap )
-          PanicZ( "invalid glyph format returned!" );
-          
-        bit3.rows   = source->rows;
-        bit3.width  = source->width;
-        bit3.pitch  = source->pitch;
-        bit3.buffer = source->buffer;
-
-        switch ( source->pixel_mode )
-        {
-        case ft_pixel_mode_mono:
-          bit3.mode  = gr_pixel_mode_mono;
-          break;
-
-        case ft_pixel_mode_grays:
-          bit3.mode  = gr_pixel_mode_gray;
-          bit3.grays = source->num_grays;
-          break;
-
-        default:
-          continue;
-        }
-
-        x_top = x + bitmap->left;
-        y_top = y - bitmap->top;
-#else
-      FTC_SBit  sbit;
-      
-      
-      error = FTC_SBit_Cache_Lookup( sbits_cache,
-                                     &current_font,
-                                     i,
-                                     &sbit );
-      if ( !error )
-      {
-        FT_Pos          x_top, y_top;
-
-        bit3.rows       = sbit->height;
-        bit3.width      = sbit->width;
-        bit3.pitch      = sbit->pitch;
-        bit3.buffer     = sbit->buffer;
-
-        switch ( sbit->format )
-        {
-        case ft_pixel_mode_mono:
-          bit3.mode  = gr_pixel_mode_mono;
-          break;
-
-        case ft_pixel_mode_grays:
-          bit3.mode  = gr_pixel_mode_gray;
-          bit3.grays = 256;
-          break;
-
-        default:
-          continue;
-        }
-
-        x_top = x + sbit->left;
-        y_top = y - sbit->top;
-#endif
-    
         /* now render the bitmap into the display surface */
+        x_top = x + left;
+        y_top = y - top;
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
-        x += ( glyph->advance.x >> 16 ) + 1;
+        x += x_advance + 1;
 
-        if ( x > bit.width )
+        if ( x + size->metrics.x_ppem > bit.width )
         {
           x  = start_x;
           y += step_y;
@@ -283,7 +148,6 @@
         Fail++;
 
       i++;
-      p++;
     }
 
     return FT_Err_Ok;

@@ -332,15 +332,18 @@
               /* other 16-bit modes are ignored */
               visual++;
             }
+         /* if (visuals)
+              XFree( visuals ); */
           }
 
-          XFree( visuals );
         }
 
         format++;
       }
 
-      XFree( formats );
+
+/*    if (formats)
+        XFree( formats ); */
     }
 
     gr_x11_device.num_pixel_modes = num_pixel_modes;

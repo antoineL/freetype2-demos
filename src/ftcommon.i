@@ -29,7 +29,7 @@
 
 
 /* define if you want to use a SBits cache instead of an image one !! */
-#undef    USE_SBITS_CACHE
+#undef     USE_SBITS_CACHE
 
   /* forward declarations */
   extern void  PanicZ( const char*  message );
@@ -356,15 +356,15 @@
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
-#if 1
+#ifdef USE_SBITS_CACHE
     error = FTC_SBit_Cache_New( manager, &sbits_cache );
     if (error)
       PanicZ( "could not initialize small bitmap cache" );
-#endif
-
+#else
     error = FTC_Image_Cache_New( manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
+#endif
   }
 
 
@@ -413,5 +413,103 @@
       current_font.image_type |= ftc_image_flag_no_sbits;
   }   
 
+
+  static
+  FT_Error  get_glyph_bitmap( FT_ULong   glyph_index,
+                              grBitmap*  target,
+                              int       *left,
+                              int       *top,
+                              int       *x_advance,
+                              int       *y_advance )
+  {
+    FT_Error  error;
+
+#ifdef USE_SBITS_CACHE
+    {
+      FTC_SBit  sbit;
+      
+      
+      error = FTC_SBit_Cache_Lookup( sbits_cache,
+                                     &current_font,
+                                     glyph_index,
+                                     &sbit );
+      if ( !error )
+      {
+        FT_Pos          x_top, y_top;
+
+        target->rows   = sbit->height;
+        target->width  = sbit->width;
+        target->pitch  = sbit->pitch;
+        target->buffer = sbit->buffer;
+
+        switch ( sbit->format )
+        {
+        case ft_pixel_mode_mono:
+          target->mode  = gr_pixel_mode_mono;
+          break;
+
+        case ft_pixel_mode_grays:
+          target->mode  = gr_pixel_mode_gray;
+          target->grays = 256;
+          break;
+
+        default:
+          return FT_Err_Invalid_Glyph_Format;
+        }
+
+        *left      = sbit->left;
+        *top       = sbit->top;
+        *x_advance = sbit->xadvance;
+        *y_advance = sbit->yadvance;
+      }
+    }
+#else
+    {
+      FT_Glyph  glyph;
+      
+      
+      error = FTC_Image_Cache_Lookup( image_cache,
+                                      &current_font,
+                                      glyph_index,
+                                      &glyph );
+      if ( !error )
+      {
+        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
+        FT_Bitmap*      source = &bitmap->bitmap;
+        
+
+        if ( glyph->format != ft_glyph_format_bitmap )
+          PanicZ( "invalid glyph format returned!" );
+        
+        target->rows   = source->rows;
+        target->width  = source->width;
+        target->pitch  = source->pitch;
+        target->buffer = source->buffer;
+
+        switch ( source->pixel_mode )
+        {
+        case ft_pixel_mode_mono:
+          target->mode  = gr_pixel_mode_mono;
+          break;
+
+        case ft_pixel_mode_grays:
+          target->mode  = gr_pixel_mode_gray;
+          target->grays = source->num_grays;
+          break;
+
+        default:
+          return FT_Err_Invalid_Glyph_Format;
+        }
+
+        *left = bitmap->left;
+        *top  = bitmap->top;
+
+        *x_advance = (glyph->advance.x+0x8000) >> 16;
+        *y_advance = (glyph->advance.y+0x8000) >> 16;
+      }
+    }
+#endif
+    return 0;
+  }
 
 /* End */

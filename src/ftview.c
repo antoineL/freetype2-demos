@@ -465,7 +465,7 @@
 
       if ( num_fonts >= 1 )
       {
-        FT_Error  error = FT_Err_Ok;;
+        error = FT_Err_Ok;
 
 
         switch ( render_mode )

@@ -199,8 +199,7 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testnames fttimer ftbench \
-          ftcheckfixedwidth
+  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring
@@ -240,7 +239,7 @@ else
   $(OBJ_DIR)/ftbench.$(SO): $(SRC_DIR)/ftbench.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
 
-  $(OBJ_DIR)/ftcheckfixedwidth.$(SO): $(SRC_DIR)/ftcheckfixedwidth.c
+  $(OBJ_DIR)/ftchkwd.$(SO): $(SRC_DIR)/ftchkwd.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
 
   $(OBJ_DIR)/compos.$(SO): $(SRC_DIR)/compos.c
@@ -255,7 +254,7 @@ else
   $(OBJ_DIR)/ftdump.$(SO): $(SRC_DIR)/ftdump.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/testnames.$(SO): $(SRC_DIR)/testnames.c
+  $(OBJ_DIR)/testname.$(SO): $(SRC_DIR)/testname.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
@@ -323,8 +322,7 @@ else
   $(BIN_DIR)/ftbench$E: $(OBJ_DIR)/ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
-  $(BIN_DIR)/ftcheckfixedwidth$E: $(OBJ_DIR)/ftcheckfixedwidth.$(SO) \
-                                  $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR)/ftchkwd$E: $(OBJ_DIR)/ftchkwd.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
   $(BIN_DIR)/ftmemchk$E: $(OBJ_DIR)/ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
@@ -348,7 +346,7 @@ else
   $(BIN_DIR)/ttdebug$E: $(OBJ_DIR)/ttdebug.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR)/testnames$E: $(OBJ_DIR)/testnames.$(SO) $(FTLIB)
+  $(BIN_DIR)/testname$E: $(OBJ_DIR)/testname.$(SO) $(FTLIB)
 	  $(LINK)
 
 

@@ -1,4 +1,4 @@
-# FreeType 2 src Jamfile (c) 2001 David Turner
+# FreeType 2 src Jamfile (c) 2001, 2003 David Turner
 #
 
 SubDir  FT2DEMO_TOP src ;
@@ -17,7 +17,7 @@ if $(UNIX)
   CCDEFS += UNIX ;
 }
 
-PROGRAMS = ftbench ftlint ftdump fttimer ftcheckfixedwidth ;
+PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
 {
   local  t ;

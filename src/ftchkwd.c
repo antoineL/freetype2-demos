@@ -5,7 +5,7 @@
 /*  Copyright 2003 by                                                       */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
-/*  ftcheckfixedwidth                                                       */
+/*  ftchkwd                                                                 */
 /*                                                                          */
 /*  NOTE:  This is just a test program that is used to show off and         */
 /*         debug the current engine.                                        */
@@ -26,7 +26,7 @@
   static void
   Usage( char*  name )
   {
-    printf( "ftcheckfixedwidth: simple font tester -- part of the FreeType project\n" );
+    printf( "ftchkwd: test fixed font width -- part of the FreeType project\n" );
     printf( "---------------------------------------------------------------------\n" );
     printf( "\n" );
     printf( "Usage: %s fontname[.ttf|.ttc] [fontname2..]\n", name );

@@ -33,7 +33,7 @@
 #include "ttobjs.h"
 #include "ttdriver.h"
 #include "ttinterp.h"
-
+#include "tterrors.h"
 
 FT_Library      library;    /* root library object */
 FT_Memory       memory;     /* system object */
@@ -817,7 +817,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
       result |= 2;
     if (tag & FT_Curve_Tag_Touch_Y)
       result |= 4;
-      
+
     return result;
   }
 
@@ -1038,7 +1038,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
           next_IP = CUR.IP + CUR.length;
           while ( exc->IP != next_IP )
           {
-            if ( ( error = TT_RunIns( exc ) ) )
+            if ( ( error = TT_RunIns( exc ) ) != 0 )
               goto LErrorLabel_;
           }
         }
@@ -1050,7 +1050,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
         if ( exc->IP < exc->codeSize )
 
       Step_into:
-          if ( ( error = TT_RunIns( exc ) ) )
+          if ( ( error = TT_RunIns( exc ) ) != 0 )
             goto LErrorLabel_;
         oldch = ch;
         break;

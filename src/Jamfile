@@ -30,4 +30,16 @@ GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
   }
 }
 
+
+# Compile bytecode debugger when needed. Define the environment
+# variable FT2_DEBUG_TT to enable this one before calling "jam"
+#
+if $(FT2_DEBUG_TT)
+{
+  SubDirHdrs $(FT2_INCLUDE)/../src/truetype ;
+
+  LinkLibraries  ttdebug : $(FT2_LIB) ;
+  Main           ttdebug : ttdebug.c ;
+}
+
 # end of src Jamfile

@@ -576,7 +576,7 @@
                                       NULL, 0 );
           if ( error )
             goto Exit;
-          
+
           *aglyf = glyf;
         }
 

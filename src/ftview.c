@@ -341,12 +341,6 @@
     fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
              execname );
     fprintf( stderr,  "\n" );
-#if defined( FT_DEBUG_LEVEL_ERROR ) || defined( FT_DEBUG_LEVEL_TRACE )
-    fprintf( stderr,  "  -d        enable debugging messages\n" );
-#endif
-#ifdef FT_DEBUG_LEVEL_TRACE
-    fprintf( stderr,  "  -l N      set debugging trace level to N (default: 0, max: 7)\n" );
-#endif
     fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
     fprintf( stderr,  "  -f index  specify first index to display\n" );
     fprintf( stderr,  "  -e enc    specify encoding tag (default: no encoding)\n" );
@@ -427,15 +421,6 @@
 
     if ( sscanf( argv[0], "%d", &orig_ptsize ) != 1 )
       orig_ptsize = 64;
-
-    if ( debug )
-    {
-#ifdef FT_DEBUG_LEVEL_TRACE
-      FT_SetTraceLevel( trace_any, (FT_Byte)trace_level );
-#else
-      trace_level = 0;
-#endif
-    }
 
     /* Initialize engine */
     init_freetype();

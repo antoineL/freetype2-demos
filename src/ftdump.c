@@ -61,13 +61,6 @@
     fprintf( stderr, "-----------------------------------------------------------\n" );
     fprintf( stderr, "\n" );
     fprintf( stderr, "Usage: %s fontname[.ttf|.ttc]\n", execname );
-#if defined( FT_DEBUG_LEVEL_ERROR ) || defined( FT_DEBUG_LEVEL_TRACE )
-    fprintf( stderr, "\n" );
-    fprintf( stderr,  "  -d    enable debugging messages\n" );
-#endif
-#ifdef FT_DEBUG_LEVEL_TRACE
-    fprintf( stderr,  "  -l N  set debugging trace level to N (default: 0, max: 7)\n" );
-#endif
     fprintf( stderr, "\n" );
 
     exit( 1 );
@@ -215,15 +208,6 @@
 
     if ( argc != 1 )
       usage( execname );
-
-    if ( debug )
-    {
-#ifdef FT_DEBUG_LEVEL_TRACE
-      FT_SetTraceLevel( trace_any, (FT_Byte)trace_level );
-#else
-      trace_level = 0;
-#endif
-    }
 
     file = 0;
 

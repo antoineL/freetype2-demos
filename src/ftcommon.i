@@ -513,7 +513,10 @@
                                     Index,
                                     &sbit,
                                     NULL );
-      if ( !error )
+      if ( error )
+        goto Exit;
+
+      if ( sbit->buffer )
       {
         target->rows   = sbit->height;
         target->width  = sbit->width;
@@ -528,7 +531,7 @@
 
         case ft_pixel_mode_grays:
           target->mode  = gr_pixel_mode_gray;
-          target->grays = 256;
+          target->grays = sbit->num_grays;
           break;
 
         default:
@@ -539,9 +542,9 @@
         *top       = sbit->top;
         *x_advance = sbit->xadvance;
         *y_advance = sbit->yadvance;
-      }
 
-      goto Exit;
+        goto Exit;
+      }
     }
 
     /* otherwise, use an image cache to store glyph outlines, and render */

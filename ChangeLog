@@ -1,4 +1,9 @@
-2002-05-12  Michael Pfeiffer  <michael.pfeiffer@utanet.at>
+2002-05-20  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (get_glyph_bitmap): Use `sbit->num_grays'.
+	Handle `sbit->buffer == 0' correctly.
+
+2002-05-17  Michael Pfeiffer  <michael.pfeiffer@utanet.at>
 
 	* graph/beos/Jamfile: New file.
 

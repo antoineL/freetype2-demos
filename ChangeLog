@@ -1,3 +1,8 @@
+2002-06-07  David Turner  <david@freetype.org>
+
+        * Makefile, src/Jamfile, src/ftbench.c: adding Vincent Caron's
+        benchmark program
+
 2002-05-20  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (get_glyph_bitmap): Use `sbit->num_grays'.
@@ -39,6 +44,7 @@
 	* descrip.mms: Add clean target.
 	Handle compiler options better.
 
+>>>>>>> 1.42
 2002-04-17  David Turner  <david@freetype.org>
 
 

@@ -12,7 +12,12 @@ COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 Library  $(COMMON_LIB) : common.c ;
 
 
-PROGRAMS = ftlint ftdump ftmemchk fttimer fttry testnames ;
+if $(UNIX)
+{
+  CCDEFS += UNIX ;
+}
+
+PROGRAMS = ftbench ftlint ftdump ftmemchk fttimer fttry testnames ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
 {
   local  t ;

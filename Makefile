@@ -300,6 +300,9 @@ else
   $(BIN_)ftlint$E: $(OBJ_)ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
+  $(BIN_)ftbench$E: $(OBJ_)ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
+	  $(COMMON_LINK)
+
   $(BIN_)ftmemchk$E: $(OBJ_)ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 

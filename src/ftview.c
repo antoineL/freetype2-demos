@@ -131,6 +131,8 @@
       FT_UInt  gindex;
 
       gindex = *(unsigned char*)p;
+      if ( encoding == ft_encoding_none )
+        gindex = get_glyph_index( gindex );
 
       /* if a cmap is active, `get_glyph_bitmap' will convert the */
       /* char code in `gindex' to a real glyph index              */

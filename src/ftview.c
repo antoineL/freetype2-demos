@@ -155,11 +155,15 @@
     grBitmap  bit3;
     FT_Pos    x_top, y_top;
     
+
     /* first, render the glyph image into a bitmap */
-    if (glyph->format != ft_glyph_format_bitmap)
+    if ( glyph->format != ft_glyph_format_bitmap )
     {
-      error = FT_Render_Glyph( glyph, antialias ? ft_render_mode_normal : ft_render_mode_mono );
-      if (error) return error;                               
+      error = FT_Render_Glyph( glyph, antialias
+                                        ? ft_render_mode_normal
+                                        : ft_render_mode_mono );
+      if ( error )
+        return error;                               
                                
     }
     
@@ -169,16 +173,16 @@
     bit3.pitch  = glyph->bitmap.pitch;
     bit3.buffer = glyph->bitmap.buffer;
 
-    switch (glyph->bitmap.pixel_mode)
+    switch ( glyph->bitmap.pixel_mode )
     {
-      case ft_pixel_mode_mono:
-         bit3.mode   = gr_pixel_mode_mono;
-         bit3.grays  = 0;
-         break;
+    case ft_pixel_mode_mono:
+      bit3.mode   = gr_pixel_mode_mono;
+      bit3.grays  = 0;
+      break;
          
-      case ft_pixel_mode_grays:
-         bit3.mode   = gr_pixel_mode_gray;
-         bit3.grays  = glyph->bitmap.num_grays;
+    case ft_pixel_mode_grays:
+      bit3.mode   = gr_pixel_mode_gray;
+      bit3.grays  = glyph->bitmap.num_grays;
     }
 
     /* Then, blit the image to the target surface */
@@ -240,7 +244,7 @@
 
 
     start_x = 4;
-    start_y = 16 + ptsize ;
+    start_y = 16 + ptsize;
 
     step_x = size->metrics.x_ppem + 4;
     step_y = size->metrics.y_ppem + 10;
@@ -251,9 +255,9 @@
     i = first_glyph;
 
 #if 0
-     while ( i < first_glyph + 1 )
+    while ( i < first_glyph + 1 )
 #else
-     while ( i < num_glyphs )
+    while ( i < num_glyphs )
 #endif
     {
       if ( !( error = LoadChar( i, hinted ) ) )
@@ -378,41 +382,43 @@
     grSetMargin( 2, 1 );
     grGotobitmap( &bit );
 
-    grWriteln("FreeType Glyph Viewer - part of the FreeType test suite" );
+    grWriteln( "FreeType Glyph Viewer - part of the FreeType test suite" );
     grLn();
-    grWriteln("This program is used to display all glyphs from one or" );
-    grWriteln("several font files, with the FreeType library.");
+    grWriteln( "This program is used to display all glyphs from one or" );
+    grWriteln( "several font files, with the FreeType library." );
     grLn();
-    grWriteln("Use the following keys :");
+    grWriteln( "Use the following keys:" );
     grLn();
-    grWriteln("  F1 or ?   : display this help screen" );
-    grWriteln("  a         : toggle anti-aliasing" );
-    grWriteln("  h         : toggle outline hinting" );
-    grWriteln("  b         : toggle embedded bitmaps" );
-    grWriteln("  l         : toggle low precision rendering" );
-    grWriteln("  space     : toggle rendering mode" );
+    grWriteln( "  F1 or ?   : display this help screen" );
+    grWriteln( "  a         : toggle anti-aliasing" );
+    grWriteln( "  h         : toggle outline hinting" );
+    grWriteln( "  b         : toggle embedded bitmaps" );
+    grWriteln( "  l         : toggle low precision rendering" );
+    grWriteln( "  space     : toggle rendering mode" );
     grLn();
-    grWriteln("  Up        : increase pointsize by 1 unit" );
-    grWriteln("  Down      : decrease pointsize by 1 unit" );
-    grWriteln("  Page Up   : increase pointsize by 10 units" );
-    grWriteln("  Page Down : decrease pointsize by 10 units" );
+    grWriteln( "  n         : next font" );
+    grWriteln( "  p         : previous font" );
     grLn();
-    grWriteln("  Right     : increment first glyph index" );
-    grWriteln("  Left      : decrement first glyph index" );
+    grWriteln( "  Up        : increase pointsize by 1 unit" );
+    grWriteln( "  Down      : decrease pointsize by 1 unit" );
+    grWriteln( "  Page Up   : increase pointsize by 10 units" );
+    grWriteln( "  Page Down : decrease pointsize by 10 units" );
     grLn();
-    grWriteln("  F7        : decrement first glyph index by 10" );
-    grWriteln("  F8        : increment first glyph index by 10" );
-    grWriteln("  F9        : decrement first glyph index by 100");
-    grWriteln("  F10       : increment first glyph index by 100");
-    grWriteln("  F11       : decrement first glyph index by 1000");
-    grWriteln("  F12       : increment first glyph index by 1000");
+    grWriteln( "  Right     : increment first glyph index" );
+    grWriteln( "  Left      : decrement first glyph index" );
     grLn();
-    grWriteln("press any key to exit this help screen");
+    grWriteln( "  F7        : decrement first glyph index by 10" );
+    grWriteln( "  F8        : increment first glyph index by 10" );
+    grWriteln( "  F9        : decrement first glyph index by 100" );
+    grWriteln( "  F10       : increment first glyph index by 100" );
+    grWriteln( "  F11       : decrement first glyph index by 1000" );
+    grWriteln( "  F12       : increment first glyph index by 1000" );
+    grLn();
+    grWriteln( "press any key to exit this help screen" );
 
     grRefreshSurface( surface );
     grListenSurface( surface, gr_event_key, &dummy_event );
   }
-
 
 
   static

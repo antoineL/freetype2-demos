@@ -1,3 +1,27 @@
+2002-04-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c (Render_Text): Don't call `get_glyph_index'.  This
+	is done in `get_glyph_bitmap'.
+
+	* src/ftstring.c (encoding): New global variable, initialized to
+	`ft_encoding_unicode'.
+	(render_mode): Removed.
+	(make_tag): New utility function (copied from ftcommon.i).
+	(prepare_text): Call `FT_Select_Charmap'.
+	(Process_Event): Don't handle ` '.
+	(main): Add option -e to select encoding.
+	(usage): Document it.
+
+	* src/ftmulti.c (encoding): New global variable.
+	(make_tag): New utility function (copied from ftcommon.i).
+	(main): Add option -e to select encoding.
+	(usage): Document it.
+
+2002-04-28  Martin Zinser  <zinser@decus.de>
+
+	* descrip.mms: Add clean target.
+	Handle compiler options better.
+
 2002-04-17  David Turner  <david@freetype.org>
 
 

@@ -48,6 +48,8 @@
   FT_Size       size;         /* the font size               */
   FT_GlyphSlot  glyph;        /* the glyph slot              */
 
+  FT_Encoding   encoding = ft_encoding_none;
+
   FT_Error      error;        /* error returned by FreeType? */
 
   grSurface*    surface;      /* current display surface     */
@@ -108,6 +110,25 @@
   {
     fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
     exit( 1 );
+  }
+
+
+  static unsigned long
+  make_tag( char  *s )
+  {
+    int            i;
+    unsigned long  l = 0;
+
+
+    for ( i = 0; i < 4; i++ )
+    {
+      if ( !s[i] )
+        break;
+      l <<= 8;
+      l  += (unsigned long)s[i];
+    }
+
+    return l;
   }
 
 
@@ -191,7 +212,6 @@
 
     return 0;
   }
-
 
 
   static
@@ -400,11 +420,11 @@
   }
 
 
-
   static
   int  Process_Event( grEvent*  event )
   {
     int  i, axis;
+
 
     switch ( event->key )
     {
@@ -577,8 +597,9 @@
     fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
              execname );
     fprintf( stderr,  "\n" );
-    fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
-    fprintf( stderr,  "  -f index  specify first glyph index to display\n" );
+    fprintf( stderr,  "  -e encoding  select encoding (default: no encoding)\n" );
+    fprintf( stderr,  "  -r R         use resolution R dpi (default: 72 dpi)\n" );
+    fprintf( stderr,  "  -f index     specify first glyph index to display\n" );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -602,13 +623,17 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "f:r:" );
+      option = getopt( argc, argv, "e:f:r:" );
 
       if ( option == -1 )
         break;
 
       switch ( option )
       {
+      case 'e':
+        encoding = (FT_Encoding)make_tag( optarg );
+        break;
+
       case 'f':
         first_glyph = atoi( optarg );
         break;
@@ -650,6 +675,13 @@
     error = FT_New_Face( library, argv[file], 0, &face );
     if ( error )
       goto Display_Font;
+
+    if ( encoding != ft_encoding_none )
+    {
+      error = FT_Select_Charmap( face, encoding );
+      if ( error )
+        goto Display_Font;
+    }
 
     /* retrieve multiple master information */
     error = FT_Get_Multi_Master( face, &multimaster ); 

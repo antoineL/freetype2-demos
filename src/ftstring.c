@@ -37,12 +37,14 @@
 
   static char*  Text = (char *)"The quick brown fox jumps over the lazy dog";
 
-  static FT_Library  library;       /* the FreeType library            */
-  static FT_Face     face;          /* the font face                   */
-  static FT_Error    error;         /* error returned by FreeType ?    */
+  static FT_Library   library;      /* the FreeType library            */
+  static FT_Face      face;         /* the font face                   */
+  static FT_Error     error;        /* error returned by FreeType?     */
 
-  static grSurface*  surface;       /* current display surface         */
-  static grBitmap    bit;           /* current display bitmap          */
+  static FT_Encoding  encoding = ft_encoding_unicode;
+
+  static grSurface*   surface;      /* current display surface         */
+  static grBitmap     bit;          /* current display bitmap          */
 
   static int  ptsize;               /* current point size */
   static int  Num;
@@ -59,7 +61,6 @@
   static grColor  fore_color = { 255 };
 
   static int  graph_init  = 0;
-  static int  render_mode = 1;
 
   static FT_Matrix  trans_matrix;
   static int        transform = 0;
@@ -118,6 +119,25 @@
   {
     fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
     exit( 1 );
+  }
+
+
+  static unsigned long
+  make_tag( char  *s )
+  {
+    int            i;
+    unsigned long  l = 0;
+
+
+    for ( i = 0; i < 4; i++ )
+    {
+      if ( !s[i] )
+        break;
+      l <<= 8;
+      l  += (unsigned long)s[i];
+    }
+
+    return l;
   }
 
 
@@ -397,6 +417,10 @@
     FT_UInt               glyph_index;
 
 
+    error = FT_Select_Charmap( face, encoding );
+    if ( error )
+      PanicZ( "invalid charmap\n" );
+
     num_glyphs = 0;
     while ( *p )
     {
@@ -526,13 +550,6 @@
                      : (char *)"glyph hinting is now ignored";
       break;
 
-    case grKEY( ' ' ):
-      render_mode ^= 1;
-      new_header   = render_mode
-                       ? (char *)"rendering all glyphs in font"
-                       : (char *)"rendering test text string";
-      break;
-
     case grKeyF1:
     case grKEY( '?' ):
       Help();
@@ -600,6 +617,7 @@
     fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
              execname );
     fprintf( stderr,  "\n" );
+    fprintf( stderr,  "  -e enc      specify encoding tag (default: unic)\n" );
     fprintf( stderr,  "  -r R        use resolution R dpi (default: 72 dpi)\n" );
     fprintf( stderr,  "  -m message  message to display\n" );
     fprintf( stderr,  "\n" );
@@ -628,13 +646,17 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "m:r:" );
+      option = getopt( argc, argv, "e:m:r:" );
 
       if ( option == -1 )
         break;
 
       switch ( option )
       {
+      case 'e':
+        encoding = (FT_Encoding)make_tag( optarg );
+        break;
+
       case 'r':
         res = atoi( optarg );
         if ( res < 1 )
@@ -667,7 +689,7 @@
     /* Initialize engine */
     error = FT_Init_FreeType( &library );
     if ( error )
-      PanicZ( "Could not initialise FreeType library" );
+      PanicZ( "Could not initialize FreeType library" );
 
   NewFile:
     ptsize      = orig_ptsize;

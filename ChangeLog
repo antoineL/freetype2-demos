@@ -1,3 +1,11 @@
+2002-05-12  Werner Lemberg  <wl@gnu.org>
+
+	* README: Updated.
+
+2002-05-12  Michael Pfeiffer  <michael.pfeiffer@utanet.at>
+
+	* graph/Jamfile: Add support for BeOS.
+
 2002-04-28  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (Render_Text): Don't call `get_glyph_index'.  This

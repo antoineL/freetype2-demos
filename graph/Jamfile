@@ -8,7 +8,11 @@ GRAPH_LIB     = $(LIBPREFIX)graph$(SUFLIB) ;
 
 graph_sources = grblit grobjs grfont grdevice grinit ;
 
-if $(UNIX)
+if $(OS) = BEOS
+{
+  DEVICE_DEFINE = -DDEVICE_BEOS ;
+}
+else if $(UNIX)
 {
   DEVICE_DEFINE = -DDEVICE_X11 ;
 }
@@ -25,7 +29,11 @@ CCFLAGS on <graph>grinit$(SUFOBJ) = $(CCFLAGS) $(DEVICE_DEFINE) ;
 
 Library  $(GRAPH_LIB) : $(graph_sources).c ;
 
-if $(UNIX)
+if $(OS) = BEOS
+{
+  SubInclude  FT2DEMO_TOP graph beos ;
+}
+else if $(UNIX)
 {
   SubInclude  FT2DEMO_TOP graph x11 ;
 }

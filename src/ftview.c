@@ -117,7 +117,7 @@
     int         i;
     grBitmap    bit3;
 
-    const char*  p;
+    const unsigned char*  p;
 
     start_x = 4;
     start_y = 16 + current_font.size.pix_height;
@@ -149,7 +149,7 @@
       
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
-                                      FT_Get_Char_Index( face, (unsigned char)*p ),
+                                      FT_Get_Char_Index( face, *p ),
                                       &glyph );
       if (!error)
       {

@@ -20,6 +20,8 @@
 #include <string.h>
 
 
+#define  DUMP_NAME
+
 #define gettext( x )  ( x )
 
   FT_Error      error;
@@ -133,6 +135,19 @@
 
       error = FT_Set_Char_Size( face, ptsize << 6, 0, 0, 0 );
       if (error) Panic( "Could not set character size" );
+
+#ifdef DUMP_NAME
+      {
+        char name[1024];
+        
+        error = FT_Get_Glyph_Name( face, glyph_index, name, 1024 );
+        if (error)
+          printf( "no glyph name available\n" );
+        else
+          printf( "glyph name = '%s'\n", name );
+      }
+      
+#endif
 
       error = FT_Load_Glyph( face,
                              glyph_index,

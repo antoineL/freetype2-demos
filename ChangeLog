@@ -1,3 +1,15 @@
+2002-09-25  David Turner  <david@freetype.org>
+
+        * graph/win32/grwin32.c: removing compiler warnings
+
+        * descrip.mms: removing 'ftmemchk' and 'testnames' from the list
+        of programs to compile, these are now obsolete
+
+2002-09-25  Anthony Fok  <anthony@thizlinux.com>
+
+        * src/ftbench.c: the program did perform out-of-bound memory writes
+        with certain fonts containing a buggy charmap
+
 2002-09-18  Werner Lemberg  <wl@gnu.org>
 
 	Add LCD BGR support.

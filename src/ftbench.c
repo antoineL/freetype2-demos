@@ -110,7 +110,11 @@ get_cmap(void)
   {
     i = 0;
     charcode = FT_Get_First_Char(face, &gindex);
-    while (gindex)
+
+    /* certain fonts contain a broken charmap that will map character codes */
+    /* to out-of-bounds glyph indices. Take care of that here !!            */
+    /*                                                                      */
+    while ( gindex && i < face->num_glyphs )
     {
       cmap[i].index = gindex;
       cmap[i].charcode = charcode;

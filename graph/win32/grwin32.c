@@ -217,6 +217,8 @@ gr_win32_surface_listen_event( grWin32Surface*  surface,
   MSG     msg;
   HANDLE  window = surface->window;
 
+  event_mask=event_mask;  /* unused parameter */
+
   if ( window && !surface->title_set )
   {
     SetWindowText( window, surface->the_title );
@@ -411,7 +413,6 @@ LRESULT CALLBACK Message_Process( HWND handle, UINT mess,
       HDC           hDC, memDC;
       HANDLE        oldbm;
       PAINTSTRUCT   ps;
-      LPBITMAPINFO  pbmi = surface->pbmi;
 
       hDC   = BeginPaint ( handle, &ps );
       memDC = CreateCompatibleDC( hDC );

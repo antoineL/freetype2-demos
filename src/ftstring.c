@@ -299,7 +299,7 @@
         
         FT_Glyph_Get_CBox( image, ft_glyph_bbox_pixels, &bbox );
 
-#if 1
+#if 0
         if (n == 0)
         {
           fprintf( stderr, "bbox = [%ld %ld %ld %ld]\n",
@@ -321,7 +321,7 @@
             FT_Bitmap*      source = &bitmap->bitmap;
             FT_Pos          x_top, y_top;
 
-#if 1
+#if 0
             if (n == 0)
             {
               fprintf( stderr, "bearing = [%d %d] dims = [%d %d]\n",

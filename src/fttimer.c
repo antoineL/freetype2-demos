@@ -117,7 +117,7 @@
   FT_Error  ConvertRaster( int  index )
   {
     FT_Glyph  bitmap;
-    FT_Error  error;
+
     
     bitmap = glyphs[index];
     error = FT_Glyph_To_Bitmap( &bitmap,

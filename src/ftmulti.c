@@ -114,12 +114,12 @@
   static
   void  Clear_Display( void )
   {
-    long  size = (long)bit.pitch * bit.rows;
+    long  bitmap_size = (long)bit.pitch * bit.rows;
 
 
-    if ( size < 0 )
-      size = -size;
-    memset( bit.buffer, 0, size );
+    if ( bitmap_size < 0 )
+      bitmap_size = -bitmap_size;
+    memset( bit.buffer, 0, bitmap_size );
   }
 
 
@@ -158,7 +158,8 @@
     /* first, render the glyph image into a bitmap */
     if (glyph->format != ft_glyph_format_bitmap)
     {
-      error = FT_Render_Glyph( glyph, antialias ? ft_render_mode_normal : ft_render_mode_mono );
+      error = FT_Render_Glyph( glyph, antialias ? ft_render_mode_normal
+                                                : ft_render_mode_mono );
       if (error) return error;                               
                                
     }
@@ -193,16 +194,9 @@
 
 
   static
-  FT_Error  Reset_Scale( int  pointSize )
+  void  Reset_Scale( int  pointSize )
   {
-    FT_Error  error;
-
-
-    error = FT_Set_Char_Size( face, pointSize << 6,
-                                    pointSize << 6,
-                                    res,
-                                    res );
-    return FT_Err_Ok;
+    (void)FT_Set_Char_Size( face, pointSize << 6, pointSize << 6, res, res );
   }
 
 
@@ -227,7 +221,7 @@
 
   static
   FT_Error  Render_All( int  first_glyph,
-                        int  ptsize )
+                        int  pt_size )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
@@ -236,7 +230,7 @@
 
 
     start_x = 4;
-    start_y = 36 + ptsize;
+    start_y = 36 + pt_size;
 
     step_x = size->metrics.x_ppem + 4;
     step_y = size->metrics.y_ppem + 10;
@@ -291,17 +285,13 @@
 
 
   static
-  FT_Error  Render_Text( int  first_glyph,
-                         int  ptsize )
+  FT_Error  Render_Text( int  first_glyph )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
 
-    FT_Error             error;
-    const unsigned char* p;
+    const unsigned char*  p;
 
-
-    ptsize=ptsize;
 
     start_x = 4;
     start_y = 32 + size->metrics.y_ppem;
@@ -607,7 +597,6 @@
     int    option;
     int    file_loaded;
 
-    FT_Error  error;
     grEvent   event;
 
     execname = ft_basename( argv[0] );
@@ -686,9 +675,7 @@
     
     file_loaded++;
 
-    error = Reset_Scale( ptsize );
-    if ( error )
-      goto Display_Font;
+    Reset_Scale( ptsize );
 
     num_glyphs = face->num_glyphs;
     glyph      = face->glyph;
@@ -729,7 +716,7 @@
         switch ( render_mode )
         {
         case 0:
-          Render_Text( Num, ptsize );
+          Render_Text( Num );
           break;
 
         default:
@@ -806,8 +793,7 @@
 
       if ( ptsize != old_ptsize )
       {
-        if ( Reset_Scale( ptsize ) )
-          PanicZ( "Could not resize font." );
+        Reset_Scale( ptsize );
 
         old_ptsize = ptsize;
       }

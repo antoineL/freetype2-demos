@@ -66,7 +66,7 @@
 
 
   static Display*  display;
-  static char*     displayname = "";
+  static char*     displayname = (char *)"";
 
   static Cursor  idle;
   static Cursor  busy;

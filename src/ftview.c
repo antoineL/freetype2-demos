@@ -54,7 +54,7 @@
   FT_Size       size;         /* the font size                   */
   FT_GlyphSlot  glyph;        /* the glyph slot                  */
 
-  FT_Error      error;        /* error code returned by FreeType */
+  FT_Error      error;
 
   grSurface*    surface;      /* current display surface         */
   grBitmap      bit;          /* current display bitmap          */
@@ -113,12 +113,12 @@
   static
   void  Clear_Display( void )
   {
-    long  size = (long)bit.pitch * bit.rows;
+    long  image_size = (long)bit.pitch * bit.rows;
 
 
-    if ( size < 0 )
-      size = -size;
-    memset( bit.buffer, 0, size );
+    if ( image_size < 0 )
+      image_size = -image_size;
+    memset( bit.buffer, 0, image_size );
   }
 
 
@@ -199,9 +199,6 @@
   static
   FT_Error  Reset_Scale( int  pointSize )
   {
-    FT_Error  error;
-
-
     error = FT_Set_Char_Size( face, pointSize << 6,
                                     pointSize << 6,
                                     res,
@@ -239,16 +236,14 @@
 
   static
   FT_Error  Render_All( int  first_glyph,
-                        int  ptsize )
+                        int  pt_size )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
 
-    FT_Error    error;
-
 
     start_x = 4;
-    start_y = 16 + ptsize;
+    start_y = 16 + pt_size;
 
     step_x = size->metrics.x_ppem + 4;
     step_y = size->metrics.y_ppem + 10;
@@ -304,13 +299,11 @@
 
 
   static
-  FT_Error  Render_Text( int  first_glyph,
-                         int  ptsize )
+  FT_Error  Render_Text( int  first_glyph )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
 
-    FT_Error              error;
     const unsigned char*  p;
 
 
@@ -563,7 +556,6 @@
     int    option;
     int    file_loaded;
 
-    FT_Error  error;
     grEvent   event;
 
 
@@ -712,7 +704,7 @@
         switch ( render_mode )
         {
         case 0:
-          Render_Text( Num, ptsize );
+          Render_Text( Num );
           break;
 
         default:

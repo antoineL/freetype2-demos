@@ -34,7 +34,7 @@
   static char  Header[128];
   static char* new_header = 0;
 
-  static char*  Text = "The quick brown fox jumps over the lazy dog";
+  static char*  Text = (char *)"The quick brown fox jumps over the lazy dog";
 
   static FT_Library    library;      /* the FreeType library            */
   static FT_Face       face;         /* the font face                   */
@@ -176,15 +176,12 @@
   }
 
 
-  static FT_Error  reset_scale( int  pointSize )
+  static void  reset_scale( int  pointSize )
   {
-    FT_Error  error;
-
-    error = FT_Set_Char_Size( face, pointSize << 6,
-                                    pointSize << 6,
-                                    res,
-                                    res );
-    return FT_Err_Ok;
+    (void)FT_Set_Char_Size( face, pointSize << 6,
+                            pointSize << 6,
+                            res,
+                            res );
   }
 
 
@@ -196,7 +193,6 @@
   static void  layout_glyphs( void )
   {
     PGlyph    glyph = glyphs;
-    FT_Error  error;
     int       n;
     FT_Vector origin;
     FT_Pos    origin_x = 0;
@@ -570,7 +566,6 @@
     int    option;
     int    file_loaded;
 
-    FT_Error  error;
     grEvent   event;
 
     execname = ft_basename( argv[0] );
@@ -660,8 +655,7 @@
 
     file_loaded++;
 
-    error = reset_scale( ptsize );
-    if (error) goto Display_Font;
+    reset_scale( ptsize );
 
   Display_Font:
     /* initialise graphics if needed */
@@ -753,8 +747,7 @@
 
       if ( ptsize != old_ptsize )
       {
-        if ( reset_scale( ptsize ) )
-          PanicZ( "Could not resize font." );
+        reset_scale( ptsize );
 
         old_ptsize = ptsize;
       }

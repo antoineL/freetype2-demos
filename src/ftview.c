@@ -18,6 +18,128 @@
 
 #include "ftcommon.i"
 #include FT_CACHE_MANAGER_H
+#include FT_STROKER_H
+
+  static FT_Error
+  Render_Stroke( int  first_index )
+  {
+    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
+    FTC_ScalerRec  scaler;
+    FT_Stroker     stroker = NULL;
+    FT_Error       error;
+    int            i;
+    grBitmap       bit3;
+
+    const unsigned char*  p;
+
+
+    start_x = 4;
+    start_y = 16 + current_font.height;
+
+
+    scaler.face_id = current_font.face_id;
+    scaler.width   = current_font.width;
+    scaler.height  = current_font.height;
+    scaler.pixel   = 1;
+
+    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
+    if ( error )
+      goto Exit;
+
+    error = FT_Stroker_New( size->face->memory, &stroker );
+    if ( error )
+      goto Exit;
+
+    FT_Stroker_Set( stroker,
+                    32,
+                    FT_STROKER_LINECAP_ROUND,
+                    FT_STROKER_LINEJOIN_ROUND,
+                    0 );
+
+    step_x = size->metrics.x_ppem + 4;
+    step_y = ( size->metrics.height >> 6 ) + 4;
+
+    x = start_x;
+    y = start_y;
+
+    i = first_index;
+    p = Text;
+    while ( i > 0 && *p )
+    {
+      p++;
+      i--;
+    }
+
+    while ( *p )
+    {
+      int           left, top, x_advance, y_advance, x_top, y_top;
+      FT_UInt       gindex;
+      FT_GlyphSlot  slot = size->face->glyph;
+      FT_Glyph      glyph;
+
+
+      gindex = *(unsigned char*)p;
+      if ( encoding == FT_ENCODING_NONE )
+        gindex = get_glyph_index( gindex );
+
+      error = FT_Load_Glyph( size->face, gindex, FT_LOAD_NO_BITMAP );
+      if ( !error && slot->format == FT_GLYPH_FORMAT_OUTLINE )
+      {
+        error = FT_Get_Glyph( slot, &glyph );
+        if ( error )
+          goto Next;
+
+        error = FT_Glyph_Stroke( &glyph, stroker, 0 );
+        if ( error )
+        {
+          FT_Done_Glyph( glyph );
+          goto Next;
+        }
+
+        error = glyph_to_bitmap( glyph, &bit3, &left, &top,
+                                 &x_advance, &y_advance );
+        if ( !error )
+        {
+          /* now render the bitmap into the display surface */
+          x_top = x + left;
+          y_top = y - top;
+          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+          x += x_advance + 1;
+
+          if ( x + size->metrics.x_ppem > bit.width )
+          {
+            x  = start_x;
+            y += step_y;
+
+            if ( y >= bit.rows )
+            {
+              FT_Done_Glyph( glyph );
+              return FT_Err_Ok;
+            }
+          }
+        }
+
+        FT_Done_Glyph( glyph );
+
+        if ( error )
+          goto Next;
+      }
+      else
+      {
+      Next:
+        Fail++;
+      }
+
+      p++;
+    }
+
+  Exit:
+    if ( stroker )
+      FT_Stroker_Done( stroker );
+
+    return error;
+  }
 
   static FT_Error
   Render_All( int  first_index )
@@ -197,15 +319,27 @@
 
     pix_size = first_size;
 
-    if ( !FT_IS_SCALABLE( face ) )
     {
-      int  i;
+      FT_Face   face;
+
+      error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
+      if ( error )
+      {
+        /* can't access the font file. do not render anything */
+        fprintf( stderr, "can't access font file %p\n", current_font.face_id );
+        return 0;
+      }
+
+      if ( !FT_IS_SCALABLE( face ) )
+      {
+        int  i;
 
 
-      max_size = 0;
-      for ( i = 0; i < face->num_fixed_sizes; i++ )
-        if ( face->available_sizes[i].height >= max_size )
-          max_size = face->available_sizes[i].height;
+        max_size = 0;
+        for ( i = 0; i < face->num_fixed_sizes; i++ )
+          if ( face->available_sizes[i].height >= max_size )
+            max_size = face->available_sizes[i].height;
+      }
     }
 
     for (;;)
@@ -437,7 +571,7 @@
       break;
 
     case grKEY( ' ' ):
-      render_mode = ( render_mode + 1 ) % 3;
+      render_mode = ( render_mode + 1 ) % 4;
       switch ( render_mode )
       {
         case 0:
@@ -446,6 +580,10 @@
         case 1:
           new_header = (char*)"rendering test text string";
           break;
+        case 2:
+          new_header = (char*)"rendering stroked text";
+          break;
+
         default:
           new_header = (char*)"rendering glyph waterfall";
       }
@@ -675,6 +813,10 @@
 
         case 1:
           error = Render_Text( Num );
+          break;
+
+        case 2:
+          error = Render_Stroke( Num );
           break;
 
         default:

@@ -529,6 +529,7 @@
   }
 
 
+#if 0
   static FT_Error
   get_glyph_bitmap( FT_ULong     Index,
                     grBitmap*    target,
@@ -684,5 +685,171 @@
     return error;
   }
 
+
+#else /* !0 */
+  static FT_Error
+  glyph_to_bitmap( FT_Glyph    glyf,
+                   grBitmap*   target,
+                   int        *left,
+                   int        *top,
+                   int        *x_advance,
+                   int        *y_advance )
+  {
+    FT_Error        error = 0;
+    FT_BitmapGlyph  bitmap;
+    FT_Bitmap*      source;
+
+    if ( glyf->format == ft_glyph_format_outline )
+    {
+      /* render the glyph to a bitmap, don't destroy original */
+      error = FT_Glyph_To_Bitmap( &glyf,
+                                  antialias ? FT_RENDER_MODE_NORMAL
+                                            : FT_RENDER_MODE_MONO,
+                                  NULL, 0 );
+      if ( error )
+        goto Exit;
+    }
+
+    if ( glyf->format != FT_GLYPH_FORMAT_BITMAP )
+      PanicZ( "invalid glyph format returned!" );
+
+    bitmap = (FT_BitmapGlyph)glyf;
+    source = &bitmap->bitmap;
+
+    target->rows   = source->rows;
+    target->width  = source->width;
+    target->pitch  = source->pitch;
+    target->buffer = source->buffer;
+
+    switch ( source->pixel_mode )
+    {
+    case FT_PIXEL_MODE_MONO:
+      target->mode = gr_pixel_mode_mono;
+      break;
+
+    case FT_PIXEL_MODE_GRAY:
+      target->mode  = gr_pixel_mode_gray;
+      target->grays = source->num_grays;
+      break;
+
+    case FT_PIXEL_MODE_LCD:
+      target->mode  = ( lcd_mode == 1 ? gr_pixel_mode_lcd : gr_pixel_mode_lcd2 );
+      target->grays = source->num_grays;
+      break;
+
+    case FT_PIXEL_MODE_LCD_V:
+      target->mode  = ( lcd_mode == 3 ? gr_pixel_mode_lcdv : gr_pixel_mode_lcdv2 );
+      target->grays = source->num_grays;
+      break;
+
+    default:
+      return FT_Err_Invalid_Glyph_Format;
+    }
+
+    *left = bitmap->left;
+    *top  = bitmap->top;
+
+    *x_advance = ( glyf->advance.x + 0x8000 ) >> 16;
+    *y_advance = ( glyf->advance.y + 0x8000 ) >> 16;
+
+  Exit:
+    return error;
+  }
+
+
+  static FT_Error
+  get_glyph_bitmap( FT_ULong     Index,
+                    grBitmap*    target,
+                    int         *left,
+                    int         *top,
+                    int         *x_advance,
+                    int         *y_advance,
+                    FT_Pointer  *aglyf )
+  {
+    *aglyf = NULL;
+
+    if ( encoding != FT_ENCODING_NONE )
+      Index = get_glyph_index( Index );
+
+    /* use the SBits cache to store small glyph bitmaps; this is a lot */
+    /* more memory-efficient                                           */
+    /*                                                                 */
+    if ( use_sbits_cache          &&
+         current_font.width  < 48 &&
+         current_font.height < 48 )
+    {
+      FTC_SBit  sbit;
+
+
+      error = FTC_SBitCache_Lookup( sbits_cache,
+                                    &current_font,
+                                    Index,
+                                    &sbit,
+                                    NULL );
+      if ( error )
+        goto Exit;
+
+      if ( sbit->buffer )
+      {
+        target->rows   = sbit->height;
+        target->width  = sbit->width;
+        target->pitch  = sbit->pitch;
+        target->buffer = sbit->buffer;
+
+        switch ( sbit->format )
+        {
+        case FT_PIXEL_MODE_MONO:
+          target->mode = gr_pixel_mode_mono;
+          break;
+
+        case FT_PIXEL_MODE_GRAY:
+          target->mode  = gr_pixel_mode_gray;
+          target->grays = sbit->max_grays + 1;
+          break;
+
+        case FT_PIXEL_MODE_LCD:
+          target->mode  = ( lcd_mode == 1 ? gr_pixel_mode_lcd
+                                          : gr_pixel_mode_lcd2 );
+          target->grays = sbit->max_grays + 1;
+          break;
+
+        case FT_PIXEL_MODE_LCD_V:
+          target->mode  = ( lcd_mode == 3 ? gr_pixel_mode_lcdv
+                                          : gr_pixel_mode_lcdv2 );
+          target->grays = sbit->max_grays + 1;
+          break;
+
+        default:
+          return FT_Err_Invalid_Glyph_Format;
+        }
+
+        *left      = sbit->left;
+        *top       = sbit->top;
+        *x_advance = sbit->xadvance;
+        *y_advance = sbit->yadvance;
+
+        goto Exit;
+      }
+    }
+
+    /* otherwise, use an image cache to store glyph outlines, and render */
+    /* them on demand. we can thus support very large sizes easily..     */
+    {
+      FT_Glyph   glyf;
+
+      error = FTC_ImageCache_Lookup( image_cache,
+                                     &current_font,
+                                     Index,
+                                     &glyf,
+                                     NULL );
+
+      if ( !error )
+        error = glyph_to_bitmap( glyf, target, left, top, x_advance, y_advance );
+    }
+
+  Exit:
+    return error;
+  }
+#endif /* !0 */
 
 /* End */

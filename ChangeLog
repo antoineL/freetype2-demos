@@ -1,3 +1,9 @@
+2003-05-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (install_font_file): Use calloc to allocate
+	`fonts'.
+	(done_freetype): Deallocate `fonts'.
+
 2003-04-28  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcheckfixedwidth.c: Remove unused global variables; make

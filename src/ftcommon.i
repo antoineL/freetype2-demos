@@ -212,7 +212,7 @@
 
   } TFont, *PFont;
 
-  static PFont*  fonts;
+  static PFont*  fonts = NULL;
   static int     num_fonts;
   static int     max_fonts = 0;
 
@@ -362,7 +362,7 @@
       if ( max_fonts == 0 )
       {
         max_fonts = 16;
-        fonts     = (PFont*)malloc( max_fonts * sizeof ( PFont ) );
+        fonts     = (PFont*)calloc( max_fonts, sizeof ( PFont ) );
       }
       else if ( num_fonts >= max_fonts )
       {
@@ -436,6 +436,20 @@
   static void
   done_freetype( void )
   {
+    int  i;
+
+
+    for ( i = 0; i < max_fonts; i++ )
+    {
+      if ( fonts[i] )
+      {
+        if ( fonts[i]->filepathname )
+          free( (void*)fonts[i]->filepathname );
+        free( fonts[i] );
+      }
+    }
+    free( fonts );
+
     FTC_Manager_Done( cache_manager );
     FT_Done_FreeType( library );
   }

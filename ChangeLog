@@ -1,8 +1,13 @@
+2002-06-10  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftbench.c: s/index/idx/.
+	Fixed more gcc compiler warnings.
+
 2002-06-10  David Turner  <david@freetype.org>
 
-    * src/ftbench.c: removing compiler warnings
+	* src/ftbench.c: Removing compiler warnings.
 
-    * src/ttdebug.c: updating to latest internal changes
+	* src/ttdebug.c: Updating to latest internal changes.
 
 2002-06-07  David Turner  <david@freetype.org>
 

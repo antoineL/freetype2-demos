@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000 by                                                  */
+/*  Copyright 2002 by                                                       */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -26,7 +26,9 @@
 #include <sys/time.h>
 #endif
 
-typedef int (*bench_t)(FT_UInt index, FT_UInt charcode);
+typedef int
+(*bench_t)(FT_UInt idx,
+           FT_UInt charcode);
 
 typedef struct charmap_t_
 {
@@ -58,7 +60,11 @@ double          bench_time = BENCH_TIME;
  * Dummy face requester (the face object is already loaded)
  */
 
-FT_Error face_requester (FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface)
+FT_Error
+face_requester (FTC_FaceID face_id,
+                FT_Library library,
+                FT_Pointer request_data,\
+                FT_Face* aface)
 {
   FT_UNUSED( face_id );
   FT_UNUSED( library );
@@ -73,7 +79,8 @@ FT_Error face_requester (FTC_FaceID face_id, FT_Library library, FT_Pointer requ
  * Bench code
  */
 
-double get_time()
+double
+get_time(void)
 {
 #ifdef UNIX
   struct timeval tv;
@@ -86,7 +93,9 @@ double get_time()
 #endif
 }
 
-void get_cmap()
+
+void
+get_cmap(void)
 {
   FT_ULong charcode;
   FT_UInt  gindex;
@@ -119,7 +128,11 @@ void get_cmap()
     }
 }
 
-void bench(bench_t bench_func, const char* title, int max)
+
+void
+bench(bench_t bench_func,
+      const char* title,
+      int max)
 {
   int      i, n, done;
   double   t0, delta;
@@ -150,67 +163,87 @@ void bench(bench_t bench_func, const char* title, int max)
  * Various tests
  */
 
-int load_test(FT_UInt index, FT_UInt charcode)
+int
+load_test(FT_UInt idx,
+          FT_UInt charcode)
 {
   FT_UNUSED( charcode );
-  return FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
+  return FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT);
 }
 
-int fetch_test(FT_UInt index, FT_UInt charcode)
+
+int
+fetch_test(FT_UInt idx,
+           FT_UInt charcode)
 {
   FT_Glyph glyph;
 
   FT_UNUSED( charcode );
 
   return
-    FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) ||
+    FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT) ||
     FT_Get_Glyph(face->glyph, &glyph);
 }
 
-int cbox_test(FT_UInt index, FT_UInt charcode)
+
+int
+cbox_test(FT_UInt idx,
+          FT_UInt charcode)
 {
   FT_BBox  bbox;
   FT_Glyph glyph;
 
   FT_UNUSED( charcode );
 
-  if (FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) ||
+  if (FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT) ||
       FT_Get_Glyph(face->glyph, &glyph))
     return 1;
   FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
   return 0;
 }
 
-int cmap_test(FT_UInt index, FT_UInt charcode)
+
+int
+cmap_test(FT_UInt idx,
+          FT_UInt charcode)
 {
-  FT_UNUSED( index );
+  FT_UNUSED( idx );
 
   return !FT_Get_Char_Index(face, charcode);
 }
 
-int cmap_cache_test(FT_UInt index, FT_UInt charcode)
+
+int
+cmap_cache_test(FT_UInt idx,
+                FT_UInt charcode)
 {
-  FT_UNUSED( index );
+  FT_UNUSED( idx );
 
   return !FTC_CMapCache_Lookup(cmap_cache, &cmap_desc, charcode);
 }
 
-int image_cache_test(FT_UInt index, FT_UInt charcode)
+
+int
+image_cache_test(FT_UInt idx,
+                 FT_UInt charcode)
 {
   FT_Glyph glyph;
 
   FT_UNUSED( charcode );
 
-  return FTC_ImageCache_Lookup(image_cache, &font_desc, index, &glyph, NULL);
+  return FTC_ImageCache_Lookup(image_cache, &font_desc, idx, &glyph, NULL);
 }
 
-int sbit_cache_test(FT_UInt index, FT_UInt charcode)
+
+int
+sbit_cache_test(FT_UInt idx,
+                FT_UInt charcode)
 {
   FTC_SBit glyph;
 
   FT_UNUSED( charcode );
 
-  return FTC_SBitCache_Lookup(sbit_cache, &font_desc, index, &glyph, NULL);
+  return FTC_SBitCache_Lookup(sbit_cache, &font_desc, idx, &glyph, NULL);
 }
 
 
@@ -218,7 +251,7 @@ int sbit_cache_test(FT_UInt index, FT_UInt charcode)
  * main
  */
 
-void usage()
+void usage(void)
 {
   fprintf(stderr, "ftbench: bench some common FreeType paths\n");
   fprintf(stderr, "-----------------------------------------\n\n");
@@ -239,10 +272,13 @@ void usage()
   exit( 1 );
 }
 
+
 #define TEST(x) (!tests || strchr(tests, x))
 
 
-int main(int argc, char** argv)
+int
+main(int argc,
+     char** argv)
 {
   FT_ULong max_bytes = CACHE_SIZE * 1024;
   char* tests = NULL;
@@ -368,3 +404,6 @@ int main(int argc, char** argv)
 
   return 0;
 }
+
+
+/* End */

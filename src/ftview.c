@@ -86,8 +86,6 @@
     int            i;
     grBitmap       bit3;
 
-    const unsigned char*  p;
-
 
     start_x = 4;
     start_y = 16 + current_font.height;
@@ -124,7 +122,6 @@
     while ( i < face->num_glyphs )
     {
       int           left, top, x_advance, y_advance, x_top, y_top;
-      FT_UInt       gindex;
       FT_GlyphSlot  slot = size->face->glyph;
       FT_Glyph      glyphp;
 

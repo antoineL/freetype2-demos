@@ -1,3 +1,20 @@
+2004-07-13  David Turner  <david@freetype.org>
+
+	* graph/x11/grx11.c (gr_x11_device_init): Fix memory leak.
+
+	* src/ftbench.c (bench_cmap_parse): New function, assigned to
+	key `j'.
+	(usage, main): Updated.
+
+	* src/ftcommon.i (install_font_file): Initialize `cmap_index' here.
+	(my_face_requester): Don't initialize `cmap_index'.
+	(glyph_to_bitmap): Add new argument to get glyph reference.
+	(get_glyph_bitmap): Updated.
+
+	* src/ftview.c (Render_Stroke): Increase stroker limit.
+	Fix glyph indices.
+	Fix memory leaks.
+
 2004-06-24  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile (GRAPH_LINK): Add $(MATH).

@@ -27,6 +27,21 @@
 	Add ftc_image_format_outline flag if not a bitmap glyph.
 	* src/ftview.c: Use `get_glyph_index'.
 
+2001-12-06  David Turner  <david@freetype.org>
+
+	An update to use the new cache manager code.
+
+	* src/ftcommon.i: s/FTC_Image_Cache/FTC_ImageCache/.
+	s/FTC_SBit_Cache/FTC_SBitCache/.
+	s/FTC_Image_Desc/FTC_ImageDesc/.
+	s/image_type/type/.
+	(done_glyph_bitmap): New function.
+	(get_glyph_bitmap): Add new argument.
+	Use sbits cache only of pixel size <= 32.
+	Other fixes.
+	* src/ftview.c (Render_All, Render_Text): Updated to changes in
+	ftcommon.i.
+
 2001-12-05  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i, src/ftview.c: s/manager/cache_manager/ to avoid

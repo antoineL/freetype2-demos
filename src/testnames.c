@@ -39,7 +39,7 @@
         if ( FT_Render_Glyph( font_face->glyph, ft_render_mode_mono ) )
           exit( 1 );
       if ( FT_Get_Glyph_Name( font_face, glyph_ind, char_name, 16 ) )
-        exit;
+        exit( 1 );
 
       bitmap = cur_glyph->bitmap;
       glyph_metrics = cur_glyph->metrics;

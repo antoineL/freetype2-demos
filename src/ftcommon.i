@@ -539,7 +539,7 @@
         *y_advance = sbit->yadvance;
       }
 
-      return error;
+      goto Exit;
     }
 
     /* otherwise, use an image cache to store glyph outlines, and render */
@@ -570,11 +570,13 @@
         if ( glyf->format == ft_glyph_format_outline )
         {
           /* render the glyph to a bitmap, don't destroy original */
-          FT_Glyph_To_Bitmap( &glyf,
-                              antialias ? ft_render_mode_normal
-                                        : ft_render_mode_mono,
-                              NULL, 0 );
-
+          error = FT_Glyph_To_Bitmap( &glyf,
+                                      antialias ? ft_render_mode_normal
+                                                : ft_render_mode_mono,
+                                      NULL, 0 );
+          if ( error)
+            goto Exit;
+          
           *aglyf = glyf;
         }
 
@@ -612,7 +614,8 @@
       }
     }
 
-    return 0;
+  Exit:
+    return error;
   }
 
 

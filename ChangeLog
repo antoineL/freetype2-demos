@@ -44,7 +44,6 @@
 	* descrip.mms: Add clean target.
 	Handle compiler options better.
 
->>>>>>> 1.42
 2002-04-17  David Turner  <david@freetype.org>
 
 

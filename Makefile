@@ -240,7 +240,7 @@ else
   endif
 
   $(OBJ_)ttdebug.$O: $(SRC_DIR)/ttdebug.c
-	    $(COMPILE) $I(TOP)$(SEP)src$(SEP)truetype $DFT_FLAT_COMPILE \
+	    $(COMPILE) $I$(TOP)$(SEP)src$(SEP)truetype $DFT_FLAT_COMPILE \
                        $(TT_INCLUDES:%=$I%) $T$@ $< $(EXTRAFLAGS)
 
 

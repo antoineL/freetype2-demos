@@ -20,27 +20,27 @@ int main( void )
    int num_chars;
    char char_name[256];
 
-     
+
    if ( FT_Init_FreeType( &font_library ) )
-     exit;
-   
+     exit(1);
+
    if ( FT_New_Face( font_library , "c:/winnt/fonts/times.ttf" , 0 , &font_face ) )
-     exit;
+     exit(1);
    if ( FT_Set_Char_Size( font_face , 0 , 768 , 300 , 300 ) )
-     exit;
+     exit(1);
    num_chars = (int) font_face->num_glyphs;
    FT_Set_Transform( font_face , NULL , NULL );
 
    for ( glyph_ind = 0 ; glyph_ind < num_chars; glyph_ind++ )
      {
         if ( FT_Load_Glyph( font_face , glyph_ind , FT_LOAD_DEFAULT ) )
-          exit;
+          exit(1);
         cur_glyph = font_face->glyph;
         if ( cur_glyph->format != ft_glyph_format_bitmap )
           if ( FT_Render_Glyph( font_face->glyph , ft_render_mode_mono ) )
-            exit;
+            exit(1);
         if ( FT_Get_Glyph_Name( font_face , glyph_ind , char_name , 16 ) )
-          exit;
+          exit(1);
         bitmap = cur_glyph->bitmap;
         glyph_metrics = cur_glyph->metrics;
         printf( "Glyph %d  name %s %ld %ld %ld %d %d\n" , glyph_ind , char_name ,
@@ -49,6 +49,6 @@ int main( void )
                 glyph_metrics.horiAdvance / 64 ,
                 bitmap.width , bitmap.rows );
      }
-     
+
   return 0;
 }

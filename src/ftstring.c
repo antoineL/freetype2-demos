@@ -248,9 +248,9 @@
 
       origin_x  += face->glyph->advance.x;
     }
-    string_center.x = origin_x / 2;
+    string_center.x = (origin_x / 2) & -64;
     string_center.y = 0;
-    
+
     if (transform)
       FT_Vector_Transform( &string_center, &trans_matrix );
   }
@@ -276,14 +276,14 @@
     {
       FT_Glyph   image;
       FT_Vector  vec;
-      
+
       if (!glyph->image)
         continue;
 
      /* copy image */
       error = FT_Glyph_Copy( glyph->image, &image );
       if (error) continue;
-      
+
      /* transform it */
       vec = glyph->pos;
       FT_Vector_Transform( &vec, &trans_matrix );
@@ -293,10 +293,10 @@
       if (!error)
       {
         FT_BBox  bbox;
-        
+
         /* check bounding box, if it's not within the display surface, we */
         /* don't need to render it..                                      */
-        
+
         FT_Glyph_Get_CBox( image, ft_glyph_bbox_pixels, &bbox );
 
 #if 0
@@ -306,10 +306,10 @@
                     bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax );
         }
 #endif
-        
+
         if ( bbox.xMax > 0         && bbox.yMax > 0        &&
              bbox.xMin < bit.width && bbox.yMin < bit.rows )
-        {             
+        {
           /* convert to a bitmap - destroy native image */
           error = FT_Glyph_To_Bitmap( &image,
                                       antialias ? ft_render_mode_normal
@@ -329,27 +329,27 @@
             }
 #endif
 
-    
+
             bit3.rows   = source->rows;
             bit3.width  = source->width;
             bit3.pitch  = source->pitch;
             bit3.buffer = source->buffer;
-    
+
             switch (source->pixel_mode)
             {
               case ft_pixel_mode_mono:
                 bit3.mode  = gr_pixel_mode_mono;
                 break;
-    
+
               case ft_pixel_mode_grays:
                 bit3.mode  = gr_pixel_mode_gray;
                 bit3.grays = source->num_grays;
                 break;
-    
+
               default:
                 continue;
             }
-    
+
             /* now render the bitmap into the display surface */
             x_top = bitmap->left;
             y_top = bit.rows - bitmap->top;

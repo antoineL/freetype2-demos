@@ -368,6 +368,9 @@
       {
         max_fonts *= 2;
         fonts      = (PFont*)realloc( fonts, max_fonts * sizeof ( PFont ) );
+
+        memset( &fonts[num_fonts], 0,
+                ( max_fonts - num_fonts ) * sizeof ( PFont ) );
       }
 
       fonts[num_fonts++] = font;

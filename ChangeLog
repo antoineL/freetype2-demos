@@ -1,3 +1,24 @@
+2004-02-18  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i: Include FT_CACHE_MANAGER_H and FT_STROKER_H.
+	Don't include obsolete FT_CACHE_* macros.
+	(glyph_to_bitmap): Remove declaration of `error'.
+
+	* src/ftview.c: Don't include FT_CACHE_MANAGER_H.
+	(Render_Stroke): Remove declaration of `error'.
+	Fix other compiler warnings.
+	(Render_Waterfall): Remove declaration of `face'.
+
+2004-01-29  David Turner  <david@freetype.org>
+
+	* src/ftcommon.i (get_glyph_bitmap): Rewritten for new cache code.
+	(glyph_to_bitmap): New function.
+
+	* src/ftview.c (Render_Stroke): New function.
+	(Render_Waterfall): Use FTC_Manager_LookupFace.
+	(Process_Event) <' '>: Provide header text for stroked text.
+	(main): Add Render_Stroke.
+
 2003-12-26  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (set_current_size): Don't allow values larger than

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2001, 2002, 2003 by                                */
+/*  Copyright 1996-2000, 2001, 2002, 2003, 2004 by                          */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -13,11 +13,11 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_CACHE_H
 
-#include FT_CACHE_IMAGE_H
-#include FT_CACHE_SMALL_BITMAPS_H
-#include FT_CACHE_CHARMAP_H
+#include FT_CACHE_H
+#include FT_CACHE_MANAGER_H
+
+#include FT_STROKER_H
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -695,9 +695,11 @@
                    int        *x_advance,
                    int        *y_advance )
   {
-    FT_Error        error = 0;
     FT_BitmapGlyph  bitmap;
     FT_Bitmap*      source;
+
+
+    error = FT_Err_Ok;
 
     if ( glyf->format == ft_glyph_format_outline )
     {

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003 by                                            */
+/*  Copyright 1996-2000, 2003, 2004 by                                      */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -17,8 +17,7 @@
 
 
 #include "ftcommon.i"
-#include FT_CACHE_MANAGER_H
-#include FT_STROKER_H
+
 
   static FT_Error
   Render_Stroke( int  first_index )
@@ -26,7 +25,6 @@
     FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
     FTC_ScalerRec  scaler;
     FT_Stroker     stroker = NULL;
-    FT_Error       error;
     int            i;
     grBitmap       bit3;
 
@@ -75,7 +73,7 @@
       int           left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt       gindex;
       FT_GlyphSlot  slot = size->face->glyph;
-      FT_Glyph      glyph;
+      FT_Glyph      glyphp;
 
 
       gindex = *(unsigned char*)p;
@@ -85,18 +83,18 @@
       error = FT_Load_Glyph( size->face, gindex, FT_LOAD_NO_BITMAP );
       if ( !error && slot->format == FT_GLYPH_FORMAT_OUTLINE )
       {
-        error = FT_Get_Glyph( slot, &glyph );
+        error = FT_Get_Glyph( slot, &glyphp );
         if ( error )
           goto Next;
 
-        error = FT_Glyph_Stroke( &glyph, stroker, 0 );
+        error = FT_Glyph_Stroke( &glyphp, stroker, 0 );
         if ( error )
         {
-          FT_Done_Glyph( glyph );
+          FT_Done_Glyph( glyphp );
           goto Next;
         }
 
-        error = glyph_to_bitmap( glyph, &bit3, &left, &top,
+        error = glyph_to_bitmap( glyphp, &bit3, &left, &top,
                                  &x_advance, &y_advance );
         if ( !error )
         {
@@ -114,13 +112,13 @@
 
             if ( y >= bit.rows )
             {
-              FT_Done_Glyph( glyph );
+              FT_Done_Glyph( glyphp );
               return FT_Err_Ok;
             }
           }
         }
 
-        FT_Done_Glyph( glyph );
+        FT_Done_Glyph( glyphp );
 
         if ( error )
           goto Next;
@@ -320,8 +318,6 @@
     pix_size = first_size;
 
     {
-      FT_Face   face;
-
       error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
       if ( error )
       {

@@ -1,3 +1,9 @@
+2004-06-23  David Turner  <david@freetype.org>
+
+	* src/ftbench.c: Added new benchmark to measure face open/close
+        performance (controlled by the 'i' flag for the -b command-line
+        option flag)
+
 2004-06-11  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftstring.c (layout_glyphs): Updated to latest FreeType library

@@ -251,6 +251,40 @@ sbit_cache_test(FT_UInt idx,
 }
 
 
+void
+bench_open_close( const char*  filename,
+                  const char* title,
+                  int max)
+{
+  int      i, n, done;
+  double   t0, delta;
+
+  printf("%-30s : ", title);
+  fflush(stdout);
+
+  n = 0;
+  done = 0;
+  t0 = get_time();
+  do
+  {
+    FT_Face   face;
+    FT_Error  error;
+    
+    error = FT_New_Face( lib, filename, 0, &face );
+    if ( !error )
+    {
+      FT_Done_Face( face );
+    }
+    done++;
+    n++;
+    delta = get_time() - t0;
+  }
+  while ((!max || n < max) && delta < bench_time);
+
+  printf("%5.3f us/op\n", delta * 1E6 / (double)done);
+}
+
+
 /*
  * main
  */
@@ -443,6 +477,9 @@ main(int argc,
     }
   }
 
+  if (TEST('i') )
+    bench_open_close( argv[1], "Open/Close file", 0 );
+  
   if (cmap)
     free (cmap);
 

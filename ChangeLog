@@ -1,3 +1,9 @@
+2002-06-10  David Turner  <david@freetype.org>
+
+    * src/ftbench.c: removing compiler warnings
+
+    * src/ttdebug.c: updating to latest internal changes
+
 2002-06-07  David Turner  <david@freetype.org>
 
 	Adding Vincent Caron's benchmark program.
@@ -141,7 +147,7 @@
 2001-12-30  David Turner  <david@freetype.org>
 
 	* README: Updated to version 2.0.6.
-	
+
 	* graph/x11/rules.mk: Updated X11 detection rules: "/usr/X11R6" and
 	"/usr/local/X11R6" are now probed as a fallback.  This allows the
 	test programs to work automatically on Debian Linux systems (which

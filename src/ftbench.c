@@ -60,6 +60,10 @@ double          bench_time = BENCH_TIME;
 
 FT_Error face_requester (FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface)
 {
+  FT_UNUSED( face_id );
+  FT_UNUSED( library );
+  FT_UNUSED( request_data );
+
   *aface = face;
   return 0;
 }
@@ -148,12 +152,15 @@ void bench(bench_t bench_func, const char* title, int max)
 
 int load_test(FT_UInt index, FT_UInt charcode)
 {
+  FT_UNUSED( charcode );
   return FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
 }
 
 int fetch_test(FT_UInt index, FT_UInt charcode)
 {
   FT_Glyph glyph;
+
+  FT_UNUSED( charcode );
 
   return
     FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) ||
@@ -165,6 +172,8 @@ int cbox_test(FT_UInt index, FT_UInt charcode)
   FT_BBox  bbox;
   FT_Glyph glyph;
 
+  FT_UNUSED( charcode );
+
   if (FT_Load_Glyph(face, index, FT_LOAD_DEFAULT) ||
       FT_Get_Glyph(face->glyph, &glyph))
     return 1;
@@ -174,11 +183,15 @@ int cbox_test(FT_UInt index, FT_UInt charcode)
 
 int cmap_test(FT_UInt index, FT_UInt charcode)
 {
+  FT_UNUSED( index );
+
   return !FT_Get_Char_Index(face, charcode);
 }
 
 int cmap_cache_test(FT_UInt index, FT_UInt charcode)
 {
+  FT_UNUSED( index );
+
   return !FTC_CMapCache_Lookup(cmap_cache, &cmap_desc, charcode);
 }
 
@@ -186,12 +199,16 @@ int image_cache_test(FT_UInt index, FT_UInt charcode)
 {
   FT_Glyph glyph;
 
+  FT_UNUSED( charcode );
+
   return FTC_ImageCache_Lookup(image_cache, &font_desc, index, &glyph, NULL);
 }
 
 int sbit_cache_test(FT_UInt index, FT_UInt charcode)
 {
   FTC_SBit glyph;
+
+  FT_UNUSED( charcode );
 
   return FTC_SBitCache_Lookup(sbit_cache, &font_desc, index, &glyph, NULL);
 }
@@ -304,7 +321,7 @@ int main(int argc, char** argv)
 
   if (!FTC_Manager_New(lib, 0, 0, max_bytes, face_requester, NULL, &cache_man))
   {
-    if (TEST('e') && 
+    if (TEST('e') &&
         face->charmap && !FTC_CMapCache_New(cache_man, &cmap_cache))
     {
       bench( cmap_cache_test,  "CMap cache (1st run)", 1);

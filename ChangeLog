@@ -1,6 +1,11 @@
+2001-12-12  David Turner  <david@freetype.org>
+
+    * src/testnames.c: adding test program
+
+
 2001-12-08  David Turner  <david@freetype.org>
 
-        * src/ftcommon.i, src/ftview.c: now use the charmap cache
+    * src/ftcommon.i, src/ftview.c: now use the charmap cache
 
 
 2001-12-05  Werner Lemberg  <wl@gnu.org>

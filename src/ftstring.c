@@ -504,9 +504,12 @@
     int                   expect;
 
 
-    error = FT_Select_Charmap( face, encoding );
-    if ( error )
-      PanicZ( "invalid charmap\n" );
+    if ( encoding )
+    {
+      error = FT_Select_Charmap( face, encoding );
+      if ( error )
+        PanicZ( "invalid charmap\n" );
+    }
 
     num_glyphs = expect = 0;
     while ( *p )
@@ -549,7 +552,11 @@
       else                              /* ASCII, U+0000 - U+007F */
         codepoint = in_code;
 
-      glyph_index = FT_Get_Char_Index( face, codepoint );
+      if ( encoding )
+        glyph_index = FT_Get_Char_Index( face, codepoint );
+      else
+        glyph_index = codepoint;
+
       glyph->glyph_index = glyph_index;
       glyph++;
       num_glyphs++;

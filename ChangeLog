@@ -1,3 +1,7 @@
+2004-08-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftstring.c (prepare_text): Handle encoding = 0.
+
 2004-07-14  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (get_glyph_bitmap): Don't accept a `missing'
@@ -19,6 +23,13 @@
 	* src/ftview.c (Render_Stroke): Increase stroker limit.
 	Fix glyph indices.
 	Fix memory leaks.
+
+2004-06-24  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.9 released.
+	=========================
+
 
 2004-06-24  Werner Lemberg  <wl@gnu.org>
 

@@ -1,3 +1,9 @@
+2006-06-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/*.c: s/ft_glyph_format_*/FT_GLYPH_FORMAT_*/.
+	s/ft_pixel_mode_*/FT_PIXEL_MODE_*/.
+	s/ft_glyph_bbox_*/FT_GLYPH_BBOX_*/.
+
 2006-06-16  YAMANO-UCHI Hidetoshi  <mer@din.or.jp>
 
 	* graph/x11/rules.mk (GRAPH_LINK): Add run-time search path on

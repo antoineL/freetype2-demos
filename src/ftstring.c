@@ -389,7 +389,7 @@
         /* check bounding box; if it is not within the display surface, */
         /* we don't need to render it                                   */
 
-        FT_Glyph_Get_CBox( image, ft_glyph_bbox_pixels, &bbox );
+        FT_Glyph_Get_CBox( image, FT_GLYPH_BBOX_PIXELS, &bbox );
 
 #if 0
         if ( n == 0 )
@@ -429,11 +429,11 @@
 
             switch ( source->pixel_mode )
             {
-            case ft_pixel_mode_mono:
+            case FT_PIXEL_MODE_MONO:
               bit3.mode = gr_pixel_mode_mono;
               break;
 
-            case ft_pixel_mode_grays:
+            case FT_PIXEL_MODE_GRAY:
               bit3.mode  = gr_pixel_mode_gray;
               bit3.grays = source->num_grays;
               if (use_gamma)

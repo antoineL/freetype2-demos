@@ -178,12 +178,12 @@
     FT_Pos    x_top, y_top;
     
     /* first, render the glyph image into a bitmap */
-    if (glyph->format != ft_glyph_format_bitmap)
+    if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )
     {
       error = FT_Render_Glyph( glyph, antialias ? FT_RENDER_MODE_NORMAL
                                                 : FT_RENDER_MODE_MONO );
-      if (error) return error;                               
-                               
+      if ( error )
+        return error;                               
     }
     
     /* now blit it to our display screen */
@@ -194,14 +194,14 @@
 
     switch (glyph->bitmap.pixel_mode)
     {
-      case ft_pixel_mode_mono:
-         bit3.mode   = gr_pixel_mode_mono;
-         bit3.grays  = 0;
-         break;
+    case FT_PIXEL_MODE_MONO:
+      bit3.mode  = gr_pixel_mode_mono;
+      bit3.grays = 0;
+      break;
          
-      case ft_pixel_mode_grays:
-         bit3.mode   = gr_pixel_mode_gray;
-         bit3.grays  = glyph->bitmap.num_grays;
+    case FT_PIXEL_MODE_GRAY:
+      bit3.mode  = gr_pixel_mode_gray;
+      bit3.grays = glyph->bitmap.num_grays;
     }
 
     /* Then, blit the image to the target surface */

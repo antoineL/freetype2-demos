@@ -202,7 +202,7 @@ cbox_test(FT_UInt idx,
   if (FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT) ||
       FT_Get_Glyph(face->glyph, &glyph))
     return 1;
-  FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
+  FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
   return 0;
 }
 

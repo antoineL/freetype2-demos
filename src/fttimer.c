@@ -123,7 +123,7 @@
 
     
     bitmap = glyphs[idx];
-    if ( bitmap->format == ft_glyph_format_bitmap )
+    if ( bitmap->format == FT_GLYPH_FORMAT_BITMAP )
       error = 0;  /* we already have a (embedded) bitmap */
     else
     {

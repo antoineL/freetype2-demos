@@ -252,6 +252,8 @@
       }
     }
 
+    set_current_size( first_size );
+
     return FT_Err_Ok;
   }
 
@@ -284,6 +286,7 @@
     grLn();
     grWriteln( "  F1 or ?   : display this help screen" );
     grWriteln( "  a         : toggle anti-aliasing" );
+    grWriteln( "  L         : cycle through LCD-optimized modes" );
     grWriteln( "  h         : toggle outline hinting" );
     grWriteln( "  b         : toggle embedded bitmaps" );
     grWriteln( "  l         : toggle low precision rendering" );
@@ -333,6 +336,19 @@
       antialias  = !antialias;
       new_header = antialias ? (char *)"anti-aliasing is now on"
                              : (char *)"anti-aliasing is now off";
+      set_current_image_type();
+      return 1;
+
+    case grKEY( 'L' ):
+      lcd_mode = (lcd_mode+1)%3;
+      switch ( lcd_mode )
+      {
+        case 0: new_header = (char *)"normal anti-aliased rendering on"; break;
+        case 1: new_header = (char *)"horizontal LCD-optimized rendering on"; break;
+        case 2: new_header = (char *)"vertical LCD-optimized rendering on"; break;
+        default:
+          ;
+      }
       set_current_image_type();
       return 1;
 

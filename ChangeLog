@@ -1,3 +1,21 @@
+2002-09-08  David Turner  <david@freetype.org>
+
+        * graph/x11/grx11.c, graph/win32/grwin32.c: completely rewrote the
+        X11 and Win32 display drivers to support 24-bits RGB surfaces. This
+        is needed to test sub-pixel rendering.
+
+        Note that other drivers haven't been touched yet. The X11 driver
+        doesn't work with 8-bit displays for now, but a reduced mode will
+        probably be introduced in the near future.
+
+        * graph/graph.h, graph/grblit.c: adding support for sub-pixel
+        rendering composition blits. For now, only horizontal and vertical
+        RGB-decimated modes are supported (BGR will come soon)
+
+        * src/Jamfile, src/ftbench.c, src/ftcommon.i, src/ftview.c:
+        small updates needed by the sub-pixel rendering support as well
+        as latest cache API changes.
+
 2002-08-04  Vincent Caron  <v.caron@zerodeux.net>
 
 	* src/ftcommon.i (Text), src/ftmulti.c (Text): s/jumped/jumps/.

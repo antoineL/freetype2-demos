@@ -33,6 +33,14 @@
       width = (width + 1) & -2;
       break;
 
+    case gr_pixel_mode_lcd:
+      width /= 3;
+      break;
+
+    case gr_pixel_mode_lcdv:
+      height /= 3;
+      break;
+
     default:
       ;
     }
@@ -296,7 +304,7 @@
       {
         if (val & 0x10000)
           val = *_read++ | 0x100;
-           
+
         if ( val & 0x80 )
         {
           if ( _phase )
@@ -375,7 +383,7 @@
   void  blit_mono_to_rgb24( grBlitter*  blit,
                             grColor     color )
   {
-    int             x, y,shift;
+    int             x, y, shift;
     unsigned char*  read;
     unsigned char*  write;
 
@@ -786,19 +794,22 @@
 
 
 
-#define  compose_pixel( a, b, n, max )                        \
+#define  compose_pixel_full( a, b, n0, n1, n2, max )          \
    {                                                          \
      int  d, half = max >> 1;                                 \
                                                               \
      d = (int)b.chroma[0] - a.chroma[0];                      \
-     a.chroma[0] += (unsigned char)((n*d + half)/max);        \
+     a.chroma[0] += (unsigned char)((n0*d + half)/max);       \
                                                               \
      d = (int)b.chroma[1] - a.chroma[1];                      \
-     a.chroma[1] += (unsigned char)((n*d + half)/max);        \
+     a.chroma[1] += (unsigned char)((n1*d + half)/max);       \
                                                               \
      d = (int)b.chroma[2] - a.chroma[2];                      \
-     a.chroma[2] += (unsigned char)((n*d + half)/max);        \
+     a.chroma[2] += (unsigned char)((n2*d + half)/max);       \
    }
+
+#define  compose_pixel( a, b, n, max )  compose_pixel_full( a, b, n, n, n, max )
+
 
 
 #define  extract555( pixel, color )                          \
@@ -1095,6 +1106,152 @@
   }
 
 
+/**************************************************************************/
+/*                                                                        */
+/* <Function> blit_lcd_to_24                                              */
+/*                                                                        */
+/**************************************************************************/
+
+  static
+  void  blit_lcd_to_24( grBlitter*  blit,
+                        grColor     color,
+                        int         max )
+  {
+    int             y;
+    unsigned char*  read;
+    unsigned char*  write;
+
+    read   = blit->read  + 3*blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        int    val0, val1, val2;
+
+        val0 = _read[2];
+        val1 = _read[1];
+        val2 = _read[0];
+
+        if ( val0 | val1 | val2 )
+        {
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == max  )
+          {
+            _write[0] = color.chroma[0];
+            _write[1] = color.chroma[1];
+            _write[2] = color.chroma[2];
+          }
+          else
+          {
+            /* compose gray value */
+            grColor pix;
+
+            pix.chroma[0] = _write[0];
+            pix.chroma[1] = _write[1];
+            pix.chroma[2] = _write[2];
+
+            compose_pixel_full( pix, color, val0, val1, val2, max );
+
+            _write[0] = pix.chroma[0];
+            _write[1] = pix.chroma[1];
+            _write[2] = pix.chroma[2];
+          }
+        }
+        _write += 3;
+        _read  += 3;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+
+
+/**************************************************************************/
+/*                                                                        */
+/* <Function> blit_lcdv_to_24                                             */
+/*                                                                        */
+/**************************************************************************/
+
+  static
+  void  blit_lcdv_to_24( grBlitter*  blit,
+                         grColor     color,
+                         int         max )
+  {
+    int             y;
+    unsigned char*  read;
+    unsigned char*  write;
+    long            line;
+
+    read   = blit->read  + blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+    line   = blit->read_line;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        unsigned char    val0, val1, val2;
+
+        val0 = _read[0*line];
+        val1 = _read[1*line];
+        val2 = _read[2*line];
+
+        if ( val0 | val1 | val2 )
+        {
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == max  )
+          {
+            _write[0] = color.chroma[0];
+            _write[1] = color.chroma[1];
+            _write[2] = color.chroma[2];
+          }
+          else
+          {
+            /* compose gray value */
+            grColor pix;
+
+            pix.chroma[0] = _write[0];
+            pix.chroma[1] = _write[1];
+            pix.chroma[2] = _write[2];
+
+            compose_pixel_full( pix, color, val0, val1, val2, max );
+
+            _write[0] = pix.chroma[0];
+            _write[1] = pix.chroma[1];
+            _write[2] = pix.chroma[2];
+          }
+        }
+        _write += 3;
+        _read  += 1;
+        x--;
+      }
+
+      read  += 3*line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+
+
  /**********************************************************************
   *
   * <Function>
@@ -1121,6 +1278,7 @@
   static
   const grColorGlyphBlitter  gr_color_blitters[gr_pixel_mode_max] =
   {
+    0,
     0,
     0,
     0,
@@ -1157,79 +1315,92 @@
     if ( compute_clips( &blit, x, y ) )
       return 0;
 
-
-    /* handle monochrome bitmap blitting */
-    if (glyph->mode == gr_pixel_mode_mono)
+    switch ( glyph->mode )
     {
-      if ( mode <= gr_pixel_mode_none || mode >= gr_pixel_mode_max )
-      {
-        grError = gr_err_bad_source_depth;
-        return -1;
-      }
-
-      gr_mono_blitters[mode]( &blit, color );
-      goto End;
-    }
-
-    /* handle gray bitmap composition */
-    if (glyph->mode == gr_pixel_mode_gray &&
-        glyph->grays > 1                  )
-    {
-      int          target_grays = target->grays;
-      int          source_grays = glyph->grays;
-      const byte*  saturation;
-
-      if ( mode == gr_pixel_mode_gray && target_grays > 1 )
-      {
-        /* rendering into a gray target - use special composition */
-        /* routines..                                             */
-        if ( gr_last_saturation->count == target_grays )
-          saturation = gr_last_saturation->table;
-        else
+      case gr_pixel_mode_mono:     /* handle monochrome bitmap blitting */
+        if ( mode <= gr_pixel_mode_none || mode >= gr_pixel_mode_max )
         {
-          saturation = grGetSaturation( target_grays );
-          if (!saturation) return -3;
-        }
-
-
-        if ( target_grays == source_grays )
-          blit_gray_to_gray_simple( &blit, saturation );
-        else
-        {
-          const byte*  conversion;
-
-          if ( gr_last_conversion->target_grays == target_grays &&
-               gr_last_conversion->source_grays == source_grays )
-            conversion = gr_last_conversion->table;
-          else
-          {
-            conversion = grGetConversion( target_grays, source_grays );
-            if (!conversion) return -3;
-          };
-
-          blit_gray_to_gray( &blit, saturation, conversion );
-        }
-      }
-      else
-      {
-        /* rendering into a color target */
-        if ( mode <= gr_pixel_mode_gray ||
-             mode >= gr_pixel_mode_max  )
-        {
-          grError = gr_err_bad_target_depth;
+          grError = gr_err_bad_source_depth;
           return -1;
         }
 
-        gr_color_blitters[mode]( &blit, color, source_grays-1 );
-      }
-      goto End;
-    }
+        gr_mono_blitters[mode]( &blit, color );
+        break;
 
-    /* we don't support the blitting of bitmaps of the following  */
-    /* types : pal4, pal8, rgb555, rgb565, rgb24, rgb32           */
-    /*                                                            */
-    grError = gr_err_bad_source_depth;
-    return -2;
+      case gr_pixel_mode_gray:
+        if ( glyph->grays > 1 )
+        {
+          int          target_grays = target->grays;
+          int          source_grays = glyph->grays;
+          const byte*  saturation;
+
+          if ( mode == gr_pixel_mode_gray && target_grays > 1 )
+          {
+            /* rendering into a gray target - use special composition */
+            /* routines..                                             */
+            if ( gr_last_saturation->count == target_grays )
+              saturation = gr_last_saturation->table;
+            else
+            {
+              saturation = grGetSaturation( target_grays );
+              if (!saturation) return -3;
+            }
+
+
+            if ( target_grays == source_grays )
+              blit_gray_to_gray_simple( &blit, saturation );
+            else
+            {
+              const byte*  conversion;
+
+              if ( gr_last_conversion->target_grays == target_grays &&
+                   gr_last_conversion->source_grays == source_grays )
+                conversion = gr_last_conversion->table;
+              else
+              {
+                conversion = grGetConversion( target_grays, source_grays );
+                if (!conversion) return -3;
+              };
+
+              blit_gray_to_gray( &blit, saturation, conversion );
+            }
+          }
+          else
+          {
+            /* rendering into a color target */
+            if ( mode <= gr_pixel_mode_gray ||
+                 mode >= gr_pixel_mode_max  )
+            {
+              grError = gr_err_bad_target_depth;
+              return -1;
+            }
+
+            gr_color_blitters[mode]( &blit, color, source_grays-1 );
+          }
+        }
+        break;
+
+      case gr_pixel_mode_lcd:
+        if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+        {
+          blit_lcd_to_24( &blit, color, glyph->grays-1 );
+          break;
+        }
+
+      case gr_pixel_mode_lcdv:
+        if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+        {
+          blit_lcdv_to_24( &blit, color, glyph->grays-1 );
+          break;
+        }
+
+      default:
+        /* we don't support the blitting of bitmaps of the following  */
+        /* types : pal4, pal8, rgb555, rgb565, rgb24, rgb32           */
+        /*                                                            */
+        grError = gr_err_bad_source_depth;
+        return -2;
+    }
 
   End:
     return 0;

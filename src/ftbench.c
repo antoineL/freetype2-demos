@@ -44,16 +44,16 @@ typedef struct charmap_t_
 #define CACHE_SIZE 1024
 #define BENCH_TIME 2.0f
 
-FT_Library      lib;
-FT_Face         face;
-FTC_Manager     cache_man;
-FTC_CMapCache   cmap_cache;
-FTC_CMapDescRec cmap_desc;
-FTC_Image_Cache image_cache;
-FTC_SBitCache   sbit_cache;
-FTC_ImageDesc   font_desc;
-charmap_t*      cmap = NULL;
-double          bench_time = BENCH_TIME;
+FT_Library        lib;
+FT_Face           face;
+FTC_Manager       cache_man;
+FTC_CMapCache     cmap_cache;
+FTC_CMapDescRec   cmap_desc;
+FTC_Image_Cache   image_cache;
+FTC_SBitCache     sbit_cache;
+FTC_ImageTypeRec  font_type;
+charmap_t*        cmap = NULL;
+double            bench_time = BENCH_TIME;
 
 
 /*
@@ -231,7 +231,7 @@ image_cache_test(FT_UInt idx,
 
   FT_UNUSED( charcode );
 
-  return FTC_ImageCache_Lookup(image_cache, &font_desc, idx, &glyph, NULL);
+  return FTC_ImageCache_Lookup(image_cache, &font_type, idx, &glyph, NULL);
 }
 
 
@@ -243,7 +243,7 @@ sbit_cache_test(FT_UInt idx,
 
   FT_UNUSED( charcode );
 
-  return FTC_SBitCache_Lookup(sbit_cache, &font_desc, idx, &glyph, NULL);
+  return FTC_SBitCache_Lookup(sbit_cache, &font_type, idx, &glyph, NULL);
 }
 
 
@@ -407,22 +407,22 @@ main(int argc,
       bench( cmap_cache_test,  "CMap cache", 0);
     }
 
-    font_desc.font.face_id    = (void*)1;
-    font_desc.font.pix_width  = (short) size;
-    font_desc.font.pix_height = (short) size;
+    font_type.font.face_id    = (void*)1;
+    font_type.font.pix_width  = (short) size;
+    font_type.font.pix_height = (short) size;
 
-    if (!FTC_Image_Cache_New(cache_man, &image_cache))
+    if (!FTC_ImageCache_New(cache_man, &image_cache))
     {
       if (TEST('f'))
       {
-        font_desc.type = ftc_image_format_outline;
+        font_type.flags = FT_LOAD_NO_BITMAP;
         bench( image_cache_test,  "Outline cache (1st run)", 1);
         bench( image_cache_test,  "Outline cache", 0);
       }
 
       if (TEST('g'))
       {
-        font_desc.type = ftc_image_format_bitmap;
+        font_type.flags = FT_LOAD_RENDER;
         bench( image_cache_test,  "Bitmap cache (1st run)", 1);
         bench( image_cache_test,  "Bitmap cache", 0);
       }
@@ -431,7 +431,7 @@ main(int argc,
     if (TEST('h') &&
         !FTC_SBitCache_New(cache_man, &sbit_cache))
     {
-      font_desc.type = ftc_image_format_bitmap;
+      font_type.flags = FT_LOAD_DEFAULT;
       bench( sbit_cache_test,  "SBit cache (1st run)", 1);
       bench( sbit_cache_test,  "SBit cache", 0);
     }

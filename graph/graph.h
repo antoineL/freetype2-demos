@@ -50,6 +50,8 @@
     gr_pixel_mode_rgb565,      /* 16-bits mode - 65536 colors      */
     gr_pixel_mode_rgb24,       /* 24-bits mode - 16 million colors */
     gr_pixel_mode_rgb32,       /* 32-bits mode - 16 million colors */
+    gr_pixel_mode_lcd,         /* horizontal RGB-decimated         */
+    gr_pixel_mode_lcdv,        /* vertical RGB-decimated           */
 
     gr_pixel_mode_max          /* don't remove */
 

@@ -20,6 +20,8 @@
     char char_name[256];
 
 
+    if (argc != 2)
+      exit( 1 );
     if ( FT_Init_FreeType( &font_library ) )
       exit( 1 );
     if ( FT_New_Face( font_library, argv[1], 0 , &font_face ) )

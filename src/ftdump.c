@@ -130,7 +130,7 @@
             FT_HAS_GLYPH_NAMES( face ) ? (char *)"yes" : (char *)"no" );
     
     printf( "   EM size:         %d\n", face->units_per_EM );
-    printf( "   global BBox:     (%d,%d):(%d,%d)\n",
+    printf( "   global BBox:     (%ld,%ld):(%ld,%ld)\n",
             face->bbox.xMin, face->bbox.yMin,
             face->bbox.xMax, face->bbox.yMax );
     printf( "   ascent:          %d\n", face->ascender );

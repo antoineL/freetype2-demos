@@ -1,23 +1,35 @@
-2002-03-21  David Turner    <david@freetype.org>
+2002-03-30  Werner Lemberg  <wl@gnu.org>
 
-        * graph/grblit.c, graph/win32/grwin32.c, src/common.c, src/ftcommon.i,
-          src/ftdump.c: getting rid of compiler warnings
+	* src/ftdump.c (Print_Type): Use `%ld' for some fields.
+	* src/testnames.c (main): Exit if no parameter.
 
-2002-03-06  David Turner    <david@freetype.org>
+2002-03-21  David Turner  <david@freetype.org>
 
-        * src/ftdump.c: added display of ascender/descender/text height
-        * Jamfile: support the FT2_TOP environment variable to indicate
-        where the FreeType 2 sources are located. That's very useful for
-        switching between the STABLE and HEAD branches of the library :o)
+	* graph/grblit.c, graph/win32/grwin32.c, src/common.c,
+	src/ftcommon.i, src/ftdump.c: Getting rid of compiler warnings.
 
-2002-03-05  David Turner    <david@freetype.org>
+2002-03-08  David Turner  <david@freetype.org>
 
-        * src/ftdump.c: added the display of a font's Postscript name,
-        EM size and global Bbox. now supports the debugging mode of
-        2.1.x
-        
-        * src/ftview.c: minor change to support debugging mode of 2.1.x
 
+	* Version 2.0.9 released.
+	=========================
+
+
+2002-03-06  David Turner  <david@freetype.org>
+
+	* src/ftdump.c: Added display of ascender/descender/text height.
+
+	* Jamfile: Support the FT2_TOP environment variable to indicate
+	where the FreeType 2 sources are located.  This is very useful for
+	switching between the STABLE and HEAD branches of the library.
+
+2002-03-05  David Turner  <david@freetype.org>
+
+	* src/ftdump.c: Added the display of a font's Postscript name,
+	EM size and global Bbox.  Now supports the debugging mode of
+	2.1.x.
+
+	* src/ftview.c: Minor change to support debugging mode of 2.1.x.
 
 2002-02-14  Detlef Würkner  <tetisoft@apg.lahn.de>
 

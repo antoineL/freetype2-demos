@@ -143,7 +143,7 @@
         y_top = y - top;
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
-        if (glyf)
+        if ( glyf )
           done_glyph_bitmap( glyf );
 
         x += x_advance + 1;
@@ -408,7 +408,6 @@
         res = atoi( optarg );
         if ( res < 1 )
           usage( execname );
-
         break;
 
       default:
@@ -571,7 +570,6 @@
     }
 
   End:
-
     printf( "Execution completed successfully.\n" );
     printf( "Fails = %d\n", Fail );
 

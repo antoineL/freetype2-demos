@@ -163,21 +163,20 @@
   /*************************************************************************/
 
 
-  FT_Library       library;      /* the FreeType library            */
-  FTC_Manager      cache_manager;/* the cache manager               */
-  FTC_ImageCache   image_cache;  /* the glyph image cache           */
-  FTC_SBitCache    sbits_cache;  /* the glyph small bitmaps cache   */
-  FTC_CMapCache    cmap_cache;   /* the charmap cache..             */
+  FT_Library      library;       /* the FreeType library            */
+  FTC_Manager     cache_manager; /* the cache manager               */
+  FTC_ImageCache  image_cache;   /* the glyph image cache           */
+  FTC_SBitCache   sbits_cache;   /* the glyph small bitmaps cache   */
+  FTC_CMapCache   cmap_cache;    /* the charmap cache..             */
 
-  FT_Face          face;         /* the font face                   */
-  FT_Size          size;         /* the font size                   */
-  FT_GlyphSlot     glyph;        /* the glyph slot                  */
+  FT_Face         face;          /* the font face                   */
+  FT_Size         size;          /* the font size                   */
+  FT_GlyphSlot    glyph;         /* the glyph slot                  */
 
-  FTC_ImageDesc    current_font;
+  FTC_ImageDesc   current_font;
 
-  /* do we need to dump cache statistics? */
-  int              dump_cache_stats = 0;
-  int              use_sbits_cache  = 1;
+  int  dump_cache_stats = 0;  /* do we need to dump cache statistics? */
+  int  use_sbits_cache  = 1;
 
   int  num_indices;           /* number of glyphs or characters */
   int  ptsize;                /* current point size             */
@@ -459,9 +458,11 @@
   static void
   done_glyph_bitmap( FT_Pointer  _glyf )
   {
-    if (_glyf)
+    if ( _glyf )
     {
       FT_Glyph  glyf = _glyf;
+
+
       FT_Done_Glyph( glyf );
     }
   }
@@ -473,6 +474,7 @@
     FTC_CMapDescRec  desc;
 
     desc.face_id    = current_font.font.face_id;
+
     desc.type       = FTC_CMAP_BY_ENCODING;
     desc.u.encoding = encoding ? encoding : ft_encoding_unicode;
 
@@ -494,8 +496,8 @@
     if ( encoding )
       Index = get_glyph_index( Index );
 
-    /* use the SBits cache to store small glyph bitmaps, this is a lot */
-    /* more memory-efficient..                                         */
+    /* use the SBits cache to store small glyph bitmaps; this is a lot */
+    /* more memory-efficient                                           */
     /*                                                                 */
     if ( use_sbits_cache                   &&
          current_font.font.pix_width  < 48 &&
@@ -535,12 +537,10 @@
         *top       = sbit->top;
         *x_advance = sbit->xadvance;
         *y_advance = sbit->yadvance;
-
-
       }
+
       return error;
     }
-
 
     /* otherwise, use an image cache to store glyph outlines, and render */
     /* them on demand. we can thus support very large sizes easily..     */
@@ -550,8 +550,8 @@
 
 
       type              = current_font.type;
-      current_font.type = (type & ~ftc_image_format_mask) |
-                           ftc_image_format_outline;
+      current_font.type = ( type & ~ftc_image_format_mask ) |
+                          ftc_image_format_outline;
 
       error = FTC_ImageCache_Lookup( image_cache,
                                      &current_font,
@@ -565,6 +565,7 @@
       {
         FT_BitmapGlyph  bitmap;
         FT_Bitmap*      source;
+
 
         if ( glyf->format == ft_glyph_format_outline )
         {

@@ -195,7 +195,7 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump
+  EXES := ftlint ftmemchk ftdump testnames
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring fttimer
@@ -241,6 +241,9 @@ else
 	  $(COMPILE) $T$@ $<
 
   $(OBJ_)ftdump.$(SO): $(SRC_DIR_)ftdump.c
+	  $(COMPILE) $T$@ $<
+
+  $(OBJ_)testnames.$(SO): $(SRC_DIR_)testnames.c
 	  $(COMPILE) $T$@ $<
 
 
@@ -316,6 +319,9 @@ else
 	  $(LINK)
 
   $(BIN_)ttdebug$E: $(OBJ_)ttdebug.$(SO) $(FTLIB)
+	  $(LINK)
+
+  $(BIN_)testnames$E: $(OBJ_)testnames.$(SO) $(FTLIB)
 	  $(LINK)
 
 

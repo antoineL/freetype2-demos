@@ -38,7 +38,7 @@ COMMON_LINK       = $(LINK) $(COMMON_OBJ)
 GRAPH_LINK        = $(COMMON_LINK) $(GRAPH_LIB) user32.lib gdi32.lib
 endif
 
-ifeq ($(CC),lcc)  # test for LCC-Win32
+ifeq ($(CC),lcc)   # test for LCC-Win32
 COMPILE_GRAPH_LIB = lcclib /out:$(subst /,\\,$(GRAPH_LIB)) $(subst /,\\,$(GRAPH_OBJS))
 GRAPH_LINK        = $(subst /,\\,$(GRAPH_LIB)) user32.lib gdi32.lib
 LINK_ROOT         = lcclnk -o $(subst /,\\,$@) $(subst /,\\,$<)
@@ -47,5 +47,11 @@ COMMON_LINK       = $(LINK_ROOT) $(subst /,\\,$(COMMON_OBJ)) $(subst /,\\,$(FTLI
 GRAPH_LINK        = $(LINK_ROOT) $(subst /,\\,$(COMMON_OBJ)) $(subst /,\\,$(GRAPH_LIB)) $(subst /,\\,$(FTLIB))
 GRAPH_LINK2       = $(GRAPH_LINK) $(subst /,\\,$(EXTRA_GRAPH_OBJS))
 endif
-endif
 
+ifeq ($(CC),bcc32) # test for Borland C++
+COMPILE_GRAPH_LIB = tlib /u $(subst $(SEP),\\,$(GRAPH_LIB)) $(GRAPH_OBJS:%=+%)
+LINK              = bcc32 -e$@ $< $(FTLIB)
+COMMON_LINK       = $(LINK) $(COMMON_OBJ)
+GRAPH_LINK        = $(COMMON_LINK) $(GRAPH_LIB)
+endif
+endif

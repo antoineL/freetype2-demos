@@ -40,10 +40,10 @@
 
   static void  Usage( char*  name )
   {
-    printf( "ftlint: simple font tester -- part of the FreeType project\n" );
-    printf( "----------------------------------------------------------\n" );
+    printf( "ftcheckfixedwidth: simple font tester -- part of the FreeType project\n" );
+    printf( "---------------------------------------------------------------------\n" );
     printf( "\n" );
-    printf( "Usage: %s ppem fontname[.ttf|.ttc] [fontname2..]\n", name );
+    printf( "Usage: %s fontname[.ttf|.ttc] [fontname2..]\n", name );
     printf( "\n" );
 
     exit( 1 );
@@ -62,15 +62,15 @@
   {
     const char*  base = pathname;
     const char*  p    = pathname;
-    
+
     while ( *p )
     {
       if ( *p == '/' || *p == '\\' )
         base = p+1;
-      
+
       p++;
     }
-    
+
     return base;
   }
 
@@ -85,22 +85,22 @@
     int  max_advance         = 0;
     int  num_proportional    = 0;
     int  n;
-    
+
     printf( "%15s : %20s : ",
             file_basename( filepathname ),
             face->family_name ? face->family_name : "UNKNOWN FAMILY" );
-    
+
     for ( n = 0; n < face->num_glyphs; n++ )
     {
       /* load the glyph outline */
       error = FT_Load_Glyph( face, n, FT_LOAD_NO_SCALE | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH );
       if ( error )
         continue;
-      
+
       if ( face->glyph->metrics.horiAdvance != face_max_advance )
         num_proportional++;
     }
-    
+
     if ( num_proportional > 0 )
     {
       if ( face_has_fixed_flag )
@@ -117,7 +117,7 @@
         printf( "KO !! tagged proportional but has fixed width" );
     }
     printf( "\n" );
-  }              
+  }
 
 
   int  main( int  argc, char**  argv )
@@ -132,17 +132,14 @@
 
     execname = argv[0];
 
-    if ( argc < 3 )
-      Usage( execname );
-
-    if ( sscanf( argv[1], "%d", &ptsize ) != 1 )
+    if ( argc < 2 )
       Usage( execname );
 
     error = FT_Init_FreeType( &library );
     if (error) Panic( "Could not create library object" );
 
     /* Now check all files */
-    for ( file_index = 2; file_index < argc; file_index++ )
+    for ( file_index = 1; file_index < argc; file_index++ )
     {
       fname = argv[file_index];
 
@@ -196,7 +193,7 @@
 
   Success:
       check_face( face, fname, face->face_index );
-  
+
       FT_Done_Face( face );
     }
 

@@ -208,7 +208,7 @@ gblender_lookup( GBlender       blender,
                  GBlenderPixel  background,
                  GBlenderPixel  foreground )
 {
-  int          index, index0;
+  int          idx, idx0;
   GBlenderKey  key;
 
 #ifdef GBLENDER_STATS
@@ -223,11 +223,11 @@ gblender_lookup( GBlender       blender,
     gblender_reset( blender );
   }
 
-  index0 = ( background + foreground*63 ) % GBLENDER_KEY_COUNT;
-  index  = index0;
+  idx0 = ( background + foreground*63 ) % GBLENDER_KEY_COUNT;
+  idx  = idx0;
   do
   {
-    key = blender->keys + index;
+    key = blender->keys + idx;
 
     if ( key->cells == NULL )
       goto NewNode;
@@ -236,9 +236,9 @@ gblender_lookup( GBlender       blender,
          key->foreground == foreground )
       goto Exit;
 
-    index = (index+1) % GBLENDER_KEY_COUNT;
+    idx = (idx+1) % GBLENDER_KEY_COUNT;
   }
-  while ( index != index0 );
+  while ( idx != idx0 );
 
  /* the cache is full, clear it completely
   */
@@ -251,7 +251,7 @@ NewNode:
   key->background = background;
   key->foreground = foreground;
   key->cells      = blender->cells + \
-                    index0*(GBLENDER_SHADE_COUNT*GBLENDER_CELL_SIZE);
+                    idx0*(GBLENDER_SHADE_COUNT*GBLENDER_CELL_SIZE);
 
   gblender_reset_key( blender, key );
 
@@ -310,7 +310,7 @@ gblender_lookup_channel( GBlender       blender,
                          int            background,
                          int            foreground )
 {
-  int              index, index0;
+  int              idx, idx0;
   unsigned short   backfore = (unsigned short)((foreground << 8) | background);
   GBlenderChanKey  key;
 
@@ -326,11 +326,11 @@ gblender_lookup_channel( GBlender       blender,
     gblender_reset( blender );
   }
 
-  index0 = ( background + foreground*63 ) % (2*GBLENDER_KEY_COUNT);
-  index  = index0;
+  idx0 = ( background + foreground*63 ) % (2*GBLENDER_KEY_COUNT);
+  idx  = idx0;
   do
   {
-    key = (GBlenderChanKey)blender->keys + index;
+    key = (GBlenderChanKey)blender->keys + idx;
 
     if ( key->index < 0 )
       goto NewNode;
@@ -338,9 +338,9 @@ gblender_lookup_channel( GBlender       blender,
     if ( key->backfore == backfore )
       goto Exit;
 
-    index = (index+1) % (2*GBLENDER_KEY_COUNT);
+    idx = (idx+1) % (2*GBLENDER_KEY_COUNT);
   }
-  while ( index != index0 );
+  while ( idx != idx0 );
 
  /* the cache is full, clear it completely
   */
@@ -351,7 +351,7 @@ gblender_lookup_channel( GBlender       blender,
 
 NewNode:
   key->backfore   = backfore;
-  key->index      = (signed short)( index0 * GBLENDER_SHADE_COUNT );
+  key->index      = (signed short)( idx0 * GBLENDER_SHADE_COUNT );
 
   gblender_reset_channel_key( blender, key );
 

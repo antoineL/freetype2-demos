@@ -16,6 +16,10 @@
  *
  ******************************************************************/
 
+#ifdef __VMS
+#include <vms_x_fix.h>
+#endif
+
 #include <grobjs.h>
 #include <grdevice.h>
 

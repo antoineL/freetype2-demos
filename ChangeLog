@@ -1,3 +1,12 @@
+2004-09-08  Jouk Jansen <joukj@hrem.stm.tudelft.nl>
+
+	* graph/x11/grx11.c [__VMS]: Include vms_x_fix.h.
+
+2004-08-29  Werner Lemberg  <wl@gnu.org>
+
+	* graph/gblender.c (gblender_lookup, gblender_lookup_channel):
+	s/index/idx/ to avoid compiler warnings.
+
 2004-08-19  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftstring.c (prepare_text): Handle encoding = 0.

@@ -1,3 +1,7 @@
+2003-04-25  Davor Buvinic  <davor@vtr.net>
+
+	* Makefile: Add rules to build ftcheckfixedwidth.
+
 2003-04-24  Anthony Fok  <anthony@thizlinux.com>
 
 	* src/ftcommon.i: Replace `ft_encoding_*' with `FT_ENCODING_*'.

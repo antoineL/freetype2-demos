@@ -195,7 +195,7 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testnames fttimer ftbench
+  EXES := ftlint ftmemchk ftdump testnames fttimer ftbench ftcheckfixedwidth
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring
@@ -232,6 +232,9 @@ else
 	  $(COMPILE) $T$@ $<
 
   $(OBJ_)ftbench.$(SO): $(SRC_DIR_)ftbench.c
+	  $(COMPILE) $T$@ $< $(EXTRAFLAGS)
+
+  $(OBJ_)ftcheckfixedwidth.$(SO): $(SRC_DIR_)ftcheckfixedwidth.c
 	  $(COMPILE) $T$@ $< $(EXTRAFLAGS)
 
   $(OBJ_)compos.$(SO): $(SRC_DIR_)compos.c
@@ -304,6 +307,10 @@ else
 	  $(COMMON_LINK)
 
   $(BIN_)ftbench$E: $(OBJ_)ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
+	  $(COMMON_LINK)
+
+  $(BIN_)ftcheckfixedwidth$E: $(OBJ_)ftcheckfixedwidth.$(SO) $(FTLIB) \
+                              $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
   $(BIN_)ftmemchk$E: $(OBJ_)ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)

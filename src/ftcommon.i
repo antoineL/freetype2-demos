@@ -1,3 +1,16 @@
+/****************************************************************************/
+/*                                                                          */
+/*  The FreeType project -- a free and portable quality TrueType renderer.  */
+/*                                                                          */
+/*  Copyright 1996-2000 by                                                  */
+/*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
+/*                                                                          */
+/*                                                                          */
+/*  ftcommin.i - common routines for the FreeType demo programs.            */
+/*                                                                          */
+/****************************************************************************/
+
+
 #include <freetype/freetype.h>
 #include <freetype/ftcache.h>
 
@@ -8,29 +21,33 @@
 #include <string.h>
 #include <stdarg.h>
 
+
   /* forward declarations */
   extern void  PanicZ( const char*  message );
 
   static FT_Error  error;
 
- /*************************************************************************/
- /*************************************************************************/
- /*****                                                               *****/
- /*****                 DISPLAY-SPECIFIC DEFINITIONS                  *****/
- /*****                                                               *****/
- /*************************************************************************/
- /*************************************************************************/
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                 DISPLAY-SPECIFIC DEFINITIONS                  *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
 
 #include "graph.h"
 #include "grfont.h"
 
-#define  DIM_X     500
-#define  DIM_Y     400
 
-#define  CENTER_X  ( bit.width / 2 )
-#define  CENTER_Y  ( bit.rows / 2 )
+#define DIM_X      500
+#define DIM_Y      400
 
-#define  MAXPTSIZE  500                 /* dtp */
+#define CENTER_X   ( bit.width / 2 )
+#define CENTER_Y   ( bit.rows / 2 )
+
+#define MAXPTSIZE  500                 /* dtp */
 
 
   char   Header[128];
@@ -42,8 +59,8 @@
     "&#~\"\'(-`_^@)=+\260 ABCDEFGHIJKLMNOPQRSTUVWXYZ "
     "$\243^\250*\265\371%!\247:/;.,?<>";
 
-  grSurface*    surface;      /* current display surface         */
-  grBitmap      bit;          /* current display bitmap          */
+  grSurface*  surface;      /* current display surface */
+  grBitmap    bit;          /* current display bitmap  */
 
   static grColor  fore_color = { 255 };
 
@@ -61,8 +78,11 @@
 
 
 #undef  NODEBUG
+
 #ifndef NODEBUG
+
 #define LOG( x )  LogMessage##x
+
 
   void  LogMessage( const char*  fmt, ... )
   {
@@ -73,9 +93,13 @@
     vfprintf( stderr, fmt, ap );
     va_end( ap );
   }
+
 #else /* !DEBUG */
+
 #define LOG(x)  /* */
+
 #endif
+
 
   /* PanicZ */
   void  PanicZ( const char*  message )
@@ -85,7 +109,7 @@
   }
 
 
-  /* Clears the Bit bitmap/pixmap */
+  /* clear the `bit' bitmap/pixmap */
   static
   void  Clear_Display( void )
   {
@@ -98,7 +122,7 @@
   }
 
 
-  /* Initialize the display bitmap `bit' */
+  /* initialize the display bitmap `bit' */
   static
   void  Init_Display( void )
   {
@@ -119,13 +143,15 @@
 
 #define MAX_BUFFER  300000
 
- /*************************************************************************/
- /*************************************************************************/
- /*****                                                               *****/
- /*****               FREETYPE-SPECIFIC DEFINITIONS                   *****/
- /*****                                                               *****/
- /*************************************************************************/
- /*************************************************************************/
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****               FREETYPE-SPECIFIC DEFINITIONS                   *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
 
   FT_Library       library;      /* the FreeType library            */
   FTC_Manager      manager;      /* the cache manager               */
@@ -137,7 +163,7 @@
 
   FTC_Image_Desc   current_font;
 
-  int  num_glyphs;            /* number of glyphs */
+  int  num_glyphs;            /* number of glyphs   */
   int  ptsize;                /* current point size */
 
   int  hinted    = 1;         /* is glyph hinting active?    */
@@ -149,15 +175,17 @@
 
   int  res = 72;
 
-#define MAX_GLYPH_BYTES   150000   /* 150 Kb for the glyph image cache */
+
+#define MAX_GLYPH_BYTES  150000   /* 150 Kb for the glyph image cache */
+
 
 #define FLOOR( x )  (   (x)        & -64 )
 #define CEIL( x )   ( ( (x) + 63 ) & -64 )
 #define TRUNC( x )  (   (x) >> 6 )
 
 
- /* this simple record is used to model a given "installed" face */
-  typedef struct TFont_
+  /* this simple record is used to model a given `installed' face */
+  typedef struct  TFont_
   {
     const char*  filepathname;
     int          face_index;
@@ -166,14 +194,12 @@
   
   } TFont, *PFont;
 
-
-  static  PFont*  fonts;
-  static  int     num_fonts;
-  static  int     max_fonts = 0;
-
+  static PFont*  fonts;
+  static int     num_fonts;
+  static int     max_fonts = 0;
 
   static
-  const  char*  file_prefixes[] =
+  const char*  file_suffixes[] =
   {
     ".ttf",
     ".ttc",
@@ -183,57 +209,62 @@
   };
 
 
-
   static
-  int    install_font_file( char*  filepath )
+  int  install_font_file( char*  filepath )
   {
-    static char filename[ 1024 + 5 ];
-    int         i, len, pre_len, num_faces;
-    const char**      prefix;
+    static char   filename[1024 + 5];
+    int           i, len, suffix_len, num_faces;
+    const char**  suffix;
     
-    len = strlen(filepath);
-    if (len > 1024)
+
+    len = strlen( filepath );
+    if ( len > 1024 )
       len = 1024;
       
     strncpy( filename, filepath, len );
     filename[len] = 0;
     
     error = FT_New_Face( library, filename, 0, &face );
-    if (!error) goto Success;
+    if ( !error )
+      goto Success;
     
-    /* could not open the file directly, we will know try with various */
-    /* prefixes like ".ttf" or ".pfb"                                  */
+    /* could not open the file directly; we will know try various */
+    /* suffixes like `.ttf' or `.pfb'                             */
     
 #ifndef macintosh
-    prefix  = file_prefixes;
-    pre_len = 0;
-    i       = len-1;
+
+    suffix     = file_suffixes;
+    suffix_len = 0;
+    i          = len - 1;
+
     while ( i > 0 && filename[i] != '\\' && filename[i] != '/' )
     {
-      if (filename[i] == '.')
+      if ( filename[i] == '.' )
       {
-        pre_len = i;
+        suffix_len = i;
         break;
       }
       i--;
     }
-    if (pre_len == 0)
+    if ( suffix_len == 0 )
     {
-      for ( prefix = file_prefixes; prefix[0]; prefix++ )
+      for ( suffix = file_suffixes; suffix[0]; suffix++ )
       {
-        /* try with current prefix */
-        strcpy( filename + len, prefix[0] );
+        /* try with current suffix */
+        strcpy( filename + len, suffix[0] );
         
         error = FT_New_Face( library, filename, 0, &face );
-        if (!error) goto Success;
+        if ( !error )
+          goto Success;
       }
     }
-#endif
+
+#endif /* !macintosh */
     
-    /* really couldn't install this file */
+    /* really couldn't open this file */
     return -1;    
     
-Success:
+  Success:
 
     /* allocate new font object */
     num_faces = face->num_faces;
@@ -241,78 +272,87 @@ Success:
     {
       PFont  font;
 
-      if (i > 0)
+
+      if ( i > 0 )
       {
         error = FT_New_Face( library, filename, i, &face );
-        if (error) continue;
+        if ( error )
+          continue;
       }
       
-      font = (PFont)malloc( sizeof(*font) );
-      font->filepathname = (char*)malloc( strlen(filename)+1 );
+      font = (PFont)malloc( sizeof ( *font ) );
+      font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
       font->num_glyphs   = face->num_glyphs;
 
       strcpy( (char*)font->filepathname, filename );
       
-      FT_Done_Face(face);
+      FT_Done_Face( face );
               
-      if (max_fonts == 0)
+      if ( max_fonts == 0 )
       {
         max_fonts = 16;
-        fonts = (PFont*)malloc( max_fonts * sizeof(PFont) );
+        fonts = (PFont*)malloc( max_fonts * sizeof ( PFont ) );
       }
-      else if (num_fonts >= max_fonts)
+      else if ( num_fonts >= max_fonts )
       {
         max_fonts *= 2;
-        fonts = (PFont*)realloc( fonts, max_fonts*sizeof(PFont) );
+        fonts = (PFont*)realloc( fonts, max_fonts * sizeof ( PFont ) );
       }
       
       fonts[num_fonts++] = font;
     }
+
     return 0;
   }
 
 
 
-
- /************************************************************************
-  *
-  *  The face requester is a function provided by the client application
-  *  to the cache manager, whose role is to translate an "abstract" face id
-  *  into a real FT_Face object.
-  *
-  *  In this program, the face ids are simply pointers to TFont objects.  
-  *
-  */
+  /*************************************************************************/
+  /*                                                                       */
+  /* The face requester is a function provided by the client application   */
+  /* to the cache manager, whose role is to translate an `abstract' face   */
+  /* ID into a real FT_Face object.                                        */
+  /*                                                                       */
+  /* In this program, the face IDs are simply pointers to TFont objects.   */
+  /*                                                                       */
   static
-  FT_Error  my_face_requester( FTC_FaceID   face_id,
-                               FT_Library   library,
-                               FT_Pointer   request_data,
-                               FT_Face     *aface )
+  FT_Error  my_face_requester( FTC_FaceID  face_id,
+                               FT_Library  library,
+                               FT_Pointer  request_data,
+                               FT_Face*    aface )
   {
     PFont  font = (PFont)face_id;
-    
-    FT_UNUSED(request_data);
-    return FT_New_Face( library, font->filepathname, font->face_index, aface );
+    FT_UNUSED( request_data );
+
+
+    return FT_New_Face( library,
+                        font->filepathname,
+                        font->face_index,
+                        aface );
   }                               
   
   
   static
-  void     init_freetype( void )
+  void  init_freetype( void )
   {
     error = FT_Init_FreeType( &library );
-    if (error) PanicZ( "could not initialise FreeType" );
+    if ( error )
+      PanicZ( "could not initialize FreeType" );
     
-    error = FTC_Manager_New( library, 0, 0, 0, my_face_requester, 0, &manager );
-    if (error) PanicZ( "could not initialise Cache Manager" );
+    error = FTC_Manager_New( library, 0, 0, 0,
+                             my_face_requester, 0, &manager );
+    if ( error )
+      PanicZ( "could not initialize cache manager" );
     
     error = FTC_Image_Cache_New( manager, &image_cache );
-    if (error) PanicZ( "could not initialise Glyph Image Cache" );
+    if ( error )
+      PanicZ( "could not initialize glyph image cache" );
   }
 
 
   static
-  void     done_freetype( void )
+  void  done_freetype( void )
   {
     FTC_Manager_Done( manager );
     FT_Done_FreeType( library );
@@ -320,14 +360,14 @@ Success:
 
 
   static
-  void     set_current_face( PFont   font )
+  void  set_current_face( PFont  font )
   {
     current_font.font.face_id = (FTC_FaceID)font;
   }  
 
 
   static
-  void     set_current_size( int  pixel_size )
+  void  set_current_size( int  pixel_size )
   {
     current_font.font.pix_width  = pixel_size;
     current_font.font.pix_height = pixel_size;
@@ -335,23 +375,26 @@ Success:
 
 
   static
-  void     set_current_pointsize( int  point_size )
+  void  set_current_pointsize( int  point_size )
   {
-    set_current_size( (point_size*res+36)/72 );
+    set_current_size( ( point_size * res + 36 ) / 72 );
   }
 
 
   static
-  void     set_current_image_type( void )
+  void  set_current_image_type( void )
   {
     current_font.image_type = antialias ? ftc_image_grays : ftc_image_mono;
     
-    if (!hinted)
+    if ( !hinted )
       current_font.image_type |= ftc_image_flag_unhinted;
       
-    if (autohint)
+    if ( autohint )
       current_font.image_type |= ftc_image_flag_autohinted;
+
+    if ( !use_sbits )
+      current_font.image_type |= ftc_image_flag_no_sbits;
   }   
 
 
-
+/* End */

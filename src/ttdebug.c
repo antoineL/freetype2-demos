@@ -830,8 +830,8 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
     FT_Error  error = 0;
 
-    TT_GlyphZone  save;
-    TT_GlyphZone  pts;
+    TT_GlyphZoneRec  save;
+    TT_GlyphZoneRec  pts;
 
     const FT_String*  round_str[8] =
     {
@@ -1011,9 +1011,9 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
         }
       } while ( !key );
 
-      MEM_Copy( save.org,   pts.org, pts.n_points * sizeof ( FT_Vector ) );
-      MEM_Copy( save.cur,   pts.cur, pts.n_points * sizeof ( FT_Vector ) );
-      MEM_Copy( save.tags, pts.tags, pts.n_points );
+      FT_MEM_COPY( save.org,   pts.org, pts.n_points * sizeof ( FT_Vector ) );
+      FT_MEM_COPY( save.cur,   pts.cur, pts.n_points * sizeof ( FT_Vector ) );
+      FT_MEM_COPY( save.tags, pts.tags, pts.n_points );
 
       /* a return indicate the last command */
       if (ch == '\r')

@@ -76,7 +76,7 @@
 
   int  graph_init  = 0;
 
-  int  render_mode = 1;
+  int  render_mode = 0;
   int  debug       = 0;
   int  trace_level = 0;
 

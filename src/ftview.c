@@ -170,6 +170,92 @@
   }
 
 
+
+  static FT_Error
+  Render_Waterfall( int  first_size )
+  {
+    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
+    FT_Pointer  glyf;
+    int         i, pix_size;
+    grBitmap    bit3;
+
+    unsigned char         text[256];
+    const unsigned char*  p;
+
+    start_x = 4;
+    start_y = 16;
+
+    pix_size = first_size;
+    for (;;)
+    {
+      sprintf( text, "%d: the quick brown fox jumps over the lazy dog "
+                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
+
+      p = text;
+
+      set_current_size( pix_size );
+
+      pix_size++;
+
+      error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
+                                       &face, &size );
+      if ( error )
+      {
+        /* probably a non-existent bitmap font size */
+        continue;
+      }
+
+      step_x = size->metrics.x_ppem + 4;
+      step_y = ( size->metrics.height >> 6 ) + 1;
+
+      x = start_x;
+      y = start_y + ( size->metrics.ascender >> 6 );
+
+      start_y += step_y;
+
+      if ( y >= bit.rows )
+        break;
+
+      while ( *p )
+      {
+        int      left, top, x_advance, y_advance, x_top, y_top;
+        FT_UInt  gindex;
+
+
+        gindex = *(unsigned char*)p;
+        if ( encoding == ft_encoding_none )
+          gindex = get_glyph_index( gindex );
+
+        /* if a cmap is active, `get_glyph_bitmap' will convert the */
+        /* char code in `gindex' to a real glyph index              */
+        error = get_glyph_bitmap( gindex, &bit3, &left, &top,
+                                  &x_advance, &y_advance, &glyf );
+        if ( !error )
+        {
+          /* now render the bitmap into the display surface */
+          x_top = x + left;
+          y_top = y - top;
+          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+          if ( glyf )
+            done_glyph_bitmap( glyf );
+
+          x += x_advance + 1;
+
+          if ( x + size->metrics.x_ppem > bit.width )
+            break;
+        }
+        else
+          Fail++;
+
+        p++;
+      }
+    }
+
+    return FT_Err_Ok;
+  }
+
+
   /*************************************************************************/
   /*************************************************************************/
   /*****                                                               *****/
@@ -290,9 +376,20 @@
       break;
 
     case grKEY( ' ' ):
-      render_mode ^= 1;
-      new_header   = render_mode ? (char *)"rendering all glyphs in font"
-                                 : (char *)"rendering test text string";
+      render_mode  = (render_mode+1) % 3;
+      switch ( render_mode )
+      {
+        case 0:
+          new_header = (char*)"rendering all glyphs in font";
+          break;
+
+        case 1:
+          new_header = (char*)"rendering test text string";
+          break;
+
+        default:
+          new_header = (char*)"rendering glyph waterfall";
+      }
       break;
 
     case grKeyF1:
@@ -441,7 +538,7 @@
     if ( debug )
     {
       char  temp[32];
-      
+
       sprintf( temp, "any=%d", trace_level );
       setenv( "FT2_DEBUG", temp );
     }
@@ -504,11 +601,15 @@
         switch ( render_mode )
         {
         case 0:
+          error = Render_All( Num );
+          break;
+
+        case 1:
           error = Render_Text( Num );
           break;
 
         default:
-          error = Render_All( Num );
+          error = Render_Waterfall( ptsize );
         }
 
         if ( face )

@@ -1,3 +1,8 @@
+2002-07-03  David Turner  <david@freetype.org>
+
+    * src/ftcommon.i, src/ftview.c: adding a "waterfall" rendering mode
+    (accessible by cycling modes with the space bar)
+
 2002-07-01  David Turner  <david@freetype.org>
 
     * src/ftbench.c: adding the "-p" option to pre-load font files in memory.

@@ -172,7 +172,7 @@ else
   # The list of demonstration programs to build.
   #
 #  EXES := ftlint ftview fttimer compos ftstring memtest ftmulti
-  EXES := ftlint ftview fttimer ftstring memtest ftmulti
+  EXES := ftlint ftview fttimer ftstring memtest ftmulti ftdump
 
 # Only uncomment the following lines if the truetype driver was
 # compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined..
@@ -212,6 +212,9 @@ else
 	  $(COMPILE) $T$@ $<
 
   $(OBJ_)fttry.$(SO): $(SRC_DIR_)fttry.c
+	  $(COMPILE) $T$@ $<
+
+  $(OBJ_)ftdump.$(SO): $(SRC_DIR_)ftdump.c
 	  $(COMPILE) $T$@ $<
 
 
@@ -272,6 +275,9 @@ else
 	  $(COMMON_LINK)
 
   $(BIN_)compos$E: $(OBJ_)compos.$(SO) $(FTLIB) $(COMMON_OBJ)
+	  $(COMMON_LINK)
+
+  $(BIN_)ftdump$E: $(OBJ_)ftdump.$(SO) $(FTLIB)
 	  $(COMMON_LINK)
 
   $(BIN_)fttry$E: $(OBJ_)fttry.$(SO) $(FTLIB)

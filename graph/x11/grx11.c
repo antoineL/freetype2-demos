@@ -1,3 +1,21 @@
+/*******************************************************************
+ *
+ *  grx11.c  graphics driver for X11.
+ *
+ *  This is the driver for displaying inside a window under X11,
+ *  used by the graphics utility of the FreeType test suite.
+ *
+ *  Copyright 1999-2000, 2001, 2002 by Antoine Leca, David Turner
+ *  David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ *  This file is part of the FreeType project, and may only be used
+ *  modified and distributed under the terms of the FreeType project
+ *  license, LICENSE.TXT. By continuing to use, modify or distribute
+ *  this file you indicate that you have read the license and
+ *  understand and accept it fully.
+ *
+ ******************************************************************/
+
 #include <grobjs.h>
 #include <grdevice.h>
 
@@ -16,13 +34,13 @@
 #include <X11/keysym.h>
 
 
-#if defined( __cplusplus ) || defined( c_plusplus)
+#if defined( __cplusplus ) || defined( c_plusplus )
 #define Class  c_class
 #else
 #define Class  class
 #endif
 
-/* old trick to determine 32-bit integer type */
+  /* old trick to determine 32-bit integer type */
 #include <limits.h>
 
   /* The number of bytes in an `int' type.  */
@@ -54,6 +72,7 @@ typedef  unsigned long   uint32;
 #else
 #error  "could not find a 32-bit integer type"
 #endif
+
 
   typedef struct  Translator
   {
@@ -95,20 +114,19 @@ typedef  unsigned long   uint32;
 
   typedef XPixmapFormatValues  XDepth;
 
+
 #ifdef TEST
-
 #define grAlloc  malloc
-
 #endif
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   PIXEL BLITTING SUPPORT                     *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                   PIXEL BLITTING SUPPORT                     *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   typedef struct grX11Blitter_
   {
@@ -126,7 +144,7 @@ typedef  unsigned long   uint32;
   } grX11Blitter;
 
 
- /* setup blitter, returns 1 if no drawing happens */
+  /* setup blitter; returns 1 if no drawing happens */
   static int
   gr_x11_blitter_reset( grX11Blitter*  blit,
                         grBitmap*      source,
@@ -138,6 +156,7 @@ typedef  unsigned long   uint32;
   {
     long  pitch;
     int   delta;
+
 
     /* clip rectangle to source bitmap */
     if ( x < 0 )
@@ -177,13 +196,13 @@ typedef  unsigned long   uint32;
 
     blit->src_line  = source->buffer + y * pitch;
     if ( pitch < 0 )
-      blit->src_line -= (source->rows-1)*pitch;
+      blit->src_line -= ( source->rows - 1 ) * pitch;
 
     pitch = blit->dst_pitch = target->pitch;
 
     blit->dst_line = target->buffer + y * pitch;
     if ( pitch < 0 )
-      blit->dst_line -= (target->rows-1)*pitch;
+      blit->dst_line -= ( target->rows - 1 ) * pitch;
 
     blit->x      = x;
     blit->y      = y;
@@ -211,26 +230,28 @@ typedef  unsigned long   uint32;
 
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  RGB565              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR RGB565                  *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_rgb565( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write++ )
       {
@@ -238,36 +259,41 @@ typedef  unsigned long   uint32;
         unsigned int  g = read[1];
         unsigned int  b = read[2];
 
-        write[0] = (unsigned short)( ( (r << 8) & 0xF800 ) |
-                                     ( (g << 3) & 0x07E0 ) |
-                                     ( (b >> 3) & 0x001F ) );
+
+        write[0] = (unsigned short)( ( ( r << 8 ) & 0xF800U ) |
+                                     ( ( g << 3 ) & 0x07E0  ) |
+                                     ( ( b >> 3 ) & 0x001F  ) );
       }
 
       line_read  += blit->src_pitch;
       line_write += blit->dst_pitch;
     }
   }
+
 
   static void
   gr_x11_convert_gray_to_rgb565( grX11Blitter*  blit )
   {
     unsigned char*  line_read  = blit->src_line + blit->x;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read++, write++ )
       {
         unsigned int  p = read[0];
 
-        write[0] = (unsigned short)( ( (p << 8) & 0xF800 ) |
-                                     ( (p << 3) & 0x07E0 ) |
-                                     ( (p >> 3) & 0x001F ) );
+
+        write[0] = (unsigned short)( ( ( p << 8 ) & 0xF800U ) |
+                                     ( ( p << 3 ) & 0x07E0  ) |
+                                     ( ( p >> 3 ) & 0x001F  ) );
       }
 
       line_read  += blit->src_pitch;
@@ -275,34 +301,37 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_rgb565 =
   {
-    16, 16, 0xF800, 0x07E0, 0x001F,
+    16, 16, 0xF800U, 0x07E0, 0x001F,
     gr_x11_convert_rgb_to_rgb565,
     gr_x11_convert_gray_to_rgb565
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  BGR565              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR  BGR565                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_bgr565( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write++ )
       {
@@ -310,9 +339,10 @@ typedef  unsigned long   uint32;
         unsigned int  g = read[1];
         unsigned int  b = read[2];
 
-        write[0] = (unsigned short)( ( (b << 8) & 0xF800 ) |
-                                     ( (g << 3) & 0x07E0 ) |
-                                     ( (r >> 3) & 0x001F ) );
+
+        write[0] = (unsigned short)( ( ( b << 8 ) & 0xF800U ) |
+                                     ( ( g << 3 ) & 0x07E0  ) |
+                                     ( ( r >> 3 ) & 0x001F  ) );
       }
 
       line_read  += blit->src_pitch;
@@ -323,31 +353,34 @@ typedef  unsigned long   uint32;
 
   static const grX11Format  gr_x11_format_bgr565 =
   {
-    16, 16, 0x001F, 0x7E00, 0xF800,
+    16, 16, 0x001F, 0x7E00, 0xF800U,
     gr_x11_convert_rgb_to_bgr565,
-    gr_x11_convert_gray_to_rgb565  /* same for bgr565 !! */
+    gr_x11_convert_gray_to_rgb565  /* the same for bgr565! */
   };
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  RGB555              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR RGB555                  *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_rgb555( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write++ )
       {
@@ -355,36 +388,41 @@ typedef  unsigned long   uint32;
         unsigned int  g = read[1];
         unsigned int  b = read[2];
 
-        write[0] = (unsigned short)( ( (r << 7) & 0x7C00 ) |
-                                     ( (g << 2) & 0x03E0 ) |
-                                     ( (b >> 3) & 0x001F ) );
+
+        write[0] = (unsigned short)( ( ( r << 7 ) & 0x7C00 ) |
+                                     ( ( g << 2 ) & 0x03E0 ) |
+                                     ( ( b >> 3 ) & 0x001F ) );
       }
 
       line_read  += blit->src_pitch;
       line_write += blit->dst_pitch;
     }
   }
+
 
   static void
   gr_x11_convert_gray_to_rgb555( grX11Blitter*  blit )
   {
     unsigned char*  line_read  = blit->src_line + blit->x;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read++, write++ )
       {
         unsigned int  p = read[0];
 
-        write[0] = (unsigned short)( ( (p << 7) & 0x7C00 ) |
-                                     ( (p << 2) & 0x03E0 ) |
-                                     ( (p >> 3) & 0x001F ) );
+
+        write[0] = (unsigned short)( ( ( p << 7 ) & 0x7C00 ) |
+                                     ( ( p << 2 ) & 0x03E0 ) |
+                                     ( ( p >> 3 ) & 0x001F ) );
       }
 
       line_read  += blit->src_pitch;
@@ -392,34 +430,37 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_rgb555 =
   {
     15, 16, 0x7C00, 0x3E00, 0x001F,
-    gr_x11_convert_rgb_to_rgb565,
-    gr_x11_convert_gray_to_rgb565
+    gr_x11_convert_rgb_to_rgb555,
+    gr_x11_convert_gray_to_rgb555
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  BGR555              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR  BGR555                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_bgr555( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*2;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 2;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
-      unsigned short*  write = (unsigned short*) line_write;
+      unsigned short*  write = (unsigned short*)line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write++ )
       {
@@ -442,29 +483,29 @@ typedef  unsigned long   uint32;
   {
     15, 16, 0x1F00, 0x3E00, 0x7C00,
     gr_x11_convert_rgb_to_bgr555,
-    gr_x11_convert_gray_to_rgb555  /* same for bgr555 !! */
+    gr_x11_convert_gray_to_rgb555  /* the same for bgr555! */
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  RGB888              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
-
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR RGB888                  *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_rgb888( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*3;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 3;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
-      memcpy( line_write, line_read, blit->width*3 );
+      memcpy( line_write, line_read, blit->width * 3 );
       line_read  += blit->src_pitch;
       line_write += blit->dst_pitch;
     }
@@ -475,8 +516,9 @@ typedef  unsigned long   uint32;
   gr_x11_convert_gray_to_rgb888( grX11Blitter*  blit )
   {
     unsigned char*  line_read  = blit->src_line + blit->x;
-    unsigned char*  line_write = blit->dst_line + blit->x*3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 3;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
@@ -484,9 +526,11 @@ typedef  unsigned long   uint32;
       unsigned char*   write = line_write;
       int              x     = blit->width;
 
-      for ( ; x > 0; x--, read ++, write += 3 )
+
+      for ( ; x > 0; x--, read++, write += 3 )
       {
         unsigned char  p = read[0];
+
 
         write[0] = p;
         write[1] = p;
@@ -498,34 +542,37 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_rgb888 =
   {
-    24, 24, 0xFF0000, 0x00FF00, 0x0000FF,
+    24, 24, 0xFF0000L, 0x00FF00U, 0x0000FF,
     gr_x11_convert_rgb_to_rgb888,
     gr_x11_convert_gray_to_rgb888
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  BGR888              *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR  BGR888                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_bgr888( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*3;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 3;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
       unsigned char*   read  = line_read;
       unsigned char*   write = line_write;
       int              x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write += 3 )
       {
@@ -539,29 +586,30 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_bgr888 =
   {
-    24, 24, 0x0000FF, 0x00FF00, 0xFF0000,
+    24, 24, 0x0000FF, 0x00FF00U, 0xFF0000L,
     gr_x11_convert_rgb_to_bgr888,
-    gr_x11_convert_gray_to_rgb888 /* same for bgr888 */
+    gr_x11_convert_gray_to_rgb888   /* the same for bgr888 */
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  RGB8880             *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
-
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR RGB8880                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_rgb8880( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*4;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 4;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
@@ -569,13 +617,14 @@ typedef  unsigned long   uint32;
       unsigned char*   write = line_write;
       int              x     = blit->width;
 
+
       for ( ; x > 0; x--, read += 3, write += 4 )
       {
-        uint32   r = read[0];
-        uint32   g = read[1];
-        uint32   b = read[2];
+        uint32  r = read[0];
+        uint32  g = read[1];
+        uint32  b = read[2];
 
-        *(uint32*)write = ( (r << 24) | (g << 16) | (b << 8) );
+        *(uint32*)write = ( ( r << 24 ) | ( g << 16 ) | ( b << 8 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -591,17 +640,20 @@ typedef  unsigned long   uint32;
     unsigned char*  line_write = blit->dst_line + blit->x*4;
     int             h          = blit->height;
 
+
     for ( ; h > 0; h-- )
     {
-      unsigned char*   read  = line_read;
-      unsigned char*   write = line_write;
-      int              x     = blit->width;
+      unsigned char*  read  = line_read;
+      unsigned char*  write = line_write;
+      int             x     = blit->width;
+
 
       for ( ; x > 0; x--, read ++, write += 4 )
       {
-        uint32   p = read[0];
+        uint32  p = read[0];
 
-        *(uint32*)write = ( (p << 24) | (p << 16) | (p << 8) );
+
+        *(uint32*)write = ( ( p << 24 ) | ( p << 16 ) | ( p << 8 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -609,42 +661,45 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_rgb8880 =
   {
-    24, 32, 0xFF000000, 0x00FF0000, 0x0000FF00,
+    24, 32, 0xFF000000UL, 0x00FF0000L, 0x0000FF00U,
     gr_x11_convert_rgb_to_rgb8880,
     gr_x11_convert_gray_to_rgb8880
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  RGB0888             *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR RGB0888                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_rgb0888( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*4;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 4;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
-      unsigned char*   read  = line_read;
-      unsigned char*   write = line_write;
-      int              x     = blit->width;
+      unsigned char*  read  = line_read;
+      unsigned char*  write = line_write;
+      int             x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write += 4 )
       {
-        uint32   r = read[0];
-        uint32   g = read[1];
-        uint32   b = read[2];
+        uint32  r = read[0];
+        uint32  g = read[1];
+        uint32  b = read[2];
 
-        *(uint32*)write = ( (r << 16) | (g << 8) | (b << 0) );
+        *(uint32*)write = ( ( r << 16 ) | ( g << 8 ) | ( b << 0 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -657,20 +712,23 @@ typedef  unsigned long   uint32;
   gr_x11_convert_gray_to_rgb0888( grX11Blitter*  blit )
   {
     unsigned char*  line_read  = blit->src_line + blit->x;
-    unsigned char*  line_write = blit->dst_line + blit->x*4;
+    unsigned char*  line_write = blit->dst_line + blit->x * 4;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
-      unsigned char*   read  = line_read;
-      unsigned char*   write = line_write;
-      int              x     = blit->width;
+      unsigned char*  read  = line_read;
+      unsigned char*  write = line_write;
+      int             x     = blit->width;
+
 
       for ( ; x > 0; x--, read ++, write += 4 )
       {
-        uint32   p = read[0];
+        uint32  p = read[0];
 
-        *(uint32*)write = ( (p << 16) | (p << 8) | (p << 0) );
+
+        *(uint32*)write = ( ( p << 16 ) | ( p << 8 ) | ( p << 0 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -678,44 +736,45 @@ typedef  unsigned long   uint32;
     }
   }
 
+
   static const grX11Format  gr_x11_format_rgb0888 =
   {
-    24, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,
+    24, 32, 0x00FF0000L, 0x0000FF00U, 0x000000FF,
     gr_x11_convert_rgb_to_rgb0888,
     gr_x11_convert_gray_to_rgb0888
   };
 
 
-
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  BGR8880             *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
-
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR BGR8880                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_bgr8880( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*4;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 4;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
-      unsigned char*   read  = line_read;
-      unsigned char*   write = line_write;
-      int              x     = blit->width;
+      unsigned char*  read  = line_read;
+      unsigned char*  write = line_write;
+      int             x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write += 4 )
       {
-        uint32   r = read[0];
-        uint32   g = read[1];
-        uint32   b = read[2];
+        uint32  r = read[0];
+        uint32  g = read[1];
+        uint32  b = read[2];
 
-        *(uint32*)write = ( (r << 8) | (g << 16) | (b << 24) );
+        *(uint32*)write = ( ( r << 8 ) | ( g << 16 ) | ( b << 24 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -724,43 +783,44 @@ typedef  unsigned long   uint32;
   }
 
 
-
   static const grX11Format  gr_x11_format_bgr8880 =
   {
-    24, 32, 0x0000FF00, 0x00FF0000, 0xFF000000,
+    24, 32, 0x0000FF00U, 0x00FF0000L, 0xFF000000UL,
     gr_x11_convert_rgb_to_bgr8880,
-    gr_x11_convert_gray_to_rgb8880  /* same for bgr8880 */
+    gr_x11_convert_gray_to_rgb8880  /* the same for bgr8880 */
   };
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   BLITTING ROUTINES FOR  BGR0888             *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                BLITTING ROUTINES FOR BGR0888                 *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static void
   gr_x11_convert_rgb_to_bgr0888( grX11Blitter*  blit )
   {
-    unsigned char*  line_read  = blit->src_line + blit->x*3;
-    unsigned char*  line_write = blit->dst_line + blit->x*4;
+    unsigned char*  line_read  = blit->src_line + blit->x * 3;
+    unsigned char*  line_write = blit->dst_line + blit->x * 4;
     int             h          = blit->height;
+
 
     for ( ; h > 0; h-- )
     {
-      unsigned char*   read  = line_read;
-      unsigned char*   write = line_write;
-      int              x     = blit->width;
+      unsigned char*  read  = line_read;
+      unsigned char*  write = line_write;
+      int             x     = blit->width;
+
 
       for ( ; x > 0; x--, read += 3, write += 4 )
       {
-        uint32   r = read[0];
-        uint32   g = read[1];
-        uint32   b = read[2];
+        uint32  r = read[0];
+        uint32  g = read[1];
+        uint32  b = read[2];
 
-        *(uint32*)write = ( (r << 0) | (g << 8) | (b << 16) );
+        *(uint32*)write = ( ( r << 0 ) | ( g << 8 ) | ( b << 16 ) );
       }
 
       line_read  += blit->src_pitch;
@@ -771,21 +831,19 @@ typedef  unsigned long   uint32;
 
   static const grX11Format  gr_x11_format_bgr0888 =
   {
-    24, 32, 0x000000FF, 0x0000FF00, 0x00FF0000,
+    24, 32, 0x000000FF, 0x0000FF00U, 0x00FF0000L,
     gr_x11_convert_rgb_to_bgr0888,
-    gr_x11_convert_gray_to_rgb0888  /* same for bgr0888 */
+    gr_x11_convert_gray_to_rgb0888  /* the same for bgr0888 */
   };
 
 
-
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   X11 DEVICE SUPPORT                         *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
-
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                   X11 DEVICE SUPPORT                         *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   static const grX11Format*  gr_x11_formats[] =
   {
@@ -803,7 +861,7 @@ typedef  unsigned long   uint32;
     NULL,
   };
 
-  typedef struct grX11DeviceRec_
+  typedef struct  grX11DeviceRec_
   {
     Display*            display;
     Cursor              idle;
@@ -831,10 +889,10 @@ typedef  unsigned long   uint32;
   static int
   gr_x11_device_init( void )
   {
-    grX11Format*  x_format = NULL;
-    grX11Device*  dev      = &x11dev;
+    grX11Device*  dev = &x11dev;
 
-    memset( &x11dev, 0, sizeof(x11dev) );
+
+    memset( &x11dev, 0, sizeof ( x11dev ) );
 
     XrmInitialize();
 
@@ -876,132 +934,130 @@ typedef  unsigned long   uint32;
         /* and 32 bits per pixel                        */
         switch ( format->depth )
         {
-          case 16:
-          case 24:
-          case 32:
-             {
-               int           count2;
-               XVisualInfo*  visuals;
-               XVisualInfo*  visual;
+        case 16:
+        case 24:
+        case 32:
+          {
+            int           count2;
+            XVisualInfo*  visuals;
+            XVisualInfo*  visual;
 
 
-               templ.depth = format->depth;
-               visuals     = XGetVisualInfo( dev->display,
-                                             VisualDepthMask,
-                                             &templ,
-                                             &count2 );
+            templ.depth = format->depth;
+            visuals     = XGetVisualInfo( dev->display,
+                                          VisualDepthMask,
+                                          &templ,
+                                          &count2 );
 
-               for ( visual = visuals; count2 > 0; count2--, visual++ )
-               {
+            for ( visual = visuals; count2 > 0; count2--, visual++ )
+            {
 #ifdef TEST
-                 const char*  string = "unknown";
+              const char*  string = "unknown";
 
 
-                 switch ( visual->Class )
-                 {
-                 case TrueColor:
-                   string = "TrueColor";
-                   break;
-                 case DirectColor:
-                   string = "DirectColor";
-                   break;
-                 case PseudoColor:
-                   string = "PseudoColor";
-                   break;
-                 case StaticGray:
-                   string = "StaticGray";
-                   break;
-                 case StaticColor:
-                   string = "StaticColor";
-                   break;
-                 case GrayScale:
-                   string = "GrayScale";
-                   break;
-                 }
-                 printf( ">   RGB %04lx:%04lx:%04lx, colors %3d, bits %2d  %s\n",
-                         visual->red_mask,
-                         visual->green_mask,
-                         visual->blue_mask,
-                         visual->colormap_size,
-                         visual->bits_per_rgb,
-                         string );
+              switch ( visual->Class )
+              {
+              case TrueColor:
+                string = "TrueColor";
+                break;
+              case DirectColor:
+                string = "DirectColor";
+                break;
+              case PseudoColor:
+                string = "PseudoColor";
+                break;
+              case StaticGray:
+                string = "StaticGray";
+                break;
+              case StaticColor:
+                string = "StaticColor";
+                break;
+              case GrayScale:
+                string = "GrayScale";
+                break;
+              }
+
+              printf( ">   RGB %04lx:%04lx:%04lx, colors %3d, bits %2d  %s\n",
+                      visual->red_mask,
+                      visual->green_mask,
+                      visual->blue_mask,
+                      visual->colormap_size,
+                      visual->bits_per_rgb,
+                      string );
 #endif /* TEST */
 
-                 /* compare to the list of supported formats */
-                 {
-                   const grX11Format**  pcur_format = gr_x11_formats;
-                   const grX11Format*   cur_format;
+              /* compare to the list of supported formats */
+              {
+                const grX11Format**  pcur_format = gr_x11_formats;
+                const grX11Format*   cur_format;
 
-                   for (;;)
-                   {
-                     cur_format = *pcur_format++;
-                     if ( cur_format == NULL )
-                       break;
 
-                     if ( format->depth          == cur_format->x_depth          &&
-                          format->bits_per_pixel == cur_format->x_bits_per_pixel &&
-                          visual->red_mask       == cur_format->x_red_mask       &&
-                          visual->green_mask     == cur_format->x_green_mask     &&
-                          visual->blue_mask      == cur_format->x_blue_mask      )
-                     {
-                       dev->format       = cur_format;
-                       dev->scanline_pad = format->scanline_pad;
-                       return 0;
-                     }
-                   }
-                 }
-               } /* for visuals */
-             }
-             break;
+                for (;;)
+                {
+                  cur_format = *pcur_format++;
+                  if ( cur_format == NULL )
+                    break;
 
-          default:
-            ;
+                  if ( format->depth          == cur_format->x_depth          &&
+                       format->bits_per_pixel == cur_format->x_bits_per_pixel &&
+                       visual->red_mask       == cur_format->x_red_mask       &&
+                       visual->green_mask     == cur_format->x_green_mask     &&
+                       visual->blue_mask      == cur_format->x_blue_mask      )
+                  {
+                    dev->format       = cur_format;
+                    dev->scanline_pad = format->scanline_pad;
+                    return 0;
+                  }
+                }
+              }
+            } /* for visuals */
+          }
+          break;
+
+        default:
+          ;
         } /* switch format depth */
-
       } /* for formats */
     }
 
-    fprintf( stderr, "unsupported X11 display depth !!\n" );
+    fprintf( stderr, "unsupported X11 display depth!\n" );
 
     return -1;
   }
 
 
- /************************************************************************/
- /************************************************************************/
- /*****                                                              *****/
- /*****                   X11 SURFACE SUPPORT                        *****/
- /*****                                                              *****/
- /************************************************************************/
- /************************************************************************/
-
+  /************************************************************************/
+  /************************************************************************/
+  /*****                                                              *****/
+  /*****                   X11 SURFACE SUPPORT                        *****/
+  /*****                                                              *****/
+  /************************************************************************/
+  /************************************************************************/
 
   typedef struct  grX11Surface_
   {
-    grSurface         root;
-    Display*          display;
-    Window            win;
-    Visual*           visual;
-    Colormap          colormap;
-    GC                gc;
-    int               depth;
-    XImage*           ximage;
-    grBitmap          ximage_bitmap;
+    grSurface           root;
+    Display*            display;
+    Window              win;
+    Visual*             visual;
+    Colormap            colormap;
+    GC                  gc;
+    int                 depth;
+    XImage*             ximage;
+    grBitmap            ximage_bitmap;
 
     const grX11Format*  format;
     grX11ConvertFunc    convert;
 
-    int               win_org_x,   win_org_y;
-    int               win_width,   win_height;
-    int               image_width, image_height;
+    int                 win_org_x,   win_org_y;
+    int                 win_width,   win_height;
+    int                 image_width, image_height;
 
-    char     key_buffer[10];
-    int      key_cursor;
-    int      key_number;
+    char                key_buffer[10];
+    int                 key_cursor;
+    int                 key_number;
 
   } grX11Surface;
-
-
 
 
   /* close a given window */
@@ -1009,6 +1065,7 @@ typedef  unsigned long   uint32;
   gr_x11_surface_done( grX11Surface*  surface )
   {
     Display*  display = surface->display;
+
 
     if ( display )
     {
@@ -1036,6 +1093,7 @@ typedef  unsigned long   uint32;
   {
     grX11Blitter  blit;
 
+
     if ( !gr_x11_blitter_reset( &blit, &surface->root.bitmap,
                                 &surface->ximage_bitmap,
                                 x, y, w, h ) )
@@ -1047,7 +1105,7 @@ typedef  unsigned long   uint32;
                  surface->gc,
                  surface->ximage,
                  blit.x, blit.y, blit.x, blit.y, blit.width, blit.height );
-     }
+    }
   }
 
 
@@ -1068,10 +1126,8 @@ typedef  unsigned long   uint32;
   }
 
 
-
-
-  static
-  grKey  KeySymTogrKey( KeySym  key )
+  static grKey
+  KeySymTogrKey( KeySym  key )
   {
     grKey        k;
     int          count = sizeof ( key_translators ) /
@@ -1114,7 +1170,6 @@ typedef  unsigned long   uint32;
     /*      a key is pressed                                   */
     (void)event_mask;
 
-
     bool_exit = surface->key_cursor < surface->key_number;
 
     XDefineCursor( display, surface->win, x11dev.idle );
@@ -1151,7 +1206,7 @@ typedef  unsigned long   uint32;
 
       case Expose:
 #if 1
-        /* we don't need to convert the bits on each expose !! */
+        /* we don't need to convert the bits on each expose! */
         XPutImage( surface->display,
                    surface->win,
                    surface->gc,
@@ -1195,9 +1250,9 @@ typedef  unsigned long   uint32;
   {
     Display*            display;
     int                 screen;
-    long                pitch;
     grBitmap*           pximage = &surface->ximage_bitmap;
     const grX11Format*  format;
+
 
     surface->key_number = 0;
     surface->key_cursor = 0;
@@ -1214,21 +1269,21 @@ typedef  unsigned long   uint32;
 
     switch ( bitmap->mode )
     {
-      case gr_pixel_mode_rgb24:
-        surface->convert = format->rgb_convert;
+    case gr_pixel_mode_rgb24:
+      surface->convert = format->rgb_convert;
+      break;
+
+    case gr_pixel_mode_gray:
+      /* we only support 256-gray level 8-bit pixmaps */
+      if ( bitmap->grays == 256 )
+      {
+        surface->convert = format->gray_convert;
         break;
+      }
 
-      case gr_pixel_mode_gray:
-        /* we only support 256-gray level 8-bit pixmaps */
-        if ( bitmap->grays == 256 )
-        {
-          surface->convert = format->gray_convert;
-          break;
-        }
-
-      default:
-        /* we don't support other modes */
-        return 0;
+    default:
+      /* we don't support other modes */
+      return 0;
     }
 
     /* allocate surface image */
@@ -1251,8 +1306,7 @@ typedef  unsigned long   uint32;
     if ( !pximage->buffer )
       return 0;
 
-    /* create the bitmap - under Win32, we support all modes as the GDI */
-    /* handles all conversions automatically..                          */
+    /* create the bitmap */
     if ( grNewBitmap( bitmap->mode,
                       bitmap->grays,
                       bitmap->width,
@@ -1327,17 +1381,15 @@ typedef  unsigned long   uint32;
                         NULL, 0, &xsh, NULL, NULL );
     }
 
-
-    surface->root.done         = (grDoneSurfaceFunc) gr_x11_surface_done;
-    surface->root.refresh_rect = (grRefreshRectFunc) gr_x11_surface_refresh_rect;
-    surface->root.set_title    = (grSetTitleFunc)    gr_x11_surface_set_title;
-    surface->root.listen_event = (grListenEventFunc) gr_x11_surface_listen_event;
+    surface->root.done         = (grDoneSurfaceFunc)gr_x11_surface_done;
+    surface->root.refresh_rect = (grRefreshRectFunc)gr_x11_surface_refresh_rect;
+    surface->root.set_title    = (grSetTitleFunc)   gr_x11_surface_set_title;
+    surface->root.listen_event = (grListenEventFunc)gr_x11_surface_listen_event;
 
     gr_x11_surface_refresh( surface );
 
     return 1;
   }
-
 
 
   grDevice  gr_x11_device =
@@ -1355,10 +1407,6 @@ typedef  unsigned long   uint32;
   };
 
 
-
-
-
-
 #ifdef TEST
 
   typedef struct  grKeyName
@@ -1369,8 +1417,7 @@ typedef  unsigned long   uint32;
   } grKeyName;
 
 
-  static
-  const grKeyName  key_names[] =
+  static const grKeyName  key_names[] =
   {
     { grKeyF1,   "F1"  },
     { grKeyF2,   "F2"  },
@@ -1400,7 +1447,8 @@ typedef  unsigned long   uint32;
 
 
 #if 0
-  int  main( void )
+  int
+  main( void )
   {
     grSurface*  surface;
     int         n;

@@ -1,12 +1,12 @@
 /*******************************************************************
  *
- *  grwin32.c  graphics driver for Win32 platform.              0.1
+ *  grwin32.c  graphics driver for Win32 platform
  *
  *  This is the driver for displaying inside a window under Win32,
  *  used by the graphics utility of the FreeType test suite.
  *
  *  Written by Antoine Leca.
- *  Copyright 1999-2000 by Antoine Leca, David Turner
+ *  Copyright 1999-2000, 2001, 2002 by Antoine Leca, David Turner
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  Borrowing liberally from the other FreeType drivers.

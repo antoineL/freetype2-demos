@@ -4,10 +4,8 @@
  *
  *    Graphics Subsystem interface
  *
- *  Copyright 1999 - The FreeType Development Team - www.freetype.org
- *
- *
- *
+ *  Copyright 1999, 2000, 2001, 2002
+ *     - The FreeType Development Team - www.freetype.org
  *
  ***************************************************************************/
 
@@ -165,6 +163,7 @@
   *    writes a given glyph bitmap to a target surface.
   *
   * <Input>
+  *    is_bgr  :: 1 if BGR, 0 if RGB
   *    target  :: handle to target bitmap
   *    glyph   :: handle to source glyph bitmap
   *    x       :: position of left-most pixel of glyph image in target surface
@@ -188,11 +187,13 @@
   *
   **********************************************************************/
 
-  extern int   grBlitGlyphToBitmap( grBitmap*  target,
-                                    grBitmap*  glyph,
-                                    grPos      x,
-                                    grPos      y,
-                                    grColor    color );
+  extern int
+  grBlitGlyphToBitmap( int        is_bgr,
+                       grBitmap*  target,
+                       grBitmap*  glyph,
+                       grPos      x,
+                       grPos      y,
+                       grColor    color );
 
 
  /**********************************************************************

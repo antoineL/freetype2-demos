@@ -2,10 +2,10 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-1999 by                                                  */
+/*  Copyright 1996-1999, 2000, 2001, 2002 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
-/*  blitter.c: Support for blitting of bitmaps with various depth.          */
+/*  grblit.c: Support for blitting of bitmaps with various depth.           */
 /*                                                                          */
 /****************************************************************************/
 
@@ -794,43 +794,44 @@
 
 
 
-#define  compose_pixel_full( a, b, n0, n1, n2, max )          \
-   {                                                          \
-     int  d, half = max >> 1;                                 \
-                                                              \
-     d = (int)b.chroma[0] - a.chroma[0];                      \
-     a.chroma[0] += (unsigned char)((n0*d + half)/max);       \
-                                                              \
-     d = (int)b.chroma[1] - a.chroma[1];                      \
-     a.chroma[1] += (unsigned char)((n1*d + half)/max);       \
-                                                              \
-     d = (int)b.chroma[2] - a.chroma[2];                      \
-     a.chroma[2] += (unsigned char)((n2*d + half)/max);       \
-   }
+#define compose_pixel_full( a, b, n0, n1, n2, max )          \
+  {                                                          \
+    int  d, half = max >> 1;                                 \
+                                                             \
+                                                             \
+    d = (int)b.chroma[0] - a.chroma[0];                      \
+    a.chroma[0] += (unsigned char)((n0*d + half)/max);       \
+                                                             \
+    d = (int)b.chroma[1] - a.chroma[1];                      \
+    a.chroma[1] += (unsigned char)((n1*d + half)/max);       \
+                                                             \
+    d = (int)b.chroma[2] - a.chroma[2];                      \
+    a.chroma[2] += (unsigned char)((n2*d + half)/max);       \
+  }
 
-#define  compose_pixel( a, b, n, max )  compose_pixel_full( a, b, n, n, n, max )
+#define compose_pixel( a, b, n, max )  \
+    compose_pixel_full( a, b, n, n, n, max )
 
 
-
-#define  extract555( pixel, color )                          \
+#define extract555( pixel, color )                           \
    color.chroma[0] = (unsigned char)((pixel >> 10) & 0x1F);  \
    color.chroma[1] = (unsigned char)((pixel >>  5) & 0x1F);  \
    color.chroma[2] = (unsigned char)((pixel      ) & 0x1F);
 
 
-#define  extract565( pixel, color )                          \
+#define extract565( pixel, color )                           \
    color.chroma[0] = (unsigned char)((pixel >> 11) & 0x1F);  \
    color.chroma[1] = (unsigned char)((pixel >>  5) & 0x3F);  \
    color.chroma[2] = (unsigned char)((pixel      ) & 0x1F);
 
 
-#define  inject555( color )                           \
+#define inject555( color )                          \
    ( ( (unsigned short)color.chroma[0] << 10 ) |    \
      ( (unsigned short)color.chroma[1] <<  5 ) |    \
        color.chroma[2]                         )
 
 
-#define  inject565( color )         \
+#define inject565( color )                          \
    ( ( (unsigned short)color.chroma[0] << 11 ) |    \
      ( (unsigned short)color.chroma[1] <<  5 ) |    \
        color.chroma[2]                         )
@@ -1112,10 +1113,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-  static
-  void  blit_lcd_to_24( grBlitter*  blit,
-                        grColor     color,
-                        int         max )
+  static void
+  blit_lcd_to_24( int         is_bgr,
+                  grBlitter*  blit,
+                  grColor     color,
+                  int         max )
   {
     int             y;
     unsigned char*  read;
@@ -1135,9 +1137,18 @@
       {
         int    val0, val1, val2;
 
-        val0 = _read[2];
-        val1 = _read[1];
-        val2 = _read[0];
+        if (is_bgr)
+        {
+          val0 = _read[0];
+          val1 = _read[1];
+          val2 = _read[2];
+        }
+        else
+        {
+          val0 = _read[2];
+          val1 = _read[1];
+          val2 = _read[0];
+        }
 
         if ( val0 | val1 | val2 )
         {
@@ -1184,10 +1195,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-  static
-  void  blit_lcdv_to_24( grBlitter*  blit,
-                         grColor     color,
-                         int         max )
+  static void
+  blit_lcdv_to_24( int         is_bgr,
+                   grBlitter*  blit,
+                   grColor     color,
+                   int         max )
   {
     int             y;
     unsigned char*  read;
@@ -1209,9 +1221,18 @@
       {
         unsigned char    val0, val1, val2;
 
-        val0 = _read[0*line];
-        val1 = _read[1*line];
-        val2 = _read[2*line];
+        if (is_bgr)
+        {
+          val0 = _read[2*line];
+          val1 = _read[1*line];
+          val2 = _read[0*line];
+        }
+        else
+        {
+          val0 = _read[0*line];
+          val1 = _read[1*line];
+          val2 = _read[2*line];
+        }
 
         if ( val0 | val1 | val2 )
         {
@@ -1290,24 +1311,26 @@
   };
 
 
-  extern int  grBlitGlyphToBitmap( grBitmap*  target,
-                                   grBitmap*  glyph,
-                                   grPos      x,
-                                   grPos      y,
-                                   grColor    color )
+  extern int
+  grBlitGlyphToBitmap( int        is_bgr,
+                       grBitmap*  target,
+                       grBitmap*  glyph,
+                       grPos      x,
+                       grPos      y,
+                       grColor    color )
   {
     grBlitter    blit;
     grPixelMode  mode;
 
+
     /* check arguments */
-    if (!target || !glyph)
+    if ( !target || !glyph )
     {
       grError = gr_err_bad_argument;
       return -1;
     }
 
-
-    /* set up blitter and compute clipping. Return immediately if needed */
+    /* set up blitter and compute clipping.  Return immediately if needed */
     blit.source = *glyph;
     blit.target = *target;
     mode        = target->mode;
@@ -1317,92 +1340,94 @@
 
     switch ( glyph->mode )
     {
-      case gr_pixel_mode_mono:     /* handle monochrome bitmap blitting */
-        if ( mode <= gr_pixel_mode_none || mode >= gr_pixel_mode_max )
+    case gr_pixel_mode_mono:     /* handle monochrome bitmap blitting */
+      if ( mode <= gr_pixel_mode_none || mode >= gr_pixel_mode_max )
+      {
+        grError = gr_err_bad_source_depth;
+        return -1;
+      }
+
+      gr_mono_blitters[mode]( &blit, color );
+      break;
+
+    case gr_pixel_mode_gray:
+      if ( glyph->grays > 1 )
+      {
+        int          target_grays = target->grays;
+        int          source_grays = glyph->grays;
+        const byte*  saturation;
+
+
+        if ( mode == gr_pixel_mode_gray && target_grays > 1 )
         {
-          grError = gr_err_bad_source_depth;
-          return -1;
-        }
-
-        gr_mono_blitters[mode]( &blit, color );
-        break;
-
-      case gr_pixel_mode_gray:
-        if ( glyph->grays > 1 )
-        {
-          int          target_grays = target->grays;
-          int          source_grays = glyph->grays;
-          const byte*  saturation;
-
-          if ( mode == gr_pixel_mode_gray && target_grays > 1 )
-          {
-            /* rendering into a gray target - use special composition */
-            /* routines..                                             */
-            if ( gr_last_saturation->count == target_grays )
-              saturation = gr_last_saturation->table;
-            else
-            {
-              saturation = grGetSaturation( target_grays );
-              if (!saturation) return -3;
-            }
-
-
-            if ( target_grays == source_grays )
-              blit_gray_to_gray_simple( &blit, saturation );
-            else
-            {
-              const byte*  conversion;
-
-              if ( gr_last_conversion->target_grays == target_grays &&
-                   gr_last_conversion->source_grays == source_grays )
-                conversion = gr_last_conversion->table;
-              else
-              {
-                conversion = grGetConversion( target_grays, source_grays );
-                if (!conversion) return -3;
-              };
-
-              blit_gray_to_gray( &blit, saturation, conversion );
-            }
-          }
+          /* rendering into a gray target - use special composition */
+          /* routines..                                             */
+          if ( gr_last_saturation->count == target_grays )
+            saturation = gr_last_saturation->table;
           else
           {
-            /* rendering into a color target */
-            if ( mode <= gr_pixel_mode_gray ||
-                 mode >= gr_pixel_mode_max  )
+            saturation = grGetSaturation( target_grays );
+            if ( !saturation )
+              return -3;
+          }
+
+          if ( target_grays == source_grays )
+            blit_gray_to_gray_simple( &blit, saturation );
+          else
+          {
+            const byte*  conversion;
+
+
+            if ( gr_last_conversion->target_grays == target_grays &&
+                 gr_last_conversion->source_grays == source_grays )
+              conversion = gr_last_conversion->table;
+            else
             {
-              grError = gr_err_bad_target_depth;
-              return -1;
+              conversion = grGetConversion( target_grays, source_grays );
+              if ( !conversion )
+                return -3;
             }
 
-            gr_color_blitters[mode]( &blit, color, source_grays-1 );
+            blit_gray_to_gray( &blit, saturation, conversion );
           }
         }
+        else
+        {
+          /* rendering into a color target */
+          if ( mode <= gr_pixel_mode_gray ||
+               mode >= gr_pixel_mode_max  )
+          {
+            grError = gr_err_bad_target_depth;
+            return -1;
+          }
+
+          gr_color_blitters[mode]( &blit, color, source_grays - 1 );
+        }
+      }
+      break;
+
+    case gr_pixel_mode_lcd:
+      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      {
+        blit_lcd_to_24( is_bgr, &blit, color, glyph->grays-1 );
         break;
+      }
 
-      case gr_pixel_mode_lcd:
-        if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
-        {
-          blit_lcd_to_24( &blit, color, glyph->grays-1 );
-          break;
-        }
+    case gr_pixel_mode_lcdv:
+      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      {
+        blit_lcdv_to_24( is_bgr, &blit, color, glyph->grays-1 );
+        break;
+      }
 
-      case gr_pixel_mode_lcdv:
-        if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
-        {
-          blit_lcdv_to_24( &blit, color, glyph->grays-1 );
-          break;
-        }
-
-      default:
-        /* we don't support the blitting of bitmaps of the following  */
-        /* types : pal4, pal8, rgb555, rgb565, rgb24, rgb32           */
-        /*                                                            */
-        grError = gr_err_bad_source_depth;
-        return -2;
+    default:
+      /* we don't support the blitting of bitmaps of the following  */
+      /* types : pal4, pal8, rgb555, rgb565, rgb24, rgb32           */
+      /*                                                            */
+      grError = gr_err_bad_source_depth;
+      return -2;
     }
 
-  End:
     return 0;
   }
 

@@ -448,7 +448,7 @@
             /* now render the bitmap into the display surface */
             x_top = bitmap->left;
             y_top = bit.rows - bitmap->top;
-            grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+            grBlitGlyphToBitmap( 0, &bit, &bit3, x_top, y_top, fore_color );
           }
         }
       }

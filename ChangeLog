@@ -1,20 +1,58 @@
+2002-09-18  Werner Lemberg  <wl@gnu.org>
+
+	Add LCD BGR support.
+
+	* graph/grblit.c (blit_lcd_to_24, blit_lcdv_to_24): Add parameter
+	`is_bgr' to assign color components in reversed order.
+	(grBlitGlyphToBitmap): Add parameter `is_bgr' passed on to
+	`blit_lcd_lcd*'.
+	Updated all callers.
+	Remove unused label.
+	* graph/graph.h, graph/grfont.c: Updated.
+
+	* src/ftcommon.i (set_current_image_type), src/ftview.c (Render_All,
+	Render_Text, Render_Waterfall, Process_Event): Handle LCD modes
+	3 and 4.
+	* src/ftstring.c, src/ftmulti.c: Updated.
+
+	* graph/x11/grx11.c (gr_x11_device_init, gr_x11_surface_init):
+	Remove unused variables.
+	(gr_x11_format_rgb555): Fix typos.
+
 2002-09-08  David Turner  <david@freetype.org>
 
-        * graph/x11/grx11.c, graph/win32/grwin32.c: completely rewrote the
-        X11 and Win32 display drivers to support 24-bits RGB surfaces. This
-        is needed to test sub-pixel rendering.
+	Add support for sub-pixel rendering.
 
-        Note that other drivers haven't been touched yet. The X11 driver
-        doesn't work with 8-bit displays for now, but a reduced mode will
-        probably be introduced in the near future.
+	* graph/x11/grx11.c, graph/win32/grwin32.c: Completely rewritten to
+	support 24-bits RGB surfaces.  This is needed to test sub-pixel
+	rendering.
 
-        * graph/graph.h, graph/grblit.c: adding support for sub-pixel
-        rendering composition blits. For now, only horizontal and vertical
-        RGB-decimated modes are supported (BGR will come soon)
+	Note that other drivers haven't been touched yet.  The X11 driver
+	doesn't work with 8-bit displays for now, but a reduced mode will
+	probably be introduced in the near future.
 
-        * src/Jamfile, src/ftbench.c, src/ftcommon.i, src/ftview.c:
-        small updates needed by the sub-pixel rendering support as well
-        as latest cache API changes.
+	* graph/graph.h (grPixelMode): Add `gr_pixel_mode_lcd' and
+	`gr_pixel_mode_lcdv'.
+	* graph/grblit.c (compute_clips): Use `gr_pixel_mode_lcd' and
+	`gr_pixel_mode_lcdv'.
+	(compose_pixel_full): New macro.
+	(compose_pixel): Use it.
+	(blit_lcd_to_24, blit_lcdv_to_24): New functions. for RGB-decimated
+	modes (BGR not yet implemented).
+	(gr_color_blitters): Updated.
+	(grBlitGlyphToBitmap): Support new pixel modes.
+
+	* src/Jamfile (PROGRAMS): Don't include fttimer, fttry, and
+	testnames.
+
+	* src/ftbench.c: Updated to latest changes in FreeType library.
+	* src/ftcommon.i (Init_Display): New default mode is
+	`gr_pixel_mode_rgb24'.
+	(set_current_image_type, get_glyph_bitmap): Add support for LCD
+	modes (horizontal and vertical).
+	* src/ftview.c (Render_Waterfall): Call `set_current_size'.
+	(Help): Document new `L' key for cycling through the pixel modes.
+	(Process_Event): Handle `L' key.
 
 2002-08-04  Vincent Caron  <v.caron@zerodeux.net>
 
@@ -23,8 +61,9 @@
 
 2002-07-03  David Turner  <david@freetype.org>
 
-	* src/ftview.c (Render_Waterfall): Adding a "waterfall" rendering
-	mode (accessible by cycling modes with the space bar).
+	* src/ftview.c (Render_Waterfall): New function, adding a
+	"waterfall" rendering mode (accessible by cycling modes with the
+	space bar).
 	(Process_Event, main): Use it.
 
 2002-07-01  David Turner  <david@freetype.org>

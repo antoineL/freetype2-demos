@@ -286,7 +286,7 @@
       return;
 
     gr_charcell.buffer = (unsigned char*)font_8x8 + 8 * charcode;
-    grBlitGlyphToBitmap( target, &gr_charcell, x, y, color );
+    grBlitGlyphToBitmap( 0, target, &gr_charcell, x, y, color );
   }
 
 
@@ -300,7 +300,7 @@
     {
       gr_charcell.buffer = (unsigned char *)font_8x8 +
                              8 * (int)(unsigned char)*string++;
-      grBlitGlyphToBitmap( target, &gr_charcell, x, y, color );
+      grBlitGlyphToBitmap( 0, target, &gr_charcell, x, y, color );
       x += 8;
     }
   }

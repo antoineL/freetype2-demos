@@ -60,10 +60,13 @@
                                 &x_advance, &y_advance, &glyf );
       if ( !error )
       {
+        int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
+
+
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
-        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+        grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
 
         if ( glyf )
           done_glyph_bitmap( glyf );
@@ -141,10 +144,13 @@
                                 &x_advance, &y_advance, &glyf );
       if ( !error )
       {
+        int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
+
+
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
-        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+        grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
 
         if ( glyf )
           done_glyph_bitmap( glyf );
@@ -232,10 +238,13 @@
                                   &x_advance, &y_advance, &glyf );
         if ( !error )
         {
+          int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
+
+
           /* now render the bitmap into the display surface */
           x_top = x + left;
           y_top = y - top;
-          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+          grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
 
           if ( glyf )
             done_glyph_bitmap( glyf );
@@ -340,14 +349,27 @@
       return 1;
 
     case grKEY( 'L' ):
-      lcd_mode = (lcd_mode+1)%3;
+      lcd_mode = ( lcd_mode + 1 ) % 5;
+
       switch ( lcd_mode )
       {
-        case 0: new_header = (char *)"normal anti-aliased rendering on"; break;
-        case 1: new_header = (char *)"horizontal LCD-optimized rendering on"; break;
-        case 2: new_header = (char *)"vertical LCD-optimized rendering on"; break;
-        default:
-          ;
+      case 0:
+        new_header = (char *)"normal anti-aliased rendering on";
+        break;
+      case 1:
+        new_header = (char *)"horizontal LCD-optimized rendering on (RGB)";
+        break;
+      case 2:
+        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        break;
+      case 3:
+        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
+        break;
+      case 4:
+        new_header = (char *)"vertical LCD-optimized rendering on (BGR)";
+        break;
+      default:
+        ;
       }
       set_current_image_type();
       return 1;
@@ -392,17 +414,15 @@
       break;
 
     case grKEY( ' ' ):
-      render_mode  = (render_mode+1) % 3;
+      render_mode = ( render_mode + 1 ) % 3;
       switch ( render_mode )
       {
         case 0:
           new_header = (char*)"rendering all glyphs in font";
           break;
-
         case 1:
           new_header = (char*)"rendering test text string";
           break;
-
         default:
           new_header = (char*)"rendering glyph waterfall";
       }

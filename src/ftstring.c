@@ -325,17 +325,17 @@
 
       if ( n && kerning > 1 )
       {
-        if ( prev_rsb_delta - face->glyph->metrics.lsb_delta >= 32 )
+        if ( prev_rsb_delta - face->glyph->lsb_delta >= 32 )
           origin_x -= 64;
 
-        else if ( prev_rsb_delta - face->glyph->metrics.lsb_delta < -32 )
+        else if ( prev_rsb_delta - face->glyph->lsb_delta < -32 )
           origin_x += 64;
       }
 
       origin.x = origin_x;
       origin.y = 0;
 
-      prev_rsb_delta = face->glyph->metrics.rsb_delta;
+      prev_rsb_delta = face->glyph->rsb_delta;
 
       error = FT_Get_Glyph( face->glyph, &glyph->image );
       if ( error )

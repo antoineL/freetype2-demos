@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004 by                                      */
+/*  Copyright 1996-2000, 2003, 2004, 2005 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -137,14 +137,14 @@
   static void
   parse_design_coords( char  *s )
   {
-
-
-    for ( requested_cnt = 0; requested_cnt < T1_MAX_MM_AXIS && *s; requested_cnt++ )
+    for ( requested_cnt = 0; requested_cnt < T1_MAX_MM_AXIS && *s;
+          requested_cnt++ )
     {
-      requested_pos[requested_cnt] = strtod(s,&s)*65536.0 ;
-      while ( *s==' ' ) ++s;
-    }
+      requested_pos[requested_cnt] = (FT_Fixed)( strtod( s, &s ) * 65536.0 );
 
+      while ( *s==' ' )
+        ++s;
+    }
   }
 
 

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2004 by                                                       */
+/*  Copyright 2004, 2005 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -13,7 +13,6 @@
 
 #include "ftcommon.i"
 #include <math.h>
-
 
 
 static void
@@ -118,7 +117,8 @@ Render_GammaGrid( void )
 
     for ( ny = 0; ny < yrepeat; ny++, y += 2*yside )
     {
-      do_rect( x, y, xside, yside, (int)255.0*pow( 0.5, 1.0/gamma_value ) );
+      do_rect( x, y, xside, yside,
+               (int)( 255.0 * pow( 0.5, 1.0 / gamma_value ) ) );
       do_rect( x, y+yside, xside, yside, -1 );
     }
   }

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004 by                                      */
+/*  Copyright 1996-2000, 2003, 2004, 2005 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -64,12 +64,12 @@
       {
         unsigned char*  dst = line;
 
-        for ( nx = 0; nx < levels; nx++, dst += 3*xside )
+        for ( nx = 0; nx < levels; nx++, dst += 3 * xside )
         {
-          double  p   = nx/(double)(levels-1);
-          int     gm  = 255.0*pow( p, ggamma );
+          double  p   = nx/(double)(levels - 1);
+          int     gm  = (int)( 255.0 * pow( p, ggamma ) );
 
-          memset( dst, gm, xside*3 );
+          memset( dst, gm, xside * 3 );
         }
       }
     }

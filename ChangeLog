@@ -1,3 +1,9 @@
+2005-03-04  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftgamma.c (Render_GammaGrid), src/ftmulti.c
+	(parse_design_coords), src/ftview.c (Render_GammaGrid): Fix compiler
+	warnings.
+
 2005-02-28  David Turner  <david@freetype.org>
 
 	* src/ftbench.c (preload, memory_file, memory_size): New global

@@ -1,3 +1,10 @@
+2001-04-04  David Turner  <david@freetype.org>
+
+	* Jamrules, Jamfile, graph/Jamfile, graph/x11/Jamfile, graph/win32/Jamfile,
+	graph/os2/Jamfile, src/Jamfile: added Jamfiles to build the FreeType 2
+	demos with Jam.	Be careful, they probably don't work on Unix and OS/2 yet..
+	
+
 2000-03-24  David Turner  <david.turner@freetype.org>
 
 	* Version 2.0.2 released.

@@ -1,0 +1,8 @@
+# Jamfile for the OS/2 graphics driver
+#
+SubDir FT2DEMO_TOP graph os2 ;
+
+SubDirHdrs $(GRAPH_INCLUDE) ;
+Library  $(GRAPH_LIB) : grxos2.c ;
+
+

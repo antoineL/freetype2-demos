@@ -1,0 +1,43 @@
+# The Jamfile used to compile the graph sub-system of the FreeType 2
+# demonstration programs..
+#
+
+SubDir FT2DEMO_TOP graph ;
+
+GRAPH_INCLUDE = $(FT2DEMO_GRAPH) ;
+GRAPH_LIB     = $(LIBPREFIX)graph$(SUFLIB) ;
+
+graph_sources = grblit grobjs grfont grdevice grinit ;
+
+if $(UNIX)
+{
+  DEVICE_DEFINE = -DDEVICE_X11 ;
+}
+else if $(NT)
+{
+  DEVICE_DEFINE = -DDEVICE_WIN32 ;
+}
+else if $(OS2)
+{
+  DEVICE_DEFINE = -DDEVICE_OS2 ;
+}
+
+CCFLAGS on <graph>grinit$(SUFOBJ) = $(CCFLAGS) $(DEVICE_DEFINE) ;
+Library $(GRAPH_LIB) : $(graph_sources).c ;
+
+if $(UNIX)
+{
+  SubInclude FT2DEMO_TOP graph x11 ;
+}
+else if $(NT)
+{
+  SubInclude FT2DEMO_TOP graph win32 ;
+}
+else if $(OS2)
+{
+  SubInclude FT2DEMO_TOP graph os2 ;
+}
+
+
+
+

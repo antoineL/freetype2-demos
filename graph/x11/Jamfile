@@ -1,0 +1,8 @@
+# Jamfile for the X11 graphics driver
+#
+SubDir FT2DEMO_TOP graph x11 ;
+
+SubDirHdrs $(GRAPH_INCLUDE) ;
+Library  $(GRAPH_LIB) : grx11.c ;
+
+

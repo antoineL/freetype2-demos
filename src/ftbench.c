@@ -54,6 +54,9 @@ FTC_SBitCache     sbit_cache;
 FTC_ImageTypeRec  font_type;
 charmap_t*        cmap = NULL;
 double            bench_time = BENCH_TIME;
+int               preload = 0;
+FT_Byte*          memory_file = NULL;
+long              memory_size;
 
 
 /*
@@ -283,7 +286,10 @@ bench_open_close( const char*  filename,
     FT_Face   bench_face;
     FT_Error  error;
 
-    error = FT_New_Face( lib, filename, 0, &bench_face );
+    if ( preload )
+      error = FT_New_Memory_Face( lib, memory_file, memory_size, 0, &bench_face );
+    else
+      error = FT_New_Face( lib, filename, 0, &bench_face );
     if ( !error )
     {
       FT_Done_Face( bench_face );
@@ -373,9 +379,6 @@ main(int argc,
   long max_bytes = CACHE_SIZE * 1024;
   char* tests = NULL;
   int size;
-  int preload = 0;
-  FT_Byte*  memory_file = NULL;
-  long      memory_size;
 
   while (argc > 1 && argv[1][0] == '-')
   {

@@ -17,6 +17,7 @@
 
 
 #include "ftcommon.i"
+#include FT_CACHE_MANAGER_H
 
   static FT_Error
   Render_All( int  first_index )
@@ -526,9 +527,9 @@
         fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
                          " [ %d, %ld, %f ]\n",
                          manager->num_nodes,
-                         manager->num_bytes,
+                         manager->cur_weight,
                          manager->num_nodes > 0 
-                            ? manager->num_bytes * 1.0 / manager->num_nodes
+                            ? manager->cur_weight * 1.0 / manager->num_nodes
                             : 0.0 );
       }
 

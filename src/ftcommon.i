@@ -175,7 +175,7 @@
 
   /* do we need to dump cache statistics? */
   int              dump_cache_stats = 0;
-  int              use_sbits_cache  = 0;
+  int              use_sbits_cache  = 1;
 
   int  num_indices;           /* number of glyphs or characters */
   int  ptsize;                /* current point size             */

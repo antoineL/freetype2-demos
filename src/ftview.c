@@ -176,7 +176,6 @@
   }
 
 
-
   static FT_Error
   Render_Waterfall( int  first_size )
   {
@@ -187,6 +186,7 @@
 
     unsigned char         text[256];
     const unsigned char*  p;
+
 
     start_x = 4;
     start_y = 16;

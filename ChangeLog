@@ -1,3 +1,7 @@
+2006-06-15  Werner Lemberg  <wl@gnu.org>
+
+	* *.mk: Updated and revised to latest changes in FreeType 2.
+
 2003-06-13  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdump.c (Print_Type): Don't emit bbox, ascender, descender,

@@ -3,6 +3,7 @@
 
 SubDir  FT2DEMO_TOP src ;
 
+SubDirHdrs  $(FT2_INCLUDE) ;
 SubDirHdrs  [ FT2DEMO_SubDir  src ] ;
 SubDirHdrs  [ FT2DEMO_SubDir  graph ] ;
 

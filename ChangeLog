@@ -1,3 +1,8 @@
+2001-04-25  David Turner <david@freetype.org>
+
+        * graph/beos/grbeos.cpp, graph/beos/grbeos.h, graph/beos/rules.mk,
+          graph/grinit.c: added BeOS graphics driver to MiGS
+
 2001-04-04  Werner Lemberg  <wl@gnu.org>
 
 	* graph/allegro/gralleg.c, graph/mac/grmac.c, graph/os2/gros2pm.c,

@@ -18,14 +18,22 @@ else
   LIBPREFIX ?= "" ;
 }
 
-# FT2_TOP contains the location of the FreeType source directory.  It is
-# "../freetype2" by default.
+
+# FT2_INCLUDE contains the location of the public FreeType 2 header files
+# it is ../freetype2/include by default
 #
-FT2_TOP ?= [ FDirName  $(DOTDOT) freetype2 ] ;
+FT2_INCLUDE ?= [ FDirName $(DOTDOT) freetype2 include ] ;
+
+
+# FT2_LIBH contains the path to the FreeType 2 library object
+#
+FT2_LIB ?= [ FDirName $(DOTDOT) freetype2 objs $(LIBPREFIX)freetype$(SUFLIB) ] ;
+
 
 # FT2DEMO_TOP contains the location of the FreeType demos directory.
 #
 FT2DEMO_TOP ?= $(DOT) ;
+
 
 # Define a new rule used to declare a sub directory of the Nirvana source
 # tree.

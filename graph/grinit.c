@@ -25,6 +25,11 @@
 #include "allegro/gralleg.h"
 #endif
 
+#ifdef DEVICE_BEOS
+#include "beos/grbeos.h"
+#endif
+
+
  /**********************************************************************
   *
   * <Function>

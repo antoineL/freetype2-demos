@@ -1,3 +1,14 @@
+2005-02-28  David Turner  <david@freetype.org>
+
+	* src/ftbench.c (preload, memory_file, memory_size): New global
+	variables.
+	(bench_open_close): Handle `preload' by using `FT_New_Memory_Face'.
+	(main): Remove `preload', `memory_file', and `memory_size'.
+
+2005-02-23  David Turner  <david@freetype.org>
+
+	* src/ftbench.c (fetch_test, cbox_test): Fix memory leaks.
+
 2005-02-12  Werner Lemberg  <wl@gnu.org>
 
 	Make ft2demos support a separate build directory.

@@ -245,7 +245,7 @@
     int  flags;
 
 
-    flags = FT_LOAD_DEFAULT;
+    flags = FT_LOAD_DEFAULT | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if ( !hint )
       flags |= FT_LOAD_NO_HINTING;

@@ -498,6 +498,8 @@
   {
     current_font.flags = antialias ? FT_LOAD_DEFAULT : FT_LOAD_TARGET_MONO;
 
+    current_font.flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
+
     if ( !hinted )
       current_font.flags |= FT_LOAD_NO_HINTING;
 

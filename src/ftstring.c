@@ -287,7 +287,7 @@
     FT_Pos     prev_rsb_delta = 0;
 
 
-    load_flags = FT_LOAD_DEFAULT;
+    load_flags = FT_LOAD_DEFAULT | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
     if ( !hinted )
       load_flags |= FT_LOAD_NO_HINTING;
     if ( !use_sbits )

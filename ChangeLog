@@ -1,15 +1,18 @@
-2001-05-28  David Turner <david@freetype.org>
+	* Version 2.0.3 released.
+	=========================
 
-    * Jamfile, src/Jamfile, graph/os2/Jamfile, graph/win32/Jamfile,
-    graph/x11/Jamfile: updating Jamfiles to correctly link the graphics
-    programs on all platforms with Jam
-    
-    * src/ftstring.c : removing debugging output
+2001-05-28  David Turner  <david@freetype.org>
 
-2001-04-25  David Turner <david@freetype.org>
+	* Jamfile, src/Jamfile, graph/os2/Jamfile, graph/win32/Jamfile,
+	graph/x11/Jamfile: Updating Jamfiles to correctly link the graphics
+	programs on all platforms with Jam.
 
-        * graph/beos/grbeos.cpp, graph/beos/grbeos.h, graph/beos/rules.mk,
-          graph/grinit.c: added BeOS graphics driver to MiGS
+	* src/ftstring.c: Removing debugging output.
+
+2001-04-25  David Turner  <david@freetype.org>
+
+	* graph/beos/grbeos.cpp, graph/beos/grbeos.h, graph/beos/rules.mk,
+	graph/grinit.c: added BeOS graphics driver to MiGS
 
 2001-04-04  Werner Lemberg  <wl@gnu.org>
 

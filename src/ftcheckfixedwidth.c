@@ -82,9 +82,10 @@
   {
     int  face_has_fixed_flag = FT_IS_FIXED_WIDTH(face);
     int  face_max_advance    = face->max_advance_width;
-    int  max_advance         = 0;
     int  num_proportional    = 0;
     int  n;
+
+    FT_UNUSED( index );
 
     printf( "%15s : %20s : ",
             file_basename( filepathname ),
@@ -123,7 +124,6 @@
   int  main( int  argc, char**  argv )
   {
     int           i, file_index;
-    unsigned int  id;
     char          filename[128 + 4];
     char          alt_filename[128 + 4];
     char*         execname;

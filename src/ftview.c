@@ -194,7 +194,7 @@
     pix_size = first_size;
     for (;;)
     {
-      sprintf( text, "%d: the quick brown fox jumps over the lazy dog "
+      sprintf( (char*)text, "%d: the quick brown fox jumps over the lazy dog "
                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
 
       p = text;

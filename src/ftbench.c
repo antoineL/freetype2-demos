@@ -289,7 +289,7 @@ int
 main(int argc,
      char** argv)
 {
-  FT_ULong max_bytes = CACHE_SIZE * 1024;
+  long max_bytes = CACHE_SIZE * 1024;
   char* tests = NULL;
   int size;
   int preload = 0;

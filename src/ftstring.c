@@ -469,8 +469,8 @@
     const unsigned char*  p     = (const unsigned char*)string;
     PGlyph                glyph = glyphs;
     FT_UInt               glyph_index;
-    FT_ULong              codepoint;
     unsigned char         in_code;
+    unsigned long         codepoint = 0;
     int                   expect;
 
 

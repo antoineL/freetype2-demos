@@ -1,3 +1,7 @@
+2004-11-16  Dr. Martin P.J. Zinser  <zinser@decus.de>
+
+	* vms_make.com: Updated to be in sync with vms_make.com from FT2.
+
 2004-10-18  Werner Lemberg  <wl@gnu.org>
 
 	* graph/gblblit.c (gblender_blit_init): Fix blit test.

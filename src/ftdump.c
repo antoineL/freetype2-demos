@@ -10,10 +10,10 @@
 
 #include <freetype/freetype.h>
 
-/* the following header shouldn't be used in normal programs */
+  /* the following header shouldn't be used in normal programs */
 #include <freetype/internal/ftdebug.h>
 
-/* showing driver name */
+  /* showing driver name */
 #include <freetype/ftmodule.h>
 #include <freetype/internal/ftobjs.h>
 #include <freetype/internal/ftdriver.h>
@@ -24,16 +24,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+
   FT_Library    library;      /* the FreeType library            */
   FT_Face       face;         /* the font face                   */
 
   FT_Error      error;
 
   int  comma_flag = 0;
+
 #if 0
   int  debug       = 0;
   int  trace_level = 0;
 #endif
+
 
   /* PanicZ */
   static
@@ -43,7 +46,8 @@
     exit( 1 );
   }
 
-  void Print_Comma( const char *message )
+
+  void  Print_Comma( const char*  message )
   {
     if ( comma_flag )
       printf(", ");
@@ -51,6 +55,7 @@
     printf("%s", message);
     comma_flag = 1;
   }
+
 
   static
   void  usage( char*  execname )
@@ -64,89 +69,101 @@
     exit( 1 );
   }
 
-  void Print_Name( FT_Face face )
+
+  void  Print_Name( FT_Face  face )
   {
     printf( "font name entries\n" );
-    /* Foundary??? Copyright??? Version???... */
+
+    /* XXX: Foundry? Copyright? Version? ... */
+
     printf( "   family: %s\n", face->family_name );
     printf( "   style:  %s\n", face->style_name );
   }
 
-  void Print_Type( FT_Face face )
+
+  void  Print_Type( FT_Face  face )
   {
-    FT_ModuleRec *module;
+    FT_ModuleRec*  module;
+
 
     printf( "font type entries\n" );
 
     module = &face->driver->root;
-    printf( "   freetype driver: %s\n", module->clazz->module_name );
+    printf( "   FreeType driver: %s\n", module->clazz->module_name );
 
     /* Is it better to dump all sfnt tag names? */
     printf( "   sfnt wrapped: %s\n",
-            (FT_IS_SFNT( face ) ? "Yes" : "No" ) );
+            FT_IS_SFNT( face ) ? (char *)"yes" : (char *)"no" );
 
     /* isScalable? */
     comma_flag = 0;
     printf( "   type: " );
     if ( FT_IS_SCALABLE( face ) )
-      Print_Comma( "Scalable" );
+      Print_Comma( "scalable" );
     if ( FT_HAS_MULTIPLE_MASTERS( face ) )
       Print_Comma( "Multiple Master" );
     if ( FT_HAS_FIXED_SIZES( face ) )
-      Print_Comma( "Fixed size" );
+      Print_Comma( "fixed size" );
     printf( "\n" );
 
-    /* Direcrtion */
+    /* Direction */
     comma_flag = 0;
-    printf( "   Direction: " );
+    printf( "   direction: " );
     if ( FT_HAS_HORIZONTAL( face ) )
-      Print_Comma( "Horizontal" );
+      Print_Comma( "horizontal" );
 
     if ( FT_HAS_VERTICAL( face ) )
-      Print_Comma( "Vertical" );
+      Print_Comma( "vertical" );
 
     printf( "\n" );
 
     printf( "   fixed width: %s\n",
-            (FT_IS_FIXED_WIDTH( face ) ? "Yes" : "No" ) );
+            FT_IS_FIXED_WIDTH( face ) ? (char *)"yes" : (char *)"no" );
 
     printf( "   fast glyphs: %s\n",
-            ( FT_HAS_FAST_GLYPHS( face ) ? "Yes" : "No" ) );
+            FT_HAS_FAST_GLYPHS( face ) ? (char *)"yes" : (char *)"no" );
 
     printf( "   glyph names: %s\n",
-            ( FT_HAS_GLYPH_NAMES( face ) ? "Yes" : "No" ) );
+            FT_HAS_GLYPH_NAMES( face ) ? (char *)"yes" : (char *)"no" );
   }
 
-  void Print_Fixed( FT_Face face )
+
+  void  Print_Fixed( FT_Face  face )
   {
-    int i;
+    int  i;
+
 
     /* num_fixed_size */
-    printf("fixed size\n");
+    printf( "fixed size\n" );
+
     /* available size */
-    for(i=0;i<face->num_fixed_sizes;i++)
+    for( i = 0; i < face->num_fixed_sizes; i++ )
     {
-      printf("   %d: height %d, width %d\n",
-             i,
-             face->available_sizes[i].height,
-             face->available_sizes[i].width);
+      printf( "   %d: height %d, width %d\n",
+              i,
+              face->available_sizes[i].height,
+              face->available_sizes[i].width );
     }
   }
 
-  void Print_Charmaps( FT_Face face )
+
+  void  Print_Charmaps( FT_Face  face )
   {
-    int i;
+    int  i;
 
-    /* Char Maps */
+
+    /* CharMaps */
     printf("charmaps\n");
-    for(i=0;i<face->num_charmaps;i++)
+
+    for( i = 0; i < face->num_charmaps; i++ )
     {
-      printf("   %d: platform: %d, encoding: %d\n",
-             i,
-             face->charmaps[i]->platform_id,
-             face->charmaps[i]->encoding_id);
+      printf( "   %d: platform: %d, encoding: %d\n",
+              i,
+              face->charmaps[i]->platform_id,
+              face->charmaps[i]->encoding_id );
     }
   }
+
 
   int  main( int    argc,
              char*  argv[] )
@@ -157,12 +174,14 @@
     char*  execname;
     int    num_faces;
 
+
     execname = ft_basename( argv[0] );
 
     if ( argc != 2 )
       usage( execname );
 
     file = 1;
+
 #if 0
     if ( debug )
     {
@@ -172,7 +191,8 @@
       trace_level = 0;
 #endif
     }
-#endif
+#endif /* 0 */
+
     /* Initialize engine */
     error = FT_Init_FreeType( &library );
     if ( error )
@@ -212,35 +232,37 @@
     num_faces = face->num_faces;
     FT_Done_Face( face );
 
-    printf("There %s %d %s in this file.\n",
-           (num_faces == 1 ? "is" : "are"),
-           num_faces,
-           (num_faces == 1 ? "face" : "faces"));
+    printf( "There %s %d %s in this file.\n",
+            num_faces == 1 ? (char *)"is" : (char *)"are",
+            num_faces,
+            num_faces == 1 ? (char *)"face" : (char *)"faces" );
 
-    for(i=0;i<num_faces;i++)
+    for( i = 0; i < num_faces; i++ )
     {
       error = FT_New_Face( library, filename, i, &face );
 
-      printf("----- Face number: %d -----\n", i);
+      printf("\n----- Face number: %d -----\n\n", i);
       Print_Name( face );
       printf("\n");
       Print_Type( face );
+
       if ( face->num_fixed_sizes )
       {
-        printf("\n");
+        printf( "\n" );
         Print_Fixed( face );
       }
+
       if( face->num_charmaps )
       {
         printf("\n");
         Print_Charmaps( face );
       }
-      printf("---------------------------\n");
 
       FT_Done_Face( face );
     }
 
     FT_Done_FreeType( library );
+
     exit( 0 );      /* for safety reasons */
     return 0;       /* never reached */
   }

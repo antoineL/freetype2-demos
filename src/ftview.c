@@ -131,8 +131,8 @@
       FT_UInt  gindex;
 
       gindex = *(unsigned char*)p;
-      if (!encoding)
-        gindex = get_glyph_index(gindex);
+      if ( encoding != ft_encoding_none )
+        gindex = get_glyph_index( gindex );
 
       error = get_glyph_bitmap( gindex, &bit3, &left, &top,
                                 &x_advance, &y_advance, &glyf );
@@ -385,7 +385,7 @@
         break;
 
       case 'e':
-        encoding = make_tag( optarg );
+        encoding = (FT_Encoding)make_tag( optarg );
         break;
 
       case 'f':
@@ -413,8 +413,9 @@
     argc -= optind;
     argv += optind;
 
-    Header_format = encoding ? "at %d points, first char code = 0x%x"
-                             : "at %d points, first glyph index = %d";
+    Header_format = encoding != ft_encoding_none
+                      ? "at %d points, first char code = 0x%x"
+                      : "at %d points, first glyph index = %d";
 
     if ( argc <= 1 )
       usage( execname );

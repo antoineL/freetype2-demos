@@ -181,7 +181,7 @@
   int  num_indices;           /* number of glyphs or characters */
   int  ptsize;                /* current point size             */
 
-  FT_UInt32  encoding = 0;
+  FT_Encoding  encoding = ft_encoding_none;
 
   int  hinted    = 1;         /* is glyph hinting active?    */
   int  antialias = 1;         /* is anti-aliasing active?    */
@@ -316,7 +316,7 @@
           continue;
       }
 
-      if ( encoding )
+      if ( encoding != ft_encoding_none )
       {
         error = FT_Select_Charmap( face, encoding );
         if ( error )
@@ -329,7 +329,8 @@
       font = (PFont)malloc( sizeof ( *font ) );
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
-      font->num_indices  = encoding? 0x10000L : face->num_glyphs;
+      font->num_indices  = encoding != ft_encoding_none ? 0x10000L
+                                                        : face->num_glyphs;
 
       strcpy( (char*)font->filepathname, filename );
 
@@ -376,7 +377,7 @@
                          font->filepathname,
                          font->face_index,
                          aface );
-    if ( !encoding || error )
+    if ( encoding == ft_encoding_none || error )
       return error;
 
     return FT_Select_Charmap( *aface, encoding );
@@ -460,7 +461,7 @@
   {
     if ( _glyf )
     {
-      FT_Glyph  glyf = _glyf;
+      FT_Glyph  glyf = (FT_Glyph)_glyf;
 
 
       FT_Done_Glyph( glyf );
@@ -476,7 +477,8 @@
     desc.face_id    = current_font.font.face_id;
 
     desc.type       = FTC_CMAP_BY_ENCODING;
-    desc.u.encoding = encoding ? encoding : ft_encoding_unicode;
+    desc.u.encoding = encoding != ft_encoding_none ? encoding
+                                                   : ft_encoding_unicode;
 
     return FTC_CMapCache_Lookup( cmap_cache, &desc, charcode );
   }
@@ -493,7 +495,7 @@
   {
     *aglyf = NULL;
 
-    if ( encoding )
+    if ( encoding != ft_encoding_none )
       Index = get_glyph_index( Index );
 
     /* use the SBits cache to store small glyph bitmaps; this is a lot */

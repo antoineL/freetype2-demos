@@ -16,6 +16,12 @@
 #include <X11/keysym.h>
 
 
+#if defined( __cplusplus ) || defined( c_plusplus)
+#define Class  c_class
+#else
+#define Class  class
+#endif
+
 
   typedef struct  Translator
   {
@@ -255,7 +261,7 @@
             {
               visual = visuals;
 
-              switch ( visual->class )
+              switch ( visual->Class )
               {
               case TrueColor:
                 string = "TrueColor";
@@ -319,7 +325,7 @@
               const char*  string = "unknown";
 
 
-              switch ( visual->class )
+              switch ( visual->Class )
               {
               case TrueColor:
                 string = "TrueColor";
@@ -771,7 +777,7 @@
 
       /* do not consume more than 1/2 of colormap entries */
       /* on PseudoColor visuals (8bpp are quite common)   */
-      if ( surface->visual->class == PseudoColor )
+      if ( surface->visual->Class == PseudoColor )
       {
         long  half = 1L << ( format->depth - 1 );
 

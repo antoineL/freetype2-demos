@@ -380,8 +380,12 @@
     fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
              execname );
     fprintf( stderr,  "\n" );
+#if defined( FT_DEBUG_LEVEL_ERROR ) || defined( FT_DEBUG_LEVEL_TRACE )
     fprintf( stderr,  "  -d        enable debugging messages\n" );
+#endif
+#ifdef FT_DEBUG_LEVEL_TRACE
     fprintf( stderr,  "  -l N      set debugging trace level to N (default: 0, max: 7)\n" );
+#endif
     fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
     fprintf( stderr,  "  -f index  specify first glyph index to display\n" );
     fprintf( stderr,  "\n" );

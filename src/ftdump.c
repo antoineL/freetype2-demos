@@ -58,11 +58,19 @@
   static
   void  usage( char*  execname )
   {
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "ftview: simple font dumper -- part of the FreeType project\n" );
-    fprintf( stderr,  "-----------------------------------------------------------\n" );
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "Usage: %s fontname[.ttf|.ttc]\n", execname );
+    fprintf( stderr, "\n" );
+    fprintf( stderr, "ftview: simple font dumper -- part of the FreeType project\n" );
+    fprintf( stderr, "-----------------------------------------------------------\n" );
+    fprintf( stderr, "\n" );
+    fprintf( stderr, "Usage: %s fontname[.ttf|.ttc]\n", execname );
+#if defined( FT_DEBUG_LEVEL_ERROR ) || defined( FT_DEBUG_LEVEL_TRACE )
+    fprintf( stderr, "\n" );
+    fprintf( stderr,  "  -d    enable debugging messages\n" );
+#endif
+#ifdef FT_DEBUG_LEVEL_TRACE
+    fprintf( stderr,  "  -l N  set debugging trace level to N (default: 0, max: 7)\n" );
+#endif
+    fprintf( stderr, "\n" );
 
     exit( 1 );
   }
@@ -171,14 +179,41 @@
     char   alt_filename[128 + 4];
     char*  execname;
     int    num_faces;
+    int    option;
 
 
     execname = ft_basename( argv[0] );
 
-    if ( argc != 2 )
-      usage( execname );
+    while ( 1 )
+    {
+      option = getopt( argc, argv, "dl:" );
 
-    file = 1;
+      if ( option == -1 )
+        break;
+
+      switch ( option )
+      {
+      case 'd':
+        debug = 1;
+        break;
+
+      case 'l':
+        trace_level = atoi( optarg );
+        if ( trace_level < 1 || trace_level > 7 )
+          usage( execname );
+        break;
+
+      default:
+        usage( execname );
+        break;
+      }
+    }
+
+    argc -= optind;
+    argv += optind;
+
+    if ( argc != 1 )
+      usage( execname );
 
     if ( debug )
     {
@@ -188,6 +223,8 @@
       trace_level = 0;
 #endif
     }
+
+    file = 0;
 
     /* Initialize engine */
     error = FT_Init_FreeType( &library );

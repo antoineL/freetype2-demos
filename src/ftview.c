@@ -18,8 +18,8 @@
 
 #include "ftcommon.i"
 
-  static
-  FT_Error  Render_All( int  first_glyph )
+  static FT_Error
+  Render_All( int  first_index )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
@@ -43,18 +43,20 @@
     x = start_x;
     y = start_y;
 
-    i = first_glyph;
+    i = first_index;
 
 #if 0
-    while ( i < first_glyph + 2 )
+    while ( i < first_index + 2 )
 #else
-    while ( i < num_glyphs )
+    while ( i < num_indices )
 #endif
     {
       int  x_top, y_top, left, top, x_advance, y_advance;
  
-      error = get_glyph_bitmap( i, &bit3, &left, &top, &x_advance, &y_advance );
-      if (!error)
+
+      error = get_glyph_bitmap( i, &bit3, &left, &top,
+                                &x_advance, &y_advance );
+      if ( !error )
       {
         /* now render the bitmap into the display surface */
         x_top = x + left;
@@ -82,8 +84,8 @@
   }
 
 
-  static
-  FT_Error  Render_Text( int  first_glyph )
+  static FT_Error
+  Render_Text( int  first_index )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
@@ -109,7 +111,7 @@
     x = start_x;
     y = start_y;
 
-    i = first_glyph;
+    i = first_index;
     p = Text;
     while ( i > 0 && *p )
     {
@@ -122,11 +124,12 @@
       int      left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt  gindex;
       
+
       gindex = FT_Get_Char_Index( face, (unsigned)*p );
  
       error = get_glyph_bitmap( gindex, &bit3, &left, &top,
-                                 &x_advance, &y_advance );
-      if (!error)
+                                &x_advance, &y_advance );
+      if ( !error )
       {
         /* now render the bitmap into the display surface */
         x_top = x + left;
@@ -162,8 +165,8 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  static
-  void Help( void )
+  static void
+  Help( void )
   {
     grEvent  dummy_event;
 
@@ -198,15 +201,15 @@
     grWriteln( "  Page Up   : increase pointsize by 10 units" );
     grWriteln( "  Page Down : decrease pointsize by 10 units" );
     grLn();
-    grWriteln( "  Right     : increment first glyph index" );
-    grWriteln( "  Left      : decrement first glyph index" );
+    grWriteln( "  Right     : increment index" );
+    grWriteln( "  Left      : decrement index" );
     grLn();
-    grWriteln( "  F7        : decrement first glyph index by 10" );
-    grWriteln( "  F8        : increment first glyph index by 10" );
-    grWriteln( "  F9        : decrement first glyph index by 100" );
-    grWriteln( "  F10       : increment first glyph index by 100" );
-    grWriteln( "  F11       : decrement first glyph index by 1000" );
-    grWriteln( "  F12       : increment first glyph index by 1000" );
+    grWriteln( "  F7        : decrement index by 10" );
+    grWriteln( "  F8        : increment index by 10" );
+    grWriteln( "  F9        : decrement index by 100" );
+    grWriteln( "  F10       : increment index by 100" );
+    grWriteln( "  F11       : decrement index by 1000" );
+    grWriteln( "  F12       : increment index by 1000" );
     grLn();
     grWriteln( "press any key to exit this help screen" );
 
@@ -215,8 +218,8 @@
   }
 
 
-  static
-  int  Process_Event( grEvent*  event )
+  static int
+  Process_Event( grEvent*  event )
   {
     int  i;
 
@@ -311,15 +314,15 @@
 
   Do_Glyph:
     Num += i;
-    if ( Num < 0 )           Num = 0;
-    if ( Num >= num_glyphs ) Num = num_glyphs - 1;
+    if ( Num < 0 )            Num = 0;
+    if ( Num >= num_indices ) Num = num_indices - 1;
     
     return 1;
   }
 
 
-  static
-  void  usage( char*  execname )
+  static void
+  usage( char*  execname )
   {
     fprintf( stderr,  "\n" );
     fprintf( stderr,  "ftview: simple glyph viewer -- part of the FreeType project\n" );
@@ -335,7 +338,8 @@
     fprintf( stderr,  "  -l N      set debugging trace level to N (default: 0, max: 7)\n" );
 #endif
     fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
-    fprintf( stderr,  "  -f index  specify first glyph index to display\n" );
+    fprintf( stderr,  "  -f index  specify first index to display\n" );
+    fprintf( stderr,  "  -e enc    specify encoding tag (default: no encoding)\n" );
     fprintf( stderr,  "  -D        dump cache usage statistics\n" );
     fprintf( stderr,  "\n" );
 
@@ -343,23 +347,25 @@
   }
 
 
-  int  main( int    argc,
-             char*  argv[] )
+  int
+  main( int    argc,
+        char*  argv[] )
   {
-    int    old_ptsize, orig_ptsize, font_index;
-    int    first_glyph = 0;
-    int    XisSetup = 0;
-    char*  execname;
-    int    option;
+    int          old_ptsize, orig_ptsize, font_index;
+    int          first_index = 0;
+    int          XisSetup = 0;
+    char*        execname;
+    int          option;
+    const char*  Header_format;
 
-    grEvent   event;
+    grEvent      event;
 
 
     execname = ft_basename( argv[0] );
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "Ddf:l:r:" );
+      option = getopt( argc, argv, "Dde:f:l:r:" );
 
       if ( option == -1 )
         break;
@@ -374,8 +380,12 @@
         dump_cache_stats = 1;
         break;
         
+      case 'e':
+        encoding = make_tag( optarg );
+        break;
+
       case 'f':
-        first_glyph = atoi( optarg );
+        first_index = atoi( optarg );
         break;
 
       case 'l':
@@ -399,6 +409,9 @@
 
     argc -= optind;
     argv += optind;
+
+    Header_format = encoding ? "at %d points, first char code = 0x%x"
+                             : "at %d points, first glyph index = %d";
 
     if ( argc <= 1 )
       usage( execname );
@@ -433,7 +446,7 @@
     set_current_face( fonts[font_index] );
     set_current_pointsize( ptsize );
     set_current_image_type();
-    num_glyphs = fonts[font_index]->num_glyphs;
+    num_indices = fonts[font_index]->num_indices;
 
     /* initialize graphics if needed */
     if ( !XisSetup )
@@ -448,10 +461,10 @@
     if ( num_fonts >= 1 )
     {
       Fail = 0;
-      Num  = first_glyph;
+      Num  = first_index;
 
-      if ( Num >= num_glyphs )
-        Num = num_glyphs - 1;
+      if ( Num >= num_indices )
+        Num = num_indices - 1;
 
       if ( Num < 0 )
         Num = 0;
@@ -460,6 +473,7 @@
     for ( ;; )
     {
       int  key;
+
 
       Clear_Display();
 
@@ -500,24 +514,21 @@
         grWriteCellString( &bit, 0, 0, new_header, fore_color );
         new_header = 0;
 
-        sprintf( Header, "at %d points, first glyph = %d",
-                         ptsize,
-                         Num );
+        sprintf( Header, Header_format, ptsize, Num );
       }
 
       grWriteCellString( &bit, 0, 8, Header, fore_color );
       grRefreshSurface( surface );
 
-      if (dump_cache_stats)
+      if ( dump_cache_stats )
       {
         /* dump simple cache manager statistics */
         fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
                          " [ %d, %ld, %f ]\n",
                          manager->num_nodes,
                          manager->num_bytes,
-                       
                          manager->num_nodes > 0 
-                            ? manager->num_bytes*1.0/manager->num_nodes
+                            ? manager->num_bytes * 1.0 / manager->num_nodes
                             : 0.0 );
       }
 

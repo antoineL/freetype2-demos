@@ -6,9 +6,10 @@
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
-/*  ftcommin.i - common routines for the FreeType demo programs.            */
+/*  ftcommon.i - common routines for the FreeType demo programs.            */
 /*                                                                          */
 /****************************************************************************/
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -90,7 +91,8 @@
 #define LOG( x )  LogMessage##x
 
 
-  void  LogMessage( const char*  fmt, ... )
+  void
+  LogMessage( const char*  fmt, ... )
   {
     va_list  ap;
 
@@ -102,13 +104,14 @@
 
 #else /* !DEBUG */
 
-#define LOG(x)  /* */
+#define LOG( x )  /* */
 
 #endif
 
 
   /* PanicZ */
-  void  PanicZ( const char*  message )
+  void
+  PanicZ( const char*  message )
   {
     fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
     exit( 1 );
@@ -116,8 +119,8 @@
 
 
   /* clear the `bit' bitmap/pixmap */
-  static
-  void  Clear_Display( void )
+  static void
+  Clear_Display( void )
   {
     long  image_size = (long)bit.pitch * bit.rows;
 
@@ -129,8 +132,8 @@
 
 
   /* initialize the display bitmap `bit' */
-  static
-  void  Init_Display( void )
+  static void
+  Init_Display( void )
   {
     grInitDevices();
 
@@ -170,24 +173,26 @@
 
   FTC_Image_Desc   current_font;
 
-  /* do we need to dump cache statistics ?? */
+  /* do we need to dump cache statistics? */
   int              dump_cache_stats = 0;
   int              use_sbits_cache  = 0;
 
-  int  num_glyphs;            /* number of glyphs   */
-  int  ptsize;                /* current point size */
+  int  num_indices;           /* number of glyphs or characters */
+  int  ptsize;                /* current point size             */
+
+  unsigned long  encoding = ft_encoding_none;
 
   int  hinted    = 1;         /* is glyph hinting active?    */
   int  antialias = 1;         /* is anti-aliasing active?    */
   int  use_sbits = 1;         /* do we use embedded bitmaps? */
   int  low_prec  = 0;         /* force low precision         */
   int  autohint  = 0;         /* force auto-hinting          */
-  int  Num;                   /* current first glyph index   */
+  int  Num;                   /* current first index         */
 
   int  res = 72;
 
 
-#define MAX_GLYPH_BYTES  150000   /* 150 Kb for the glyph image cache */
+#define MAX_GLYPH_BYTES  150000   /* 150kB for the glyph image cache */
 
 
 #define FLOOR( x )  (   (x)        & -64 )
@@ -201,7 +206,7 @@
     const char*  filepathname;
     int          face_index;
 
-    int          num_glyphs;
+    int          num_indices;
 
   } TFont, *PFont;
 
@@ -220,8 +225,27 @@
   };
 
 
-  static
-  int  install_font_file( char*  filepath )
+  static unsigned long
+  make_tag( char  *s )
+  {
+    int            i;
+    unsigned long  l = 0;
+
+
+    for ( i = 0; i < 4; i++ )
+    {
+      if ( !s[i] )
+        break;
+      l <<= 8;
+      l  += (unsigned long)s[i];
+    }
+
+    return l;
+  }
+
+
+  static int
+  install_font_file( char*  filepath )
   {
     static char   filename[1024 + 5];
     int           i, len, suffix_len, num_faces;
@@ -239,8 +263,8 @@
     if ( !error )
       goto Success;
 
-    /* could not open the file directly; we will know try various */
-    /* suffixes like `.ttf' or `.pfb'                             */
+    /* could not open the file directly; we will now try various */
+    /* suffixes like `.ttf' or `.pfb'                            */
 
 #ifndef macintosh
 
@@ -291,10 +315,20 @@
           continue;
       }
 
+      if ( encoding )
+      {
+        error = FT_Select_Charmap( face, encoding );
+        if ( error )
+        {
+          FT_Done_Face( face );
+          continue;
+        }
+      }
+
       font = (PFont)malloc( sizeof ( *font ) );
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
-      font->num_glyphs   = face->num_glyphs;
+      font->num_indices  = encoding? 0x10000L : face->num_glyphs;
 
       strcpy( (char*)font->filepathname, filename );
 
@@ -303,12 +337,12 @@
       if ( max_fonts == 0 )
       {
         max_fonts = 16;
-        fonts = (PFont*)malloc( max_fonts * sizeof ( PFont ) );
+        fonts     = (PFont*)malloc( max_fonts * sizeof ( PFont ) );
       }
       else if ( num_fonts >= max_fonts )
       {
         max_fonts *= 2;
-        fonts = (PFont*)realloc( fonts, max_fonts * sizeof ( PFont ) );
+        fonts      = (PFont*)realloc( fonts, max_fonts * sizeof ( PFont ) );
       }
 
       fonts[num_fonts++] = font;
@@ -337,15 +371,19 @@
     FT_UNUSED( request_data );
 
 
-    return FT_New_Face( lib,
-                        font->filepathname,
-                        font->face_index,
-                        aface );
+    error = FT_New_Face( lib,
+                         font->filepathname,
+                         font->face_index,
+                         aface );
+    if ( !encoding || error )
+      return error;
+
+    return FT_Select_Charmap( *aface, encoding );
   }
 
 
-  static
-  void  init_freetype( void )
+  static void
+  init_freetype( void )
   {
     error = FT_Init_FreeType( &library );
     if ( error )
@@ -366,38 +404,38 @@
   }
 
 
-  static
-  void  done_freetype( void )
+  static void
+  done_freetype( void )
   {
     FTC_Manager_Done( manager );
     FT_Done_FreeType( library );
   }
 
 
-  static
-  void  set_current_face( PFont  font )
+  static void
+  set_current_face( PFont  font )
   {
     current_font.font.face_id = (FTC_FaceID)font;
   }
 
 
-  static
-  void  set_current_size( int  pixel_size )
+  static void
+  set_current_size( int  pixel_size )
   {
     current_font.font.pix_width  = pixel_size;
     current_font.font.pix_height = pixel_size;
   }
 
 
-  static
-  void  set_current_pointsize( int  point_size )
+  static void
+  set_current_pointsize( int  point_size )
   {
     set_current_size( ( point_size * res + 36 ) / 72 );
   }
 
 
-  static
-  void  set_current_image_type( void )
+  static void
+  set_current_image_type( void )
   {
     current_font.image_type = antialias ? ftc_image_grays : ftc_image_mono;
 
@@ -412,23 +450,31 @@
   }
 
 
-
-  static
-  FT_Error  get_glyph_bitmap( FT_ULong   glyph_index,
-                              grBitmap*  target,
-                              int       *left,
-                              int       *top,
-                              int       *x_advance,
-                              int       *y_advance )
+  static FT_Error
+  get_glyph_bitmap( FT_ULong   Index,
+                    grBitmap*  target,
+                    int       *left,
+                    int       *top,
+                    int       *x_advance,
+                    int       *y_advance )
   {
-    if (use_sbits_cache)
+    if ( encoding )
+    {
+      FT_Face  f;
+
+
+      FTC_Manager_Lookup_Face( manager, current_font.font.face_id, &f );
+      Index = FT_Get_Char_Index( f, Index );
+    }
+
+    if ( use_sbits_cache )
     {
       FTC_SBit  sbit;
 
 
       error = FTC_SBit_Cache_Lookup( sbits_cache,
                                      &current_font,
-                                     glyph_index,
+                                     Index,
                                      &sbit );
       if ( !error )
       {
@@ -440,7 +486,7 @@
         switch ( sbit->format )
         {
         case ft_pixel_mode_mono:
-          target->mode  = gr_pixel_mode_mono;
+          target->mode = gr_pixel_mode_mono;
           break;
 
         case ft_pixel_mode_grays:
@@ -465,7 +511,7 @@
 
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
-                                      glyph_index,
+                                      Index,
                                       &glyf );
       if ( !error )
       {
@@ -484,7 +530,7 @@
         switch ( source->pixel_mode )
         {
         case ft_pixel_mode_mono:
-          target->mode  = gr_pixel_mode_mono;
+          target->mode = gr_pixel_mode_mono;
           break;
 
         case ft_pixel_mode_grays:
@@ -499,11 +545,13 @@
         *left = bitmap->left;
         *top  = bitmap->top;
 
-        *x_advance = (glyf->advance.x+0x8000) >> 16;
-        *y_advance = (glyf->advance.y+0x8000) >> 16;
+        *x_advance = ( glyf->advance.x + 0x8000 ) >> 16;
+        *y_advance = ( glyf->advance.y + 0x8000 ) >> 16;
       }
     }
+
     return 0;
   }
+
 
 /* End */

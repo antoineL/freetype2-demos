@@ -574,7 +574,7 @@
                                       antialias ? ft_render_mode_normal
                                                 : ft_render_mode_mono,
                                       NULL, 0 );
-          if ( error)
+          if ( error )
             goto Exit;
           
           *aglyf = glyf;

@@ -1,16 +1,21 @@
+2001-12-31  Werner Lemberg  <wl@gnu.org>
+
+	* graph/x11/rules.mk: Fix typo (wilcard -> wildcard).
+
 2001-12-30  David Turner  <david@freetype.org>
 
-	* README: updated release numbers to 2.0.6
+	* README: Updated to version 2.0.6.
 	
-	* graph/x11/rules.mk: updated X11 detection rules. /usr/X11R6 and
-	/usr/local/X11R6 are now probed automatically as a fallback. This
-	allows the test programs to work automatically on Debian Linux
-	systems (which only use "/usr/bin/X11" in the path)
+	* graph/x11/rules.mk: Updated X11 detection rules: "/usr/X11R6" and
+	"/usr/local/X11R6" are now probed as a fallback.  This allows the
+	test programs to work automatically on Debian Linux systems (which
+	only use "/usr/bin/X11" in the path).
 
 2001-12-21  David Turner  <david@freetype.org>
 
-        * src/ftcommon.i (get_glyph_bitmap): added a missing error check,
-        and have the function return an error code when necessary..
+	* src/ftcommon.i (get_glyph_bitmap): Added a missing error check.
+	Make the function return an error code if necessary.
+	* src/testnames.c (main): Fix typo.
 
 2001-12-15  Werner Lemberg  <wl@gnu.org>
 

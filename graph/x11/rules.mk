@@ -16,6 +16,11 @@
 #   X11R6
 #   X11R5
 #
+# Additionally, we directly check the following directories:
+#
+#   /usr/X11R6
+#   /usr/local/X11R6
+#
 # If the variable X11_PATH is set (to specify unusual locations of X11), no
 # other directory is searched.  More than one directory must be separated
 # with spaces.  Example:
@@ -40,10 +45,7 @@ ifndef X11_PATH
     X11_PATH := $(filter %$(xversion)$(SEP)bin,$(X11_PATH))
     X11_PATH := $(X11_PATH:%$(SEP)bin=%)
   else
-    # on Debian Linux systems, and a few others, only "/usr/bin/X11"
-    # is in the path. As a last fallback, we test for "/usr/X11R6"
-    #
-    X11_PATH = $(strip $(wildcard /usr/X11R6) $(wilcard /usr/local/X11R6))
+    X11_PATH = $(strip $(wildcard /usr/X11R6) $(wildcard /usr/local/X11R6))
   endif
 endif
 

@@ -1,3 +1,17 @@
+2003-11-07  Werner Lemberg  <wl@gnu.org>
+
+
+	* Version 2.1.7 released.
+	=========================
+
+
+2003-11-06  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.6 released.
+	=========================
+
+
 2003-11-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/testname.c: Include ft2build.h.

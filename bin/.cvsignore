@@ -1,8 +1,8 @@
 ftdump
 ftlint
+ftmemchk
 ftmulti
 ftstring
 fttimer
 ftview
-memtest
 .libs

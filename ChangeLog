@@ -1,3 +1,7 @@
+2001-09-10  Werner Lemberg  <wl@gnu.org>
+
+	README: Slight update.
+
 2001-08-25  Werner Lemberg  <wl@gnu.org>
 
 	Added CMap support to ftview: The new flag `-e' accepts an encoding
@@ -26,7 +30,7 @@
 
 2001-06-27  Werner Lemberg  <wl@gnu.org>
 
-	* src/memtest.c: s/memtest/ftmemchk/.
+	* src/ftmemchk.c: s/memtest/ftmemchk/.
 
 2001-06-27  David Turner  <david@freetype.org>
 

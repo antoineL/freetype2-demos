@@ -1006,11 +1006,16 @@ typedef  unsigned long   uint32;
                     x11dev.format       = cur_format;
                     x11dev.scanline_pad = format->scanline_pad;
                     x11dev.visual       = visual->visual;
+                    
+                    XFree( visuals );
+                    XFree( formats );
                     return 0;
                   }
                 }
               }
             } /* for visuals */
+            
+            XFree( visuals );
           }
           break;
 
@@ -1018,8 +1023,10 @@ typedef  unsigned long   uint32;
           ;
         } /* switch format depth */
       } /* for formats */
+      XFree( formats );
     }
 
+    
     fprintf( stderr, "unsupported X11 display depth!\n" );
 
     return -1;

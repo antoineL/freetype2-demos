@@ -142,7 +142,7 @@
         if ( error )
           goto Next;
 
-        error = FT_Glyph_Stroke( &glyphp, stroker, 0 );
+        error = FT_Glyph_Stroke( &glyphp, stroker, 1 );
         if ( error )
         {
           FT_Done_Glyph( glyphp );
@@ -169,7 +169,7 @@
             y += step_y;
 
             if ( y >= bit.rows )
-              return FT_Err_Ok;
+              goto Exit;
           }
         }
         else

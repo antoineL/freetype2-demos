@@ -164,14 +164,14 @@
 
   FT_Library       library;      /* the FreeType library            */
   FTC_Manager      cache_manager;/* the cache manager               */
-  FTC_Image_Cache  image_cache;  /* the glyph image cache           */
-  FTC_SBit_Cache   sbits_cache;  /* the glyph small bitmaps cache   */
+  FTC_ImageCache   image_cache;  /* the glyph image cache           */
+  FTC_SBitCache    sbits_cache;  /* the glyph small bitmaps cache   */
 
   FT_Face          face;         /* the font face                   */
   FT_Size          size;         /* the font size                   */
   FT_GlyphSlot     glyph;        /* the glyph slot                  */
 
-  FTC_Image_Desc   current_font;
+  FTC_ImageDesc    current_font;
 
   /* do we need to dump cache statistics? */
   int              dump_cache_stats = 0;
@@ -394,11 +394,11 @@
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
-    error = FTC_SBit_Cache_New( cache_manager, &sbits_cache );
+    error = FTC_SBitCache_New( cache_manager, &sbits_cache );
     if ( error )
       PanicZ( "could not initialize small bitmaps cache" );
 
-    error = FTC_Image_Cache_New( cache_manager, &image_cache );
+    error = FTC_ImageCache_New( cache_manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
   }
@@ -437,45 +437,66 @@
   static void
   set_current_image_type( void )
   {
-    current_font.image_type = antialias ? ftc_image_grays : ftc_image_mono;
+    current_font.type = antialias ? ftc_image_grays : ftc_image_mono;
 
     if ( !hinted )
-      current_font.image_type |= ftc_image_flag_unhinted;
+      current_font.type |= ftc_image_flag_unhinted;
 
     if ( autohint )
-      current_font.image_type |= ftc_image_flag_autohinted;
+      current_font.type |= ftc_image_flag_autohinted;
 
     if ( !use_sbits )
-      current_font.image_type |= ftc_image_flag_no_sbits;
+      current_font.type |= ftc_image_flag_no_sbits;
+  }
+
+
+  static void
+  done_glyph_bitmap( FT_Pointer  _glyf )
+  {
+    if (_glyf)
+    {
+      FT_Glyph  glyf = _glyf;
+      FT_Done_Glyph( glyf );
+    }
   }
 
 
   static FT_Error
-  get_glyph_bitmap( FT_ULong   Index,
-                    grBitmap*  target,
-                    int       *left,
-                    int       *top,
-                    int       *x_advance,
-                    int       *y_advance )
+  get_glyph_bitmap( FT_ULong     Index,
+                    grBitmap*    target,
+                    int         *left,
+                    int         *top,
+                    int         *x_advance,
+                    int         *y_advance,
+                    FT_Pointer  *aglyf )
   {
+    *aglyf = NULL;
+    
     if ( encoding )
     {
       FT_Face  f;
 
-
+      /* yes, this is slow. We'd better have a way to cache charmaps outside  */
+      /* of face objects themselves, but for now, that is simply not possible */
       FTC_Manager_Lookup_Face( cache_manager, current_font.font.face_id, &f );
       Index = FT_Get_Char_Index( f, Index );
     }
 
-    if ( use_sbits_cache )
+    /* use the SBits cache to store small glyph bitmaps, this is a lot */
+    /* more memory-efficient..                                         */
+    /*                                                                 */
+    if ( use_sbits_cache                   &&
+         current_font.font.pix_width  < 32 &&
+         current_font.font.pix_height < 32 )
     {
       FTC_SBit  sbit;
 
 
-      error = FTC_SBit_Cache_Lookup( sbits_cache,
-                                     &current_font,
-                                     Index,
-                                     &sbit );
+      error = FTC_SBitCache_Lookup( sbits_cache,
+                                    &current_font,
+                                    Index,
+                                    &sbit,
+                                    NULL );
       if ( !error )
       {
         target->rows   = sbit->height;
@@ -502,25 +523,53 @@
         *top       = sbit->top;
         *x_advance = sbit->xadvance;
         *y_advance = sbit->yadvance;
+        
+        
       }
+      return error;
     }
-    else
+
+
+    /* otherwise, use an image cache to store glyph outlines, and render */
+    /* them on demand. we can thus support very large sizes easily..     */
     {
-      FT_Glyph  glyf;
+      FT_Glyph   glyf;
+      FT_UInt32  type;
 
 
-      error = FTC_Image_Cache_Lookup( image_cache,
-                                      &current_font,
-                                      Index,
-                                      &glyf );
+      type              = current_font.type;
+      current_font.type = (type & ~ftc_image_format_mask) | 
+                           ftc_image_format_outline;
+
+      error = FTC_ImageCache_Lookup( image_cache,
+                                     &current_font,
+                                     Index,
+                                     &glyf,
+                                     NULL );
+
+      current_font.type = type;
+
       if ( !error )
       {
-        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyf;
-        FT_Bitmap*      source = &bitmap->bitmap;
+        FT_BitmapGlyph  bitmap;
+        FT_Bitmap*      source;
 
+        if ( glyf->format == ft_glyph_format_outline )
+        {
+          /* render the glyph to a bitmap, don't destroy original */
+          FT_Glyph_To_Bitmap( &glyf,
+                              antialias ? ft_render_mode_normal
+                                        : ft_render_mode_mono,
+                              NULL, 0 );
+
+          *aglyf = glyf;
+        }
 
         if ( glyf->format != ft_glyph_format_bitmap )
           PanicZ( "invalid glyph format returned!" );
+
+        bitmap = (FT_BitmapGlyph)glyf;
+        source = &bitmap->bitmap;
 
         target->rows   = source->rows;
         target->width  = source->width;

@@ -23,6 +23,7 @@
   Render_All( int  first_index )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
+    FT_Pointer  glyf;
     int         i;
     grBitmap    bit3;
 
@@ -47,7 +48,7 @@
     i = first_index;
 
 #if 0
-    while ( i < first_index + 2 )
+    while ( i < first_index + 1 )
 #else
     while ( i < num_indices )
 #endif
@@ -56,13 +57,16 @@
  
 
       error = get_glyph_bitmap( i, &bit3, &left, &top,
-                                &x_advance, &y_advance );
+                                &x_advance, &y_advance, &glyf );
       if ( !error )
       {
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+        if ( glyf )
+          done_glyph_bitmap( glyf );
 
         x += x_advance + 1;
 
@@ -89,6 +93,7 @@
   Render_Text( int  first_index )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
+    FT_Pointer  glyf;
     int         i;
     grBitmap    bit3;
 
@@ -129,13 +134,16 @@
       gindex = FT_Get_Char_Index( face, (unsigned)*p );
  
       error = get_glyph_bitmap( gindex, &bit3, &left, &top,
-                                &x_advance, &y_advance );
+                                &x_advance, &y_advance, &glyf );
       if ( !error )
       {
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+        if (glyf)
+          done_glyph_bitmap( glyf );
 
         x += x_advance + 1;
 

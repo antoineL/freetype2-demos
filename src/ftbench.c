@@ -360,7 +360,7 @@ main(int argc,
     memory_size = ftell( file );
     fseek( file, 0, SEEK_SET );
 
-    memory_file = malloc( memory_size );
+    memory_file = (FT_Byte*)malloc( memory_size );
     if ( memory_file == NULL )
     {
       fprintf( stderr, "couldn't allocate memory to pre-load font file\n" );
@@ -395,7 +395,7 @@ main(int argc,
 
   cmap_desc.face_id    = (void*)1;
   cmap_desc.type       = FTC_CMAP_BY_INDEX;
-  cmap_desc.u.encoding = 0;
+  cmap_desc.u.encoding = FT_ENCODING_NONE;
   if (TEST('d') &&
       face->charmap) /* some fonts (eg. windings) don't have a charmap */
   {

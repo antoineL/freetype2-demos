@@ -1,3 +1,11 @@
+2003-06-08  Werner Lemberg  <wl@gnu.org>
+
+	* graph/x11/grx11.c (gr_x11_surface_init): Add proper cast in call
+	to grAlloc.
+
+	* src/ftbench.c (main): Add proper cast in call to malloc.
+	Use FT_ENCODING_NONE, not 0.
+
 2003-06-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (Render_Waterfall): Handle fixed-sized fonts better.

@@ -25,9 +25,9 @@
     grBitmap    bit3;
 
     start_x = 4;
-    start_y = 16 + current_font.size.pix_height;
+    start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.size, &face, &size );
+    error = FTC_Manager_Lookup_Size( manager, &current_font.font, &face, &size );
     if (error)
     {
       /* this should never happen !! */
@@ -120,9 +120,9 @@
     const unsigned char*  p;
 
     start_x = 4;
-    start_y = 16 + current_font.size.pix_height;
+    start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.size, &face, &size );
+    error = FTC_Manager_Lookup_Size( manager, &current_font.font, &face, &size );
     if (error)
     {
       /* this should never happen */
@@ -464,7 +464,7 @@
     ptsize     = orig_ptsize;
     
   NewFile:
-    set_current_font( fonts[ font_index ] );
+    set_current_face( fonts[ font_index ] );
     set_current_pointsize( ptsize );
     set_current_image_type();
     num_glyphs = fonts[font_index]->num_glyphs;
@@ -513,7 +513,7 @@
         sprintf( Header, "%s %s (file `%s')",
                          face->family_name,
                          face->style_name,
-                         ft_basename( ((PFont)current_font.size.face_id)->filepathname ) );
+                         ft_basename( ((PFont)current_font.font.face_id)->filepathname ) );
 
         if ( !new_header )
           new_header = Header;

@@ -303,10 +303,10 @@ Success:
     error = FT_Init_FreeType( &library );
     if (error) PanicZ( "could not initialise FreeType" );
     
-    error = FTC_Manager_New( library, 0, 0, my_face_requester, 0, &manager );
+    error = FTC_Manager_New( library, 0, 0, 0, my_face_requester, 0, &manager );
     if (error) PanicZ( "could not initialise Cache Manager" );
     
-    error = FTC_Image_Cache_New( manager, MAX_GLYPH_BYTES, &image_cache );
+    error = FTC_Image_Cache_New( manager, &image_cache );
     if (error) PanicZ( "could not initialise Glyph Image Cache" );
   }
 
@@ -314,24 +314,23 @@ Success:
   static
   void     done_freetype( void )
   {
-    FTC_Image_Cache_Done( image_cache );
     FTC_Manager_Done( manager );
     FT_Done_FreeType( library );
   }  
 
 
   static
-  void     set_current_font( PFont   font )
+  void     set_current_face( PFont   font )
   {
-    current_font.size.face_id = (FTC_FaceID)font;
+    current_font.font.face_id = (FTC_FaceID)font;
   }  
 
 
   static
   void     set_current_size( int  pixel_size )
   {
-    current_font.size.pix_width  = pixel_size;
-    current_font.size.pix_height = pixel_size;
+    current_font.font.pix_width  = pixel_size;
+    current_font.font.pix_height = pixel_size;
   }
 
 

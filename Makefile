@@ -24,6 +24,7 @@ endif
 # defined by default as $(TOP)/config.mk
 #
 ifndef CONFIG_MK
+  PROJECT := freetype
   CONFIG_MK := $(TOP)/config.mk
 endif
 
@@ -80,7 +81,7 @@ else
 
   SRC_DIR_ := $(SRC_DIR)$(SEP)
 
-  FT_INCLUDES := $(BUILD) $(TOP_)config $(TOP_)include $(SRC_) $(SRC_DIR)
+  FT_INCLUDES := $(BUILD) $(TOP_)include $(SRC_) $(SRC_DIR)
 
   COMPILE = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
 

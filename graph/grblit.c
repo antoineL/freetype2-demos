@@ -821,14 +821,14 @@
    {                                         \
      int  d, half = max >> 1;                \
                                              \
-     d = (int)b.chroma[0] - a.chroma[0]; \
-     a.chroma[0] += (n*d + half)/max;      \
+     d = (int)b.chroma[0] - a.chroma[0];     \
+     a.chroma[0] += (n*d + half)/max;        \
                                              \
-     d = (int)b.chroma[1] - a.chroma[1]; \
-     a.chroma[1] += (n*d + half)/max;      \
+     d = (int)b.chroma[1] - a.chroma[1];     \
+     a.chroma[1] += (n*d + half)/max;        \
                                              \
-     d = (int)b.chroma[2] - a.chroma[2]; \
-     a.chroma[2] += (n*d + half)/max;      \
+     d = (int)b.chroma[2] - a.chroma[2];     \
+     a.chroma[2] += (n*d + half)/max;        \
    }
 
 

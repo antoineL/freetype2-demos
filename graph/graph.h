@@ -50,6 +50,8 @@
     gr_pixel_mode_rgb32,       /* 32-bits mode - 16 million colors */
     gr_pixel_mode_lcd,         /* horizontal RGB-decimated         */
     gr_pixel_mode_lcdv,        /* vertical RGB-decimated           */
+    gr_pixel_mode_lcd2,        /* horizontal BGR-decimated         */
+    gr_pixel_mode_lcdv2,       /* vertical BGR-decimated           */
 
     gr_pixel_mode_max          /* don't remove */
 
@@ -163,7 +165,6 @@
   *    writes a given glyph bitmap to a target surface.
   *
   * <Input>
-  *    is_bgr  :: 1 if BGR, 0 if RGB
   *    target  :: handle to target bitmap
   *    glyph   :: handle to source glyph bitmap
   *    x       :: position of left-most pixel of glyph image in target surface
@@ -188,8 +189,7 @@
   **********************************************************************/
 
   extern int
-  grBlitGlyphToBitmap( int        is_bgr,
-                       grBitmap*  target,
+  grBlitGlyphToBitmap( grBitmap*  target,
                        grBitmap*  glyph,
                        grPos      x,
                        grPos      y,

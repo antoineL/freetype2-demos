@@ -48,8 +48,7 @@ FT_Library        lib;
 FT_Face           face;
 FTC_Manager       cache_man;
 FTC_CMapCache     cmap_cache;
-FTC_CMapDescRec   cmap_desc;
-FTC_Image_Cache   image_cache;
+FTC_ImageCache    image_cache;
 FTC_SBitCache     sbit_cache;
 FTC_ImageTypeRec  font_type;
 charmap_t*        cmap = NULL;
@@ -116,7 +115,7 @@ get_cmap(void)
     /*                                                                      */
     while ( gindex && i < face->num_glyphs )
     {
-      cmap[i].index = gindex;
+      cmap[i].index    = gindex;
       cmap[i].charcode = charcode;
       i++;
       charcode = FT_Get_Next_Char(face, charcode, &gindex);
@@ -223,7 +222,7 @@ cmap_cache_test(FT_UInt idx,
 {
   FT_UNUSED( idx );
 
-  return !FTC_CMapCache_Lookup(cmap_cache, &cmap_desc, charcode);
+  return !FTC_CMapCache_Lookup( cmap_cache, (void*)1, 0, charcode );
 }
 
 
@@ -393,9 +392,11 @@ main(int argc,
   if (TEST('b')) bench( fetch_test, "Load + Get_Glyph", 0);
   if (TEST('c')) bench( cbox_test,  "Load + Get_Glyph + Get_CBox", 0);
 
+#if 0
   cmap_desc.face_id    = (void*)1;
   cmap_desc.type       = FTC_CMAP_BY_INDEX;
   cmap_desc.u.encoding = FT_ENCODING_NONE;
+#endif
   if (TEST('d') &&
       face->charmap) /* some fonts (eg. windings) don't have a charmap */
   {
@@ -411,9 +412,9 @@ main(int argc,
       bench( cmap_cache_test,  "CMap cache", 0);
     }
 
-    font_type.font.face_id    = (void*)1;
-    font_type.font.pix_width  = (short) size;
-    font_type.font.pix_height = (short) size;
+    font_type.face_id = (void*)1;
+    font_type.width   = (short) size;
+    font_type.height  = (short) size;
 
     if (!FTC_ImageCache_New(cache_man, &image_cache))
     {

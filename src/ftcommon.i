@@ -354,7 +354,7 @@
       default:
         font->num_indices = 0x10000L;
       }
-	
+
       strcpy( (char*)font->filepathname, filename );
 
       FT_Done_Face( face );
@@ -461,15 +461,15 @@
   static void
   set_current_face( PFont  font )
   {
-    current_font.font.face_id = (FTC_FaceID)font;
+    current_font.face_id = (FTC_FaceID)font;
   }
 
 
   static void
   set_current_size( int  pixel_size )
   {
-    current_font.font.pix_width  = (FT_UShort) pixel_size;
-    current_font.font.pix_height = (FT_UShort) pixel_size;
+    current_font.width  = (FT_UShort) pixel_size;
+    current_font.height = (FT_UShort) pixel_size;
   }
 
 
@@ -520,15 +520,7 @@
   static FT_UInt
   get_glyph_index( FT_UInt32  charcode )
   {
-    FTC_CMapDescRec  desc;
-
-    desc.face_id    = current_font.font.face_id;
-
-    desc.type       = FTC_CMAP_BY_ENCODING;
-    desc.u.encoding = encoding != FT_ENCODING_NONE ? encoding
-                                                   : FT_ENCODING_UNICODE;
-
-    return FTC_CMapCache_Lookup( cmap_cache, &desc, charcode );
+    return FTC_CMapCache_Lookup( cmap_cache, current_font.face_id, 0, charcode );
   }
 
 
@@ -549,9 +541,9 @@
     /* use the SBits cache to store small glyph bitmaps; this is a lot */
     /* more memory-efficient                                           */
     /*                                                                 */
-    if ( use_sbits_cache                   &&
-         current_font.font.pix_width  < 48 &&
-         current_font.font.pix_height < 48 )
+    if ( use_sbits_cache          &&
+         current_font.width  < 48 &&
+         current_font.height < 48 )
     {
       FTC_SBit  sbit;
 

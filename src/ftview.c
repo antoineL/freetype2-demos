@@ -22,17 +22,22 @@
   static FT_Error
   Render_All( int  first_index )
   {
-    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
-    FT_Pointer  glyf;
-    int         i;
-    grBitmap    bit3;
+    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
+    FTC_ScalerRec  scaler;
+    FT_Pointer     glyf;
+    int            i;
+    grBitmap       bit3;
 
 
     start_x = 4;
-    start_y = 16 + current_font.font.pix_height;
+    start_y = 16 + current_font.height;
 
-    error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
-                                     &face, &size );
+    scaler.face_id = current_font.face_id;
+    scaler.width   = current_font.width;
+    scaler.height  = current_font.height;
+    scaler.pixel   = 1;
+
+    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
     if ( error )
     {
       /* probably a non-existent bitmap font size */
@@ -60,13 +65,10 @@
                                 &x_advance, &y_advance, &glyf );
       if ( !error )
       {
-        int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
-
-
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
-        grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
+        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
         if ( glyf )
           done_glyph_bitmap( glyf );
@@ -95,19 +97,25 @@
   static FT_Error
   Render_Text( int  first_index )
   {
-    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
-    FT_Pointer  glyf;
-    int         i;
-    grBitmap    bit3;
+    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
+    FTC_ScalerRec  scaler;
+    FT_Pointer     glyf;
+    int            i;
+    grBitmap       bit3;
 
     const unsigned char*  p;
 
 
     start_x = 4;
-    start_y = 16 + current_font.font.pix_height;
+    start_y = 16 + current_font.height;
 
-    error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
-                                     &face, &size );
+
+    scaler.face_id = current_font.face_id;
+    scaler.width   = current_font.width;
+    scaler.height  = current_font.height;
+    scaler.pixel   = 1;
+
+    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
     if ( error )
     {
       /* probably a non-existent bitmap font size */
@@ -144,13 +152,10 @@
                                 &x_advance, &y_advance, &glyf );
       if ( !error )
       {
-        int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
-
-
         /* now render the bitmap into the display surface */
         x_top = x + left;
         y_top = y - top;
-        grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
+        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
         if ( glyf )
           done_glyph_bitmap( glyf );
@@ -206,6 +211,8 @@
 
     for (;;)
     {
+      FTC_ScalerRec  scaler;
+
       sprintf( (char*)text,
                 "%d: the quick brown fox jumps over the lazy dog "
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
@@ -218,8 +225,12 @@
         break;
       pix_size++;
 
-      error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
-                                       &face, &size );
+      scaler.face_id = current_font.face_id;
+      scaler.width   = current_font.width;
+      scaler.height  = current_font.height;
+      scaler.pixel   = 1;
+
+      error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
       if ( error )
       {
         /* probably a non-existent bitmap font size */
@@ -253,13 +264,10 @@
                                   &x_advance, &y_advance, &glyf );
         if ( !error )
         {
-          int is_bgr = ( lcd_mode == 3 ) || ( lcd_mode == 4 );
-
-
           /* now render the bitmap into the display surface */
           x_top = x + left;
           y_top = y - top;
-          grBlitGlyphToBitmap( is_bgr, &bit, &bit3, x_top, y_top, fore_color );
+          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
           if ( glyf )
             done_glyph_bitmap( glyf );
@@ -667,15 +675,15 @@
           sprintf( Header, "%s %s (file `%s')",
             face->family_name,
             face->style_name,
-            ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
+            ft_basename( ( (PFont)current_font.face_id)->filepathname ) );
         else
         {
           if ( error == FT_Err_Invalid_Pixel_Size )
             sprintf( Header, "Invalid pixel size (file `%s')",
-              ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
+              ft_basename( ( (PFont)current_font.face_id)->filepathname ) );
           else
             sprintf( Header, "File `%s': error 0x%04x",
-              ft_basename( ( (PFont)current_font.font.face_id)->filepathname ),
+              ft_basename( ( (PFont)current_font.face_id)->filepathname ),
               (FT_UShort)error );
         }
 

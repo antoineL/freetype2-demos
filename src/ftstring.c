@@ -466,7 +466,7 @@
               x_top = vec.x - bitmap->left;
               y_top = vec.y - bitmap->top;
             }
-            grBlitGlyphToBitmap( 0, &bit, &bit3, x_top, y_top, fore_color );
+            grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
           }
         }
       }

@@ -257,8 +257,8 @@
 
         val <<= 1;
         _write++;
-        x--;
-      } while ( x > 0 );
+
+      } while ( --x > 0 );
 
       read  += blit->read_line;
       write += blit->write_line;
@@ -1114,8 +1114,7 @@
 /**************************************************************************/
 
   static void
-  blit_lcd_to_24( int         is_bgr,
-                  grBlitter*  blit,
+  blit_lcd_to_24( grBlitter*  blit,
                   grColor     color,
                   int         max )
   {
@@ -1137,18 +1136,75 @@
       {
         int    val0, val1, val2;
 
-        if (is_bgr)
+        val0 = _read[0];
+        val1 = _read[1];
+        val2 = _read[2];
+
+        if ( val0 | val1 | val2 )
         {
-          val0 = _read[0];
-          val1 = _read[1];
-          val2 = _read[2];
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == max  )
+          {
+            _write[0] = color.chroma[0];
+            _write[1] = color.chroma[1];
+            _write[2] = color.chroma[2];
+          }
+          else
+          {
+            /* compose gray value */
+            grColor pix;
+
+            pix.chroma[0] = _write[0];
+            pix.chroma[1] = _write[1];
+            pix.chroma[2] = _write[2];
+
+            compose_pixel_full( pix, color, val0, val1, val2, max );
+
+            _write[0] = pix.chroma[0];
+            _write[1] = pix.chroma[1];
+            _write[2] = pix.chroma[2];
+          }
         }
-        else
-        {
-          val0 = _read[2];
-          val1 = _read[1];
-          val2 = _read[0];
-        }
+        _write += 3;
+        _read  += 3;
+        x--;
+      }
+
+      read  += blit->read_line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+
+
+  static void
+  blit_lcd2_to_24( grBlitter*  blit,
+                   grColor     color,
+                   int         max )
+  {
+    int             y;
+    unsigned char*  read;
+    unsigned char*  write;
+
+    read   = blit->read  + 3*blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        int    val0, val1, val2;
+
+        val0 = _read[2];
+        val1 = _read[1];
+        val2 = _read[0];
 
         if ( val0 | val1 | val2 )
         {
@@ -1196,8 +1252,7 @@
 /**************************************************************************/
 
   static void
-  blit_lcdv_to_24( int         is_bgr,
-                   grBlitter*  blit,
+  blit_lcdv_to_24( grBlitter*  blit,
                    grColor     color,
                    int         max )
   {
@@ -1221,18 +1276,77 @@
       {
         unsigned char    val0, val1, val2;
 
-        if (is_bgr)
+        val0 = _read[0*line];
+        val1 = _read[1*line];
+        val2 = _read[2*line];
+
+        if ( val0 | val1 | val2 )
         {
-          val0 = _read[2*line];
-          val1 = _read[1*line];
-          val2 = _read[0*line];
+          if ( val0 == val1 &&
+               val0 == val2 &&
+               val0 == max  )
+          {
+            _write[0] = color.chroma[0];
+            _write[1] = color.chroma[1];
+            _write[2] = color.chroma[2];
+          }
+          else
+          {
+            /* compose gray value */
+            grColor pix;
+
+            pix.chroma[0] = _write[0];
+            pix.chroma[1] = _write[1];
+            pix.chroma[2] = _write[2];
+
+            compose_pixel_full( pix, color, val0, val1, val2, max );
+
+            _write[0] = pix.chroma[0];
+            _write[1] = pix.chroma[1];
+            _write[2] = pix.chroma[2];
+          }
         }
-        else
-        {
-          val0 = _read[0*line];
-          val1 = _read[1*line];
-          val2 = _read[2*line];
-        }
+        _write += 3;
+        _read  += 1;
+        x--;
+      }
+
+      read  += 3*line;
+      write += blit->write_line;
+      y--;
+    }
+    while (y > 0);
+  }
+
+
+  static void
+  blit_lcdv2_to_24( grBlitter*  blit,
+                    grColor     color,
+                    int         max )
+  {
+    int             y;
+    unsigned char*  read;
+    unsigned char*  write;
+    long            line;
+
+    read   = blit->read  + blit->xread;
+    write  = blit->write + 3*blit->xwrite;
+    line   = blit->read_line;
+
+    y = blit->height;
+    do
+    {
+      unsigned char*  _read  = read;
+      unsigned char*  _write = write;
+      int             x      = blit->width;
+
+      while (x > 0)
+      {
+        unsigned char    val0, val1, val2;
+
+        val0 = _read[2*line];
+        val1 = _read[1*line];
+        val2 = _read[0*line];
 
         if ( val0 | val1 | val2 )
         {
@@ -1312,8 +1426,7 @@
 
 
   extern int
-  grBlitGlyphToBitmap( int        is_bgr,
-                       grBitmap*  target,
+  grBlitGlyphToBitmap( grBitmap*  target,
                        grBitmap*  glyph,
                        grPos      x,
                        grPos      y,
@@ -1409,14 +1522,28 @@
     case gr_pixel_mode_lcd:
       if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
       {
-        blit_lcd_to_24( is_bgr, &blit, color, glyph->grays-1 );
+        blit_lcd_to_24( &blit, color, glyph->grays-1 );
         break;
       }
 
     case gr_pixel_mode_lcdv:
       if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
       {
-        blit_lcdv_to_24( is_bgr, &blit, color, glyph->grays-1 );
+        blit_lcdv_to_24( &blit, color, glyph->grays-1 );
+        break;
+      }
+
+    case gr_pixel_mode_lcd2:
+      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      {
+        blit_lcd2_to_24( &blit, color, glyph->grays-1 );
+        break;
+      }
+
+    case gr_pixel_mode_lcdv2:
+      if ( glyph->grays > 1 && mode == gr_pixel_mode_rgb24 )
+      {
+        blit_lcdv2_to_24( &blit, color, glyph->grays-1 );
         break;
       }
 

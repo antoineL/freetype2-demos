@@ -47,4 +47,7 @@ if $(FT2_DEBUG_TT)
   Main           ttdebug : ttdebug.c ;
 }
 
+Main  gbench : gbench.c ;
+
+
 # end of src Jamfile

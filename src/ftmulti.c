@@ -176,7 +176,7 @@
   {
     grBitmap  bit3;
     FT_Pos    x_top, y_top;
-    
+
 
     /* first, render the glyph image into a bitmap */
     if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )
@@ -184,9 +184,9 @@
       error = FT_Render_Glyph( glyph, antialias ? FT_RENDER_MODE_NORMAL
                                                 : FT_RENDER_MODE_MONO );
       if ( error )
-        return error;                               
+        return error;
     }
-    
+
     /* now blit it to our display screen */
     bit3.rows   = glyph->bitmap.rows;
     bit3.width  = glyph->bitmap.width;
@@ -199,7 +199,7 @@
       bit3.mode  = gr_pixel_mode_mono;
       bit3.grays = 0;
       break;
-         
+
     case FT_PIXEL_MODE_GRAY:
       bit3.mode  = gr_pixel_mode_gray;
       bit3.grays = glyph->bitmap.num_grays;
@@ -209,7 +209,7 @@
     x_top = x_offset + glyph->bitmap_left;
     y_top = y_offset - glyph->bitmap_top;
 
-    grBlitGlyphToBitmap( 0, &bit, &bit3, x_top, y_top, fore_color );
+    grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
     return 0;
   }
@@ -570,13 +570,13 @@
       FT_MM_Axis*  a   = multimaster.axis + axis;
       FT_Long      pos = design_pos[axis];
 
-      
+
       pos += i;
       if ( pos < a->minimum ) pos = a->minimum;
       if ( pos > a->maximum ) pos = a->maximum;
-      
+
       design_pos[axis] = pos;
-      
+
       FT_Set_MM_Design_Coordinates( face, multimaster.num_axis, design_pos );
     }
     return 1;
@@ -693,7 +693,7 @@
     }
 
     /* retrieve multiple master information */
-    error = FT_Get_Multi_Master( face, &multimaster ); 
+    error = FT_Get_Multi_Master( face, &multimaster );
     if ( error )
       goto Display_Font;
 
@@ -701,18 +701,18 @@
     {
       int  n;
 
-      
+
       for ( n = 0; n < (int)multimaster.num_axis; n++ )
         design_pos[n] =
           ( multimaster.axis[n].minimum + multimaster.axis[n].maximum ) / 2;
     }
-    
+
     error = FT_Set_MM_Design_Coordinates( face,
                                           multimaster.num_axis,
                                           design_pos );
     if ( error )
       goto Display_Font;
-    
+
     file_loaded++;
 
     Reset_Scale( ptsize );
@@ -791,7 +791,7 @@
           }
         }
         grWriteCellString( &bit, 0, 16, Header, fore_color );
-          
+
         sprintf( Header, "at %d points, first glyph = %d",
                          ptsize,
                          Num );

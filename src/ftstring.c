@@ -338,7 +338,7 @@
     string_center.x = ( origin_x / 2 ) & -64;
     string_center.y = 0;
 
-    if ( transform )
+    if ( transform && FT_IS_SCALABLE( face ) )
       FT_Vector_Transform( &string_center, &trans_matrix );
   }
 
@@ -377,10 +377,12 @@
 
       /* transform it */
       vec = glyph->pos;
-      FT_Vector_Transform( &vec, &trans_matrix );
+      if ( FT_IS_SCALABLE( face ) )
+        FT_Vector_Transform( &vec, &trans_matrix );
       vec.x += delta.x;
       vec.y += delta.y;
-      error = FT_Glyph_Transform( image, &trans_matrix, &vec );
+      if ( FT_IS_SCALABLE( face ) )
+        error = FT_Glyph_Transform( image, &trans_matrix, &vec );
       if ( !error )
       {
         FT_BBox  bbox;
@@ -390,6 +392,16 @@
         /* we don't need to render it                                   */
 
         FT_Glyph_Get_CBox( image, FT_GLYPH_BBOX_PIXELS, &bbox );
+        if ( !FT_IS_SCALABLE( face ) )
+        {
+          vec.x = vec.x >> 6;
+          vec.y = vec.y >> 6;
+
+          bbox.xMin += vec.x;
+          bbox.xMax += vec.x;
+          bbox.yMin += vec.y;
+          bbox.yMax += vec.y;
+        }
 
 #if 0
         if ( n == 0 )
@@ -402,7 +414,7 @@
         if ( bbox.xMax > 0         && bbox.yMax > 0        &&
              bbox.xMin < bit.width && bbox.yMin < bit.rows )
         {
-          /* convert to a bitmap - destroy native image */
+          /* convert to a bitmap -- destroy native image */
           error = FT_Glyph_To_Bitmap( &image,
                                       antialias ? FT_RENDER_MODE_NORMAL
                                                 : FT_RENDER_MODE_MONO,
@@ -420,7 +432,6 @@
                        bitmap->left, bitmap->top, source->width, source->rows );
             }
 #endif
-
 
             bit3.rows   = source->rows;
             bit3.width  = source->width;
@@ -445,8 +456,16 @@
             }
 
             /* now render the bitmap into the display surface */
-            x_top = bitmap->left;
-            y_top = bit.rows - bitmap->top;
+            if ( FT_IS_SCALABLE( face ) )
+            {
+              x_top = bitmap->left;
+              y_top = bit.rows - bitmap->top;
+            }
+            else
+            {
+              x_top = vec.x - bitmap->left;
+              y_top = vec.y - bitmap->top;
+            }
             grBlitGlyphToBitmap( 0, &bit, &bit3, x_top, y_top, fore_color );
           }
         }

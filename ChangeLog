@@ -1,3 +1,11 @@
+2003-11-10  Werner Lemberg  <wl@gnu.org>
+
+	Add display of bitmap fonts to ftstring.
+
+	* src/ftstring.c (layout_glyphs): Call FT_Vector_Transform for
+	scalable fonts only.
+	(render_string): Handle bitmap fonts.
+
 2003-11-07  Werner Lemberg  <wl@gnu.org>
 
 

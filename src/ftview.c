@@ -66,6 +66,7 @@
   int  antialias   = 1;       /* is anti-aliasing active?     */
   int  use_sbits   = 1;       /* do we use embedded bitmaps?  */
   int  low_prec    = 0;       /* force low precision          */
+  int  autohint    = 0;    /* force auto-hinting           */
   int  Num;                   /* current first glyph index    */
 
   int  res = 72;
@@ -229,6 +230,9 @@
     if ( !use_sbits )
       flags |= FT_LOAD_NO_BITMAP;
 
+    if ( autohint )
+      flags |= FT_LOAD_FORCE_AUTOHINT;
+
     return FT_Load_Glyph( face, idx, flags );
   }
 
@@ -255,7 +259,7 @@
     i = first_glyph;
 
 #if 0
-    while ( i < first_glyph + 1 )
+    while ( i < first_glyph + 2 )
 #else
     while ( i < num_glyphs )
 #endif
@@ -394,6 +398,7 @@
     grWriteln( "  h         : toggle outline hinting" );
     grWriteln( "  b         : toggle embedded bitmaps" );
     grWriteln( "  l         : toggle low precision rendering" );
+    grWriteln( "  f         : toggle force auto-hinting" );
     grWriteln( "  space     : toggle rendering mode" );
     grLn();
     grWriteln( "  n         : next font" );
@@ -439,6 +444,12 @@
                              : "anti-aliasing is now off";
       return 1;
 
+    case grKEY( 'f' ):
+      autohint = !autohint;
+      new_header = autohint ? "forced auto-hinting is now on"
+                            : "forced auto-hinting is now off";
+      return 1;
+      
     case grKEY( 'b' ):
       use_sbits  = !use_sbits;
       new_header = use_sbits

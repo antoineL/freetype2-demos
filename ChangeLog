@@ -1,3 +1,8 @@
+2003-06-13  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdump.c (Print_Type): Don't emit bbox, ascender, descender,
+	and height for non-scalable fonts.
+
 2003-06-08  Werner Lemberg  <wl@gnu.org>
 
 	* graph/x11/grx11.c (gr_x11_surface_init): Add proper cast in call

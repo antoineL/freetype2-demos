@@ -129,13 +129,16 @@
     printf( "   glyph names:     %s\n",
             FT_HAS_GLYPH_NAMES( face ) ? (char *)"yes" : (char *)"no" );
     
-    printf( "   EM size:         %d\n", face->units_per_EM );
-    printf( "   global BBox:     (%ld,%ld):(%ld,%ld)\n",
-            face->bbox.xMin, face->bbox.yMin,
-            face->bbox.xMax, face->bbox.yMax );
-    printf( "   ascent:          %d\n", face->ascender );
-    printf( "   descent:         %d\n", face->descender );
-    printf( "   text height:     %d\n", face->height );            
+    if ( FT_IS_SCALABLE( face ) )
+    {
+      printf( "   EM size:         %d\n", face->units_per_EM );
+      printf( "   global BBox:     (%ld,%ld):(%ld,%ld)\n",
+              face->bbox.xMin, face->bbox.yMin,
+              face->bbox.xMax, face->bbox.yMax );
+      printf( "   ascent:          %d\n", face->ascender );
+      printf( "   descent:         %d\n", face->descender );
+      printf( "   text height:     %d\n", face->height );
+    }
   }
 
 

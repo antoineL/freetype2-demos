@@ -17,6 +17,7 @@ ifndef TOP2
   TOP2 := .
 endif
 
+
 ######################################################################
 #
 # MY_CONFIG_MK points to the current "config.mk" to use. It is
@@ -54,12 +55,20 @@ else
   #
   # Define a few important variables now
   #
+  ifeq ($(PLATFORM),unix)
+    # without absolute paths libtool fails
+    TOP  := $(shell cd $(TOP); pwd)
+    TOP2 := $(shell cd $(TOP2); pwd)
+    BIN_ := $(TOP2)$(SEP)bin$(SEP)
+    OBJ_ := $(TOP2)$(SEP)obj$(SEP)
+  else
+    BIN_ := bin$(SEP)
+    OBJ_ := obj$(SEP)
+  endif
+
   TOP_  := $(TOP)$(SEP)
   TOP2_ := $(TOP2)$(SEP)
   SRC_  := $(TOP)$(SEP)src$(SEP)
-
-  BIN_ := bin$(SEP)
-  OBJ_ := obj$(SEP)
 
   GRAPH_DIR := graph
 
@@ -79,15 +88,14 @@ else
   # the default commands used to link the executables. These can
   # be re-defined for platform-specific stuff..
   #
-  LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) $(LDFLAGS)
-  
-  # the program "src/ftstring.c" used the math library which isn't linked
-  # with the program by default on Unix, we thus add it whenever appropriate
-  #
   ifeq ($(PLATFORM),unix)
-  LINK += -lm
+    CC   = $(CCraw)
+    LINK = $(BUILD)/libtool --mode=link $(CC) $T$@ $< \
+           $(FTLIB) $(EFENCE) -lm
+  else
+    LINK = $(CC) $T$@ $< $(FTLIB) $(EFENCE) $(LDFLAGS)
   endif
-
+  
   COMMON_LINK = $(LINK) $(COMMON_OBJ)
   GRAPH_LINK  = $(COMMON_LINK) $(GRAPH_LIB)
   GRAPH_LINK2 = $(GRAPH_LINK) $(EXTRA_GRAPH_OBJS)
@@ -120,7 +128,7 @@ else
   ifdef DOSLIKE
 
     clean_demo:
-	    -del obj\*.$O 2> nul
+	    -del obj\*.$(SO) 2> nul
 	    -del $(subst /,\,$(TOP2))\src\*.bak 2> nul
 
     distclean_demo: clean_demo
@@ -130,13 +138,17 @@ else
   else
 
     clean_demo:
-	    -$(DELETE) $(OBJ_)*.$O
+	    -$(DELETE) $(OBJ_)*.$(SO)
 	    -$(DELETE) $(SRC_)*.bak graph$(SEP)*.bak
 	    -$(DELETE) $(SRC_)*~ graph$(SEP)*~
 
     distclean_demo: clean_demo
 	    -$(DELETE) $(EXES:%=$(BIN_)%$E)
 	    -$(DELETE) $(GRAPH_LIB)
+    ifeq ($(PLATFORM),unix)
+	      -$(DELETE) $(BIN_).libs/*
+	      -$(DELDIR) $(BIN_).libs
+    endif
 
   endif
 
@@ -174,7 +186,7 @@ else
   #
   # Rules for compiling object files for text-only demos
   #
-  COMMON_OBJ := $(OBJ_)common.$O
+  COMMON_OBJ := $(OBJ_)common.$(SO)
   $(COMMON_OBJ): $(SRC_DIR_)common.c
   ifdef DOSLIKE
 	  $(COMPILE) $T$@ $< $DEXPAND_WILDCARDS 
@@ -183,37 +195,37 @@ else
   endif
 
 
-  $(OBJ_)%.$O: $(SRC_DIR_)%.c $(FTLIB)
+  $(OBJ_)%.$(SO): $(SRC_DIR_)%.c $(FTLIB)
 	  $(COMPILE) $T$@ $<
 
-  $(OBJ_)ftlint.$O: $(SRC_DIR_)ftlint.c
+  $(OBJ_)ftlint.$(SO): $(SRC_DIR_)ftlint.c
 	  $(COMPILE) $T$@ $<
 
-  $(OBJ_)compos.$O: $(SRC_DIR_)compos.c
+  $(OBJ_)compos.$(SO): $(SRC_DIR_)compos.c
 	  $(COMPILE) $T$@ $<
 
-  $(OBJ_)memtest.$O: $(SRC_DIR_)memtest.c
+  $(OBJ_)memtest.$(SO): $(SRC_DIR_)memtest.c
 	  $(COMPILE) $T$@ $<
 
-  $(OBJ_)fttry.$O: $(SRC_DIR_)fttry.c
+  $(OBJ_)fttry.$(SO): $(SRC_DIR_)fttry.c
 	  $(COMPILE) $T$@ $<
 
 
-  $(OBJ_)ftview.$O: $(SRC_DIR_)ftview.c $(GRAPH_LIB)
+  $(OBJ_)ftview.$(SO): $(SRC_DIR_)ftview.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
-  $(OBJ_)ftmulti.$O: $(SRC_DIR_)ftmulti.c $(GRAPH_LIB)
+  $(OBJ_)ftmulti.$(SO): $(SRC_DIR_)ftmulti.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
-  $(OBJ_)ftstring.$O: $(SRC_DIR_)ftstring.c $(GRAPH_LIB)
+  $(OBJ_)ftstring.$(SO): $(SRC_DIR_)ftstring.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
-  $(OBJ_)fttimer.$O: $(SRC_DIR_)fttimer.c $(GRAPH_LIB)
+  $(OBJ_)fttimer.$(SO): $(SRC_DIR_)fttimer.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
 
 
-# $(OBJ_)ftsbit.$O: $(SRC_DIR)/ftsbit.c $(GRAPH_LIB)
+# $(OBJ_)ftsbit.$(SO): $(SRC_DIR)/ftsbit.c $(GRAPH_LIB)
 #	 $(COMPILE) $T$@ $<
 
 
@@ -222,7 +234,7 @@ else
   # Special rule to compile the `t1dump' program as it includes
   # the Type1 source path
   #
-  $(OBJ_)t1dump.$O: $(SRC_DIR)/t1dump.c
+  $(OBJ_)t1dump.$(SO): $(SRC_DIR)/t1dump.c
 	  $(COMPILE) $T$@ $<
 
 
@@ -239,7 +251,7 @@ else
     EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
   endif
 
-  $(OBJ_)ttdebug.$O: $(SRC_DIR)/ttdebug.c
+  $(OBJ_)ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
 	    $(COMPILE) $I$(TOP)$(SEP)src$(SEP)truetype $DFT_FLAT_COMPILE \
                        $(TT_INCLUDES:%=$I%) $T$@ $< $(EXTRAFLAGS)
 
@@ -249,38 +261,38 @@ else
   # Rules used to link the executables. Note that they could be
   # over-ridden by system-specific things..
   #
-  $(BIN_)ftlint$E: $(OBJ_)ftlint.$O $(FTLIB) $(COMMON_OBJ)
+  $(BIN_)ftlint$E: $(OBJ_)ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
-  $(BIN_)memtest$E: $(OBJ_)memtest.$O $(FTLIB) $(COMMON_OBJ)
+  $(BIN_)memtest$E: $(OBJ_)memtest.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
-  $(BIN_)compos$E: $(OBJ_)compos.$O $(FTLIB) $(COMMON_OBJ)
+  $(BIN_)compos$E: $(OBJ_)compos.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(COMMON_LINK)
 
-  $(BIN_)fttry$E: $(OBJ_)fttry.$O $(FTLIB)
+  $(BIN_)fttry$E: $(OBJ_)fttry.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_)ftsbit$E: $(OBJ_)ftsbit.$O $(FTLIB)
+  $(BIN_)ftsbit$E: $(OBJ_)ftsbit.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_)t1dump$E: $(OBJ_)t1dump.$O $(FTLIB)
+  $(BIN_)t1dump$E: $(OBJ_)t1dump.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_)ttdebug$E: $(OBJ_)ttdebug.$O $(FTLIB)
+  $(BIN_)ttdebug$E: $(OBJ_)ttdebug.$(SO) $(FTLIB)
 	  $(LINK)
 
 
-  $(BIN_)ftview$E: $(OBJ_)ftview.$O $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
+  $(BIN_)ftview$E: $(OBJ_)ftview.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)
 
-  $(BIN_)ftmulti$E: $(OBJ_)ftmulti.$O $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
+  $(BIN_)ftmulti$E: $(OBJ_)ftmulti.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)
 
-  $(BIN_)ftstring$E: $(OBJ_)ftstring.$O $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
+  $(BIN_)ftstring$E: $(OBJ_)ftstring.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)
 
-  $(BIN_)fttimer$E: $(OBJ_)fttimer.$O $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
+  $(BIN_)fttimer$E: $(OBJ_)fttimer.$(SO) $(FTLIB) $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)
 
 

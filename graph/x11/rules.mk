@@ -69,7 +69,7 @@ ifneq ($(X11_PATH),)
 
   # add the X11 driver object file to the graphics library
   #
-  GRAPH_OBJS += $(OBJ_)grx11.$O
+  GRAPH_OBJS += $(OBJ_)grx11.$(SO)
 
 
   GR_X11  := $(GRAPH_)x11
@@ -80,7 +80,7 @@ ifneq ($(X11_PATH),)
 
   # the rule used to compile the X11 driver
   #
-  $(OBJ_)grx11.$O: $(GR_X11_)grx11.c $(GR_X11_)grx11.h
+  $(OBJ_)grx11.$(SO): $(GR_X11_)grx11.c $(GR_X11_)grx11.h
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $I$(GR_X11) \
                 $(X11_INCLUDE:%=$I%) $T$@ $<
 endif

@@ -62,12 +62,12 @@
   int  num_glyphs;            /* number of glyphs */
   int  ptsize;                /* current point size */
 
-  int  hinted      = 1;       /* is glyph hinting active?     */
-  int  antialias   = 1;       /* is anti-aliasing active?     */
-  int  use_sbits   = 1;       /* do we use embedded bitmaps?  */
-  int  low_prec    = 0;       /* force low precision          */
-  int  autohint    = 0;    /* force auto-hinting           */
-  int  Num;                   /* current first glyph index    */
+  int  hinted    = 1;         /* is glyph hinting active?    */
+  int  antialias = 1;         /* is anti-aliasing active?    */
+  int  use_sbits = 1;         /* do we use embedded bitmaps? */
+  int  low_prec  = 0;         /* force low precision         */
+  int  autohint  = 0;         /* force auto-hinting          */
+  int  Num;                   /* current first glyph index   */
 
   int  res = 72;
 

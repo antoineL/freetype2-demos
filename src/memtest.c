@@ -300,7 +300,7 @@ int  main( int argc, char** argv )
       {
         for ( id = 0; id < num_glyphs; id++ )
         {
-          error = FT_Load_Glyph( face, id, FT_LOAD_RENDER | FT_LOAD_ANTI_ALIAS );
+          error = FT_Load_Glyph( face, id, FT_LOAD_RENDER );
           if (error)
           {
             if ( Fail < 10 )

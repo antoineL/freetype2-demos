@@ -190,8 +190,7 @@
     for (i = 0; i < bmp->rows; i++)
     {
       for (j = 0; j < bmp->width; j++)
-        /* bitmap color is the inverse of coverage values, hence the '255-x' */
-        buffer[j] = (FT_Byte)(255 - gamma_ramp[255 - buffer[j]]);
+        buffer[j] = (FT_Byte) gamma_ramp[buffer[j]];
 
       buffer += bmp->pitch;
     }

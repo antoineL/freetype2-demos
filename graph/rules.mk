@@ -45,11 +45,11 @@
 #
 #
 
-GRAPH_INCLUDES := $(TOP2_)graph
+GRAPH_INCLUDES := $(TOP_DIR_2_)graph
 GRAPH_LIB      := $(OBJ_)graph.$(SA)
 #GRAPH_LINK     := $(GRAPH_LIB)
 
-GRAPH_ := $(TOP2_)graph$(SEP)
+GRAPH_ := $(TOP_DIR_2_)graph$(SEP)
 
 GRAPH_H := $(GRAPH_)graph.h    \
            $(GRAPH_)grtypes.h  \
@@ -73,7 +73,7 @@ COMPILE_GRAPH_LIB = ar -r $@ $(GRAPH_OBJS)
 # Add the rules used to detect and compile graphics driver depending
 # on the current platform..
 #
-include $(wildcard $(TOP2)/graph/*/rules.mk)
+include $(wildcard $(TOP_DIR_2)/graph/*/rules.mk)
 
 #########################################################################
 #

@@ -1,3 +1,7 @@
+2002-06-14  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile, graph/rules.mk: s/TOP/TOP_DIR/, s/TOP2/TOP_DIR_2/.
+
 2002-06-10  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftbench.c: s/index/idx/.

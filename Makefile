@@ -11,30 +11,30 @@ space := $(empty) $(empty)
 
 ####################################################################
 #
-# TOP is the directory where the main FreeType source is found,
+# TOP_DIR is the directory where the main FreeType source is found,
 # as well as the 'config.mk' file
 #
-# TOP2 is the directory is the top of the demonstration
+# TOP_DIR_2 is the directory is the top of the demonstration
 # programs directory
 #
 
-ifndef TOP
-  TOP := ../freetype2
+ifndef TOP_DIR
+  TOP_DIR := ../freetype2
 endif
 
-ifndef TOP2
-  TOP2 := .
+ifndef TOP_DIR_2
+  TOP_DIR_2 := .
 endif
 
 
 ######################################################################
 #
 # MY_CONFIG_MK points to the current "config.mk" to use. It is
-# defined by default as $(TOP)/config.mk
+# defined by default as $(TOP_DIR)/config.mk
 #
 ifndef CONFIG_MK
   PROJECT   := freetype
-  CONFIG_MK := $(TOP)/config.mk
+  CONFIG_MK := $(TOP_DIR)/config.mk
 endif
 
 ####################################################################
@@ -50,7 +50,7 @@ ifdef no_config_mk
   exes:
 	  @echo Please compile the library before the demo programs!
   clean distclean:
-	  @echo "I need \`$(TOP)/config.mk' to do that!"
+	  @echo "I need \`$(TOP_DIR)/config.mk' to do that!"
 else
 
   ####################################################################
@@ -67,30 +67,30 @@ else
   #
   ifeq ($(PLATFORM),unix)
     # without absolute paths libtool fails
-    TOP  := $(shell cd $(TOP); pwd)
-    TOP2 := $(shell cd $(TOP2); pwd)
-    BIN_ := $(TOP2)$(SEP)bin$(SEP)
-    OBJ_ := $(TOP2)$(SEP)obj$(SEP)
+    TOP_DIR   := $(shell cd $(TOP_DIR); pwd)
+    TOP_DIR_2 := $(shell cd $(TOP_DIR_2); pwd)
+    BIN_      := $(TOP_DIR_2)$(SEP)bin$(SEP)
+    OBJ_      := $(TOP_DIR_2)$(SEP)obj$(SEP)
   else
     BIN_ := bin$(SEP)
     OBJ_ := obj$(SEP)
   endif
 
-  TOP_  := $(TOP)$(SEP)
-  TOP2_ := $(TOP2)$(SEP)
-  SRC_  := $(TOP)$(SEP)src$(SEP)
+  TOP_DIR_   := $(TOP_DIR)$(SEP)
+  TOP_DIR_2_ := $(TOP_DIR_2)$(SEP)
+  SRC_       := $(TOP_DIR)$(SEP)src$(SEP)
 
   GRAPH_DIR := graph
 
-  ifeq ($(TOP),..)
+  ifeq ($(TOP_DIR),..)
     SRC_DIR := src
   else
-    SRC_DIR := $(TOP2_)src
+    SRC_DIR := $(TOP_DIR_2_)src
   endif
 
   SRC_DIR_ := $(SRC_DIR)$(SEP)
 
-  FT_INCLUDES := $(BUILD) $(TOP_)include $(SRC_) $(SRC_DIR)
+  FT_INCLUDES := $(BUILD) $(TOP_DIR_)include $(SRC_) $(SRC_DIR)
 
   COMPILE = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
 
@@ -154,7 +154,7 @@ else
 
     clean_demo:
 	    -del obj\*.$(SO) 2> nul
-	    -del $(subst /,\,$(TOP2))\src\*.bak 2> nul
+	    -del $(subst /,\,$(TOP_DIR_2))\src\*.bak 2> nul
 
     distclean_demo: clean_demo
 	    -del obj\*.lib 2> nul
@@ -291,7 +291,7 @@ else
   endif
 
   $(OBJ_)ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
-	    $(COMPILE) $I$(TOP)$(SEP)src$(SEP)truetype \
+	    $(COMPILE) $I$(TOP_DIR)$(SEP)src$(SEP)truetype \
                        $(TT_INCLUDES:%=$I%) $T$@ $< $(EXTRAFLAGS)
 
 

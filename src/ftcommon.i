@@ -327,11 +327,11 @@
   /*                                                                       */
   /* In this program, the face IDs are simply pointers to TFont objects.   */
   /*                                                                       */
-  FT_CALLBACK_DEF
-  FT_Error  my_face_requester( FTC_FaceID  face_id,
-                               FT_Library  lib,
-                               FT_Pointer  request_data,
-                               FT_Face*    aface )
+  FT_CALLBACK_DEF(FT_Error)
+  my_face_requester( FTC_FaceID  face_id,
+                     FT_Library  lib,
+                     FT_Pointer  request_data,
+                     FT_Face*    aface )
   {
     PFont  font = (PFont)face_id;
 

@@ -1,3 +1,8 @@
+2001-06-27  David Turner  <david@freetype.org>
+
+	* src/ftcommon.i, src/ftmemchk.c: changes due to the modification of
+	the FT_CALLBACK_DEF macro definition
+
 2001-06-24  David Turner  <david@freetype.org>
 
     * src/ftmemchk.c, src/memtest.c, Makefile, src/Jamfile: renamed the

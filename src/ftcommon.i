@@ -163,7 +163,7 @@
 
 
   FT_Library       library;      /* the FreeType library            */
-  FTC_Manager      manager;      /* the cache manager               */
+  FTC_Manager      cache_manager;/* the cache manager               */
   FTC_Image_Cache  image_cache;  /* the glyph image cache           */
   FTC_SBit_Cache   sbits_cache;  /* the glyph small bitmaps cache   */
 
@@ -390,15 +390,15 @@
       PanicZ( "could not initialize FreeType" );
 
     error = FTC_Manager_New( library, 0, 0, 0,
-                             my_face_requester, 0, &manager );
+                             my_face_requester, 0, &cache_manager );
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
-    error = FTC_SBit_Cache_New( manager, &sbits_cache );
+    error = FTC_SBit_Cache_New( cache_manager, &sbits_cache );
     if ( error )
       PanicZ( "could not initialize small bitmaps cache" );
 
-    error = FTC_Image_Cache_New( manager, &image_cache );
+    error = FTC_Image_Cache_New( cache_manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
   }
@@ -407,7 +407,7 @@
   static void
   done_freetype( void )
   {
-    FTC_Manager_Done( manager );
+    FTC_Manager_Done( cache_manager );
     FT_Done_FreeType( library );
   }
 
@@ -463,7 +463,7 @@
       FT_Face  f;
 
 
-      FTC_Manager_Lookup_Face( manager, current_font.font.face_id, &f );
+      FTC_Manager_Lookup_Face( cache_manager, current_font.font.face_id, &f );
       Index = FT_Get_Char_Index( f, Index );
     }
 

@@ -30,7 +30,7 @@
     start_x = 4;
     start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.font,
+    error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
                                      &face, &size );
     if ( error )
     {
@@ -98,7 +98,7 @@
     start_x = 4;
     start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.font,
+    error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,
                                      &face, &size );
     if ( error )
     {
@@ -526,11 +526,12 @@
         /* dump simple cache manager statistics */
         fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
                          " [ %d, %ld, %f ]\n",
-                         manager->num_nodes,
-                         manager->cur_weight,
-                         manager->num_nodes > 0 
-                            ? manager->cur_weight * 1.0 / manager->num_nodes
-                            : 0.0 );
+                         cache_manager->num_nodes,
+                         cache_manager->cur_weight,
+                         cache_manager->num_nodes > 0 
+                           ? cache_manager->cur_weight * 1.0 /
+                               cache_manager->num_nodes
+                           : 0.0 );
       }
 
       grListenSurface( surface, 0, &event );

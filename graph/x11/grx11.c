@@ -142,6 +142,13 @@
   void  done_surface( grXSurface*  surface )
   {
     XUnmapWindow( display, surface->win );
+    if ( surface->colormap != DefaultColormap( display,
+                                               DefaultScreen( display ) ) )
+    {
+      XFreeColormap( display, surface->colormap );
+      surface->colormap = DefaultColormap( display,
+                                           DefaultScreen( display ) );
+    }
   }
 
 
@@ -784,7 +791,16 @@
         color->blue  = 65535 - ( i * 65535 ) / bitmap->grays;
 
         if ( !XAllocColor( display, surface->colormap, color ) )
-          Panic( "grx11.init_surface: cannot allocate colour\n" );
+        {
+          printf( "grx11.init_surface: warning: "
+                  "cannot allocate colour in default colormap\n" );
+          if ( surface->colormap == DefaultColormap( display, screen ) )
+            surface->colormap = XCopyColormapAndFree( display,
+                                                      surface->colormap );
+          if ( !XAllocColor( display, surface->colormap, color ) )
+            Panic( "grx11.init_surface: "
+                   "cannot allocate colour in private colormap\n" );
+        }
 
         if ( step > 1 )
         {
@@ -827,6 +843,8 @@
                                       CWEventMask | CWCursor,
                                     &xswa );
 
+      if ( surface->colormap != DefaultColormap( display, screen ) )
+        XSetWindowColormap( display, surface->win, surface->colormap );
       XMapWindow( display, surface->win );
 
       surface->gc = XCreateGC( display, RootWindow( display, screen ),

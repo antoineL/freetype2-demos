@@ -1,19 +1,55 @@
+2001-12-05  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i, src/ftview.c: s/manager/cache_manager/ to avoid
+	compiler warnings.
+
+2001-12-05  Taiji Yamada  <taiji@aihara.co.jp>
+
+	* src/graph/x11/grx11.c (done_surface): Free and reset color map.
+	(init_surface): Use private colormap if there are no more shared
+	colormap entries.
+
+2001-10-27  David Turner  <david@freetype.org>
+
+	* src/ftcommon.i (use_sbits_cache): Set to 1.
+
 2001-10-26  Leonard Rosenthol  <leonardr@lazerware.com>
 
-	* Added new /ft2demos/mac/codewarror/carbonprefix.h to define building
+	* mac/codewarror/carbonprefix.h: New file to define building
 	the demos Carbonized.
-	
-	* Updated the Mac version of ftview (/ft2demos/mac/codewarror/ftview.prj)
-	for CW7 and to build a Carbonized version.
-	
-	* Updated /ft2demos/mac/getargv.c to build Carbonized.
+	* mac/codewarror/ftview.prj: Updated for CW7 and to build a
+	Carbonized version.
+	* mac/getargv.c: Updated to build Carbonized.
+	* mac/ftview_m.c: Updated to build Carbonized.
 
-	* Updated /ft2demos/mac/ftview_m.c to build Carbonized.
+2001-10-18  David Turner  <david@freetype.org>
 
+	* Jamrules: Define X11_LINKLIBS.
+	* README: Updated.
+	* graph/os2/Jamfile: Define GROS2_PATH and GRAPH_LINKLIBS.
+	* src/Jamfile (PROGRAMS): Add fttry.
+	Fix order of libraries.
+	* src/ftview.c (main): Update cache dump code.
+	* src/ftlint.c (main) [TEST_PSNAMES]: Add some debugging code.
+	* src/fttry.c (main) [DUMP_NAME]: Add some glyph name debugging code.
+
+2001-09-21  Eric Olson  <eric.olson@sympatico.ca>
+
+	* graph/os2/gros2pm.c: Remove global variable `window_created'.
+	(LOCK): Fix typo.
+	(refresh_rectangle): Use LOCK() and UNLOCK().
+	(init_surface): Don't use `window_created'.
+	Use LOCK() and UNLOCK().
+	(RunPMWindow): Use LOCK() and UNLOCK().
+	Fix typo.
+	Don't use `window_created'.
+	(Message_Process): Allow F9, F10, and others keys to pass through
+	the application.
+	Use LOCK() and UNLOCK().
 
 2001-09-10  Werner Lemberg  <wl@gnu.org>
 
-	README: Slight update.
+	* README: Slight update.
 
 2001-08-25  Werner Lemberg  <wl@gnu.org>
 

@@ -241,6 +241,8 @@
       unsigned int    mask   = left_mask;
       unsigned int    val    = *_read;
 
+      if (mask != 0x80)
+        val = *_read++;
 
       x = blit->width;
       do

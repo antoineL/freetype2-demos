@@ -8,11 +8,6 @@
 /*                                                                          */
 /*  ftgamma - gamma matcher                                                 */
 /*                                                                          */
-/*  This is a new version using the MiGS graphics subsystem for             */
-/*  blitting and display.                                                   */
-/*                                                                          */
-/*  Press F1 when running this program to have a list of key-bindings       */
-/*                                                                          */
 /****************************************************************************/
 
 

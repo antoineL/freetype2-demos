@@ -180,13 +180,19 @@ int
 fetch_test(FT_UInt idx,
            FT_UInt charcode)
 {
-  FT_Glyph glyph;
+  FT_Glyph  glyph;
+  FT_Error  error;
 
   FT_UNUSED( charcode );
 
-  return
-    FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT) ||
-    FT_Get_Glyph(face->glyph, &glyph);
+  error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT );
+  if ( !error )
+  {
+    error = FT_Get_Glyph( face->glyph, &glyph );
+    if ( !error )
+      FT_Done_Glyph( glyph );
+  }
+  return error;
 }
 
 
@@ -196,14 +202,21 @@ cbox_test(FT_UInt idx,
 {
   FT_BBox  bbox;
   FT_Glyph glyph;
+  FT_Error error;
 
   FT_UNUSED( charcode );
 
-  if (FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT) ||
-      FT_Get_Glyph(face->glyph, &glyph))
-    return 1;
-  FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
-  return 0;
+  error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT );
+  if ( !error )
+  {
+    error = FT_Get_Glyph( face->glyph, &glyph );
+    if ( !error )
+    {
+      FT_Glyph_Get_CBox( glyph, FT_GLYPH_BBOX_PIXELS, &bbox );
+      FT_Done_Glyph( glyph );
+    }
+  }
+  return error;
 }
 
 

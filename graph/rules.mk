@@ -24,7 +24,7 @@ GRAPH_H := $(GRAPH)/graph.h    \
            $(GRAPH)/grdevice.h \
            $(GRAPH)/grblit.h   \
            $(GRAPH)/gblender.h \
-           $(GRAPH)/gblender_blit.h
+           $(GRAPH)/gblblit.h
 
 
 GRAPH_OBJS := $(OBJ_DIR)/grblit.$(SO)   \
@@ -33,7 +33,7 @@ GRAPH_OBJS := $(OBJ_DIR)/grblit.$(SO)   \
               $(OBJ_DIR)/grdevice.$(SO) \
               $(OBJ_DIR)/grinit.$(SO)   \
               $(OBJ_DIR)/gblender.$(SO) \
-              $(OBJ_DIR)/gblender_blit.$(SO)
+              $(OBJ_DIR)/gblblit.$(SO)
 
 
 # Default value for COMPILE_GRAPH_LIB;

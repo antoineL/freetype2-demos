@@ -29,8 +29,8 @@
     int   xside  = 10;
     int   levels = 17;
     int   gammas = 30;
-    int   x0     = (bit.width - levels*xside)/2;
-    int   y0     = (bit.rows  - gammas*(yside+1))/2;
+    int   x_0    = (bit.width - levels*xside)/2;
+    int   y_0    = (bit.rows  - gammas*(yside+1))/2;
     int   pitch  = bit.pitch;
 
     if ( pitch < 0 )
@@ -44,7 +44,7 @@
     {
       double ggamma = g/10.0;
       char   temp[6];
-      int    y = y0 + (yside+1)*(g-1);
+      int    y = y_0 + (yside+1)*(g-1);
       int    nx, ny;
 
       unsigned char*  line = bit.buffer + y*bit.pitch;
@@ -52,9 +52,9 @@
       if ( bit.pitch < 0 )
         line -= bit.pitch*(bit.rows-1);
 
-      line += x0*3;
+      line += x_0*3;
 
-      grSetPixelMargin( x0-32, y + (yside-8)/2 );
+      grSetPixelMargin( x_0-32, y + (yside-8)/2 );
       grGotoxy( 0, 0 );
 
       sprintf( temp, "%.1f", ggamma );
@@ -520,6 +520,8 @@
     grLn();
     grWriteln( "  g         : increase gamma by 0.1" );
     grWriteln( "  v         : decrease gamma by 0.1" );
+    grLn();
+    grWriteln( "  K         : show gamma ramp" );
     grLn();
     grWriteln( "  Up        : increase pointsize by 1 unit" );
     grWriteln( "  Down      : decrease pointsize by 1 unit" );

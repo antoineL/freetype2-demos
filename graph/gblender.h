@@ -137,6 +137,7 @@
 #endif
 
 
+  /* no final `;'! */
 #define  GBLENDER_VARS(_gb,_fore)                                                                                               \
    GBlenderPixel    _gback  = (_gb)->cache_back;                                                                                \
    GBlenderCell*    _gcells = ( (_fore) == (_gb)->cache_fore ? (_gb)->cache_cells : gblender_lookup( (_gb), _gback, _fore ) );  \
@@ -149,6 +150,7 @@
 
 
 
+  /* no final `;'! */
 #define  GBLENDER_CHANNEL_VARS(_gb,_rfore,_gfore,_bfore)                                                                                         \
    int              _grback  = (_gb)->cache_r_back;                                                                                              \
    unsigned char*   _grcells = ( (_rfore) == (_gb)->cache_r_fore ? (_gb)->cache_r_cells : gblender_lookup_channel( (_gb), _grback, _rfore ));    \
@@ -158,7 +160,7 @@
    int              _ggfore  = (_rfore);                                                                                                         \
    int              _gbback  = (_gb)->cache_b_back;                                                                                              \
    unsigned char*   _gbcells = ( (_bfore) == (_gb)->cache_b_fore ? (_gb)->cache_b_cells : gblender_lookup_channel( (_gb), _gbback, _bfore ));    \
-   int              _gbfore  = (_bfore);
+   int              _gbfore  = (_bfore)
 
 #define  GBLENDER_CHANNEL_CLOSE(_gb)   \
   (_gb)->cache_r_back  = _grback;      \
@@ -212,4 +214,3 @@
 
 
 #endif /* __GBENCH_CACHE_H__ */
-

@@ -3,13 +3,13 @@
 #include <math.h>
 
 static void
-gblender_set_gamma_table( double           gamma,
+gblender_set_gamma_table( double           gamma_value,
                           unsigned short*  gamma_ramp,
                           unsigned char*   gamma_ramp_inv )
 {
   int    gmax      = (256 << GBLENDER_GAMMA_SHIFT)-1;
 
-  if ( gamma <= 0 )  /* special case for sRGB */
+  if ( gamma_value <= 0 )  /* special case for sRGB */
   {
     int  ii;
 
@@ -40,11 +40,11 @@ gblender_set_gamma_table( double           gamma,
   else
   {
     int    ii;
-    double gamma_inv = 1.0f / gamma;
+    double gamma_inv = 1.0f / gamma_value;
 
     /* voltage to linear */
     for ( ii = 0; ii < 256; ii++ )
-      gamma_ramp[ii] = (unsigned short)( pow( (double)ii/255.0f, gamma )*gmax );
+      gamma_ramp[ii] = (unsigned short)( pow( (double)ii/255.0f, gamma_value )*gmax );
 
     /* linear to voltage */
     for ( ii = 0; ii < gmax; ii++ )
@@ -63,10 +63,10 @@ gblender_clear( GBlender  blender )
 
   if ( blender->channels )
   {
-    GBlenderChanKey  keys = (GBlenderChanKey) blender->keys;
+    GBlenderChanKey  chan_keys = (GBlenderChanKey) blender->keys;
 
     for ( nn = 0; nn < GBLENDER_KEY_COUNT; nn++ )
-      keys[nn].index = -1;
+      chan_keys[nn].index = -1;
   }
   else
   {
@@ -104,11 +104,11 @@ gblender_reset( GBlender  blender )
 
 GBLENDER_APIDEF( void )
 gblender_init( GBlender   blender,
-               double     gamma )
+               double     gamma_value )
 {
   blender->channels = 0;
 
-  gblender_set_gamma_table ( gamma,
+  gblender_set_gamma_table ( gamma_value,
                              blender->gamma_ramp,
                              blender->gamma_ramp_inv );
 
@@ -379,5 +379,3 @@ gblender_dump_stats( GBlender  blender )
            );
 }
 #endif
-
-

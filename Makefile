@@ -202,7 +202,7 @@ else
   EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
 
   # Comment out the next line if you don't have a graphics subsystem.
-  EXES += ftview ftmulti ftstring
+  EXES += ftview ftmulti ftstring ftgamma
 
   # Only uncomment the following lines if the truetype driver was
   # compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined.
@@ -259,6 +259,11 @@ else
 
 
   $(OBJ_DIR)/ftview.$(SO): $(SRC_DIR)/ftview.c \
+                           $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
+
+  $(OBJ_DIR)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
                            $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
@@ -351,6 +356,10 @@ else
 
 
   $(BIN_DIR)/ftview$E: $(OBJ_DIR)/ftview.$(SO) $(FTLIB) \
+                       $(GRAPH_LIB) $(COMMON_OBJ)
+	  $(GRAPH_LINK)
+
+  $(BIN_DIR)/ftgamma$E: $(OBJ_DIR)/ftgamma.$(SO) $(FTLIB) \
                        $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(GRAPH_LINK)
 

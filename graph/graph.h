@@ -646,7 +646,7 @@
   **********************************************************************/
 
   extern
-  void  grSetGlyphGamma( double  gamma );
+  void  grSetGlyphGamma( double  gamma_value );
 
 /* */
   

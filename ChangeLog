@@ -1,14 +1,84 @@
-2004-05-20  David Turner    <david@freetype.org>
+2004-05-23  Werner Lemberg  <wl@gnu.org>
 
-        * graph/gblender*.[hc], graph/grblit.c, graph/grfont.c, graph/grfont.h,
-        graph/graph.h: adding support for fast gamma-corrected alpha-blending
+	* graph/gblender_blit.c: Renamed to...
+	* graph/gblblit.c: This.
+	Updated to use new include file names.
+	(gblender_blit_init): Change 11th argument to `unsigned char*'
 
-        * src/ftview.c, src/ftcommon.i, src/ftgamma.c: adding support for
-        gamma-corrected alpha-blending in the "ftview" program. Use the
-        keys "g" and "G" to change the Gamma.
+	* graph/gblender_blit.h: Renamed to...
+	* graph/gblblit.h: This.
+	Updated.
 
-        TRY IT, IT TOTALLY ROCKS !!
+	* graph/gblender_blit_any.h: Renamed to...
+	* graph/gblany.h: This.
+	Updated to use new include file names.
 
+	* graph/gblender_blit_hbgr.h: Renamed to...
+	* graph/gblhbgr.h: This.
+
+	* graph/gblender_blit_hrgb.h: Renamed to...
+	* graph/gblhrgb.h: This.
+
+	* graph/gblender_blit_vbgr.h: Renamed to...
+	* graph/gblvbgr.h: This.
+
+	* graph/gblender_blit_vrgb.h: Renamed to...
+	* graph/gblvrgb.h: This.
+
+	* graph/gblender.h (GBLENDER_CHANNEL_VARS): Remove final `;'.
+	* graph/grblit.c: Updated to use new include file names.
+
+	* graph/rules.mk, graph/Jamfile: Updated.
+
+	* Makefile: Build `ftgamma'.
+
+	* src/ftview.c (Render_GammaGrid): Fix compiler warnings.
+	(Help): Updated.
+
+	* src/ftgamma.c: Fix compiler warnings.
+
+2004-05-20  David Turner  <david@freetype.org>
+
+	Adding support for fast gamma-corrected alpha-blending.
+	New test program `ftgamma'.
+
+	* graph/grblit.c: Include gblender_blit.h.
+	(GRAY8): New macro.
+	(blit_gray8_to_555, blit_gray8_to_565, blit_gray8_to_24,
+	blit_lcd8_to_24, blit_lcd28_to_24) [GRAY8]: New functions.
+	(blit_gray8_to_32): New function.
+	(gr_gray8_blitters) [GRAY8]: New function table.
+	(grSetGlyphGamma): New function.
+	(grBlitGlyphToBitmap): Implement blending.
+	* graph/graph.h (grSetGlyphGamma): New declaration.
+
+	* graph/grfont.c, graph/grfont.h (grSetPixelMargin): New function.
+
+	* graph/gblender.c, graph/gblender.h, graph/gblender_blit.c,
+	graph/gblender_blit.h, graph/gblender_blit_any.h,
+	gblender_blit_color.h, gblender_blit_hbgr.h, gblender_blit_hrgb.h,
+	gblender_blit_vbgr.h, gblender_blit_vrgb.h: New files.
+
+	* graph/Jamfile (graph_sources): Add gblender and gblender_bnit.
+	* graph/rules.mk (GRAPH_H, GRAPH_OBJS): Updated.
+
+	* src/ftcommon.i (the_gamma): New global variable.
+	(Init_Display): Call grSetGlyphGamma.
+
+	* src/ftgamma.c: New demo program.
+
+	* src/ftview.c: Include math.h.
+	(Render_GammaGrid): New function.
+	(Help): Updated.
+	(Process_Event): Assign increase and decrease of gamma value to
+	keys `g' and `G'.
+	Assign gamma grid rendering mode to key `K'.
+	(main): Updated.
+
+	* src/Jamfile (LINKLIBS): Add -lm.
+	(GRAPHIC_PROGRAMS): Add ftgamma.c.
+	Add LINKLIBS for all GRAPHIC_PROGRAMS.
+	* vms_make.com: Updated.
 
 2004-05-19  George Williams  <gww@silcom.com>
 

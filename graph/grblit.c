@@ -1815,7 +1815,7 @@
 #endif
 
 
-#include "gblender_blit.h"
+#include "gblblit.h"
 
   static double    gr_glyph_gamma = 1.2;
 

@@ -1,4 +1,4 @@
-#include "gblender_blit.h"
+#include "gblblit.h"
 
 /* blitting gray glyphs
  */
@@ -63,7 +63,7 @@
 #define  GDST_STOREC(d,r,g,b)     *(GBlenderPixel*)(d) = GRGB_PACK(r,g,b)
 #define  GDST_COPY_VAR            /* nothing */
 
-#include "gblender_blit_any.h"
+#include "gblany.h"
 
 /* Rgb24 blitting routines
  */
@@ -92,7 +92,7 @@
 
 #define  GDST_COPY_VAR            /* nothing */
 
-#include "gblender_blit_any.h"
+#include "gblany.h"
 
 /* Rgb565 blitting routines
  */
@@ -122,7 +122,7 @@
 
 #define  GDST_STOREC(d,r,g,b)   *(unsigned short*)(d) = GRGB_TO_RGB565(r,g,b)
 
-#include "gblender_blit_any.h"
+#include "gblany.h"
 
 /* Bgr565 blitting routines
  */
@@ -151,7 +151,7 @@
 
 #define  GDST_STOREC(d,r,g,b)   *(unsigned short*)(d) = GRGB_TO_BGR565(r,g,b)
 
-#include "gblender_blit_any.h"
+#include "gblany.h"
 
 /* */
 
@@ -175,7 +175,7 @@ gblender_blit_init( GBlenderBlit           blit,
                     int                    src_width,
                     int                    src_height,
                     GBlenderTargetFormat   dst_format,
-                    void*                  dst_buffer,
+                    unsigned char*         dst_buffer,
                     int                    dst_pitch,
                     int                    dst_width,
                     int                    dst_height )

@@ -12,7 +12,7 @@ graph_sources = grblit
                 grdevice 
                 grinit
                 gblender
-                gblender_blit
+                gblblit
                 ;
 
 if $(OS) = BEOS

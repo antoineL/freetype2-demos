@@ -2,11 +2,11 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004 by                                      */
+/*  Copyright 2004 by                                                       */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
-/*  FTView - a simple font viewer.                                          */
+/*  ftgamma - gamma matcher                                                 */
 /*                                                                          */
 /*  This is a new version using the MiGS graphics subsystem for             */
 /*  blitting and display.                                                   */
@@ -63,7 +63,6 @@ Render_GammaGrid( void )
 {
   int   g;
   int   xmargin = 10;
-  int   levels  = 1;
   int   gamma_first = 16;
   int   gamma_last  = 26;
   int   gammas      = gamma_last - gamma_first + 1;
@@ -71,8 +70,8 @@ Render_GammaGrid( void )
   int   yside       = (bit.rows-100)/2;
   int   yrepeat     = 1;
 
-  int   x0      = (bit.width - gammas*(xside+xmargin)+xmargin)/2;
-  int   y0      = (bit.rows  - (8+yside*2*yrepeat))/2;
+  int   x_0     = (bit.width - gammas*(xside+xmargin)+xmargin)/2;
+  int   y_0     = (bit.rows  - (8+yside*2*yrepeat))/2;
   int   pitch   = bit.pitch;
 
 
@@ -110,21 +109,21 @@ Render_GammaGrid( void )
 
   for ( g = gamma_first; g <= gamma_last; g += 1 )
   {
-    double gamma = g/10.0;
+    double gamma_value = g/10.0;
     char   temp[6];
-    int    x = x0 + (xside+xmargin)*(g-gamma_first);
-    int    y = y0;
-    int    nx, ny;
+    int    x = x_0 + (xside+xmargin)*(g-gamma_first);
+    int    y = y_0;
+    int    ny;
 
-    grSetPixelMargin( x, y0-8 );
+    grSetPixelMargin( x, y_0-8 );
     grGotoxy( 0, 0 );
 
-    sprintf( temp, "%.1f", gamma );
+    sprintf( temp, "%.1f", gamma_value );
     grWrite( temp );
 
     for ( ny = 0; ny < yrepeat; ny++, y += 2*yside )
     {
-      do_rect( x, y, xside, yside, (int)255.0*pow( 0.5, 1.0/gamma ) );
+      do_rect( x, y, xside, yside, (int)255.0*pow( 0.5, 1.0/gamma_value ) );
       do_rect( x, y+yside, xside, yside, -1 );
     }
   }
@@ -134,8 +133,7 @@ Render_GammaGrid( void )
 
 
 int
-main( int    argc,
-      char*  argv[] )
+main( void )
 {
   grEvent  event;
 

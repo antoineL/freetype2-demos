@@ -441,7 +441,7 @@
     unsigned char*  read;
     unsigned char*  write;
 
-    read  = blit->read  + (blit->xread >> 3);
+    read  = blit->read  + ( blit->xread >> 3 );
     write = blit->write + blit->xwrite*4;
     shift = blit->xread & 7;
 
@@ -450,18 +450,21 @@
     {
       unsigned char*  _read  = read;
       unsigned char*  _write = write;
-      unsigned long   val    = (*_read | 0x100L) << shift;
+      unsigned long   val    = ( *_read++ | 0x100L ) << shift;
 
       x = blit->width;
       do
       {
-        if (val & 0x10000)
-          val = (*_read | 0x100L);
+        if ( val & 0x10000 )
+          val = *_read++ | 0x100L;
 
         if ( val & 0x80 )
         {
-   /* this could be greatly optimised as a *(long*)_write = color.value */
-   /* but this wouldn't work on 64-bits systems... stupid C types!      */
+          /* this could be greatly optimized as                         */
+          /*                                                            */
+          /*   *(long*)_write = color.value                             */
+          /*                                                            */
+          /* but it wouldn't work on 64-bits systems... stupid C types! */
           _write[0] = color.chroma[0];
           _write[1] = color.chroma[1];
           _write[2] = color.chroma[2];
@@ -471,14 +474,15 @@
         val   <<= 1;
         _write += 4;
         x--;
+
       } while ( x > 0 );
 
       read  += blit->read_line;
       write += blit->write_line;
       y--;
+
     } while ( y > 0 );
   }
-
 
 
   static

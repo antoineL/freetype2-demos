@@ -1,3 +1,17 @@
+2004-12-14  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i: Include new FT_BITMAP_H.
+	Remove dead code.
+	(ft_bitmap): New global variable.
+	(init_freetype): Call FT_Bitmap_New.
+	(done_freetype): Call FT_Bitmap_Done.
+	(glyph_to_bitmap, get_glyph_bitmap): Handle 2bpp and 4bpp bitmaps
+	using FT_Bitmap_Convert.
+
+2004-12-12  Steve Hartwell  <shspamsink@comcast.net>
+
+	* graph/grblit.c (blit_mono_to_rgb32): Advance read buffer properly.
+
 2004-11-26  Jouk Jansen <joukj@hrem.stm.tudelft.nl>
 
 	* vms_make.com: Don't assume that the ft2demos package is a

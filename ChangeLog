@@ -1,20 +1,32 @@
-2006-06-30  Werner Lemberg  <wl@gnu.org>
+2003-10-10  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftmulti.c (Help): Document all keys.
+	(main): Call FT_Done_FreeType.
+
+2003-09-02  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.5 released.
+	=========================
+
+
+2003-06-30  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdump.c (Print_Fixed): Print all elements of
 	face->available_sizes.
 
-2006-06-17  Werner Lemberg  <wl@gnu.org>
+2003-06-17  Werner Lemberg  <wl@gnu.org>
 
 	* src/*.c: s/ft_glyph_format_*/FT_GLYPH_FORMAT_*/.
 	s/ft_pixel_mode_*/FT_PIXEL_MODE_*/.
 	s/ft_glyph_bbox_*/FT_GLYPH_BBOX_*/.
 
-2006-06-16  YAMANO-UCHI Hidetoshi  <mer@din.or.jp>
+2003-06-16  YAMANO-UCHI Hidetoshi  <mer@din.or.jp>
 
 	* graph/x11/rules.mk (GRAPH_LINK): Add run-time search path on
 	Unix systems.
 
-2006-06-16  Werner Lemberg  <wl@gnu.org>
+2003-06-16  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcheckfixedwidth.c: Renamed to...
 	* src/ftchkwd.c: This.
@@ -22,7 +34,7 @@
 	* src/testname.c: This.
 	* src/Jamfile, Makefile: Updated.
 
-2006-06-15  Werner Lemberg  <wl@gnu.org>
+2003-06-15  Werner Lemberg  <wl@gnu.org>
 
 	* *.mk: Updated and revised to latest changes in FreeType 2.
 
@@ -93,6 +105,13 @@
 	(apply_gamma): Fix initialization of `buffer'.
 	* src/ftview.c (Render_Waterfall): Print more characters.
 
+2003-04-08  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.4 released.
+	=========================
+
+
 2002-12-02  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
 
 	* src/ftstring.c: Use `FT_ENCODING_*' everywhere instead of
@@ -104,6 +123,13 @@
 2002-12-01  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
 
 	* graph/win32/rules.mk: Adding link rules for Borland C++.
+
+2002-11-18  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.3 released.
+	=========================
+
 
 2002-11-10  David Turner  <david@freetype.org>
 

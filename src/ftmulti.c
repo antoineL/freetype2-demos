@@ -91,8 +91,8 @@
 #endif
 
 #ifdef DEBUG
-  static
-  void  LogMessage( const char*  fmt, ... )
+  static void
+  LogMessage( const char*  fmt, ... )
   {
     va_list  ap;
 
@@ -105,8 +105,8 @@
 
 
   /* PanicZ */
-  static
-  void PanicZ( const char*  message )
+  static void
+  PanicZ( const char*  message )
   {
     fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
     exit( 1 );
@@ -133,8 +133,8 @@
 
 
   /* Clears the Bit bitmap/pixmap */
-  static
-  void  Clear_Display( void )
+  static void
+  Clear_Display( void )
   {
     long  bitmap_size = (long)bit.pitch * bit.rows;
 
@@ -146,8 +146,8 @@
 
 
   /* Initialize the display bitmap named `bit' */
-  static
-  void  Init_Display( void )
+  static void
+  Init_Display( void )
   {
     grInitDevices();
 
@@ -170,13 +170,14 @@
 
 
   /* Render a single glyph with the `grays' component */
-  static
-  FT_Error  Render_Glyph( int  x_offset,
-                          int  y_offset )
+  static FT_Error
+  Render_Glyph( int  x_offset,
+                int  y_offset )
   {
     grBitmap  bit3;
     FT_Pos    x_top, y_top;
     
+
     /* first, render the glyph image into a bitmap */
     if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )
     {
@@ -192,7 +193,7 @@
     bit3.pitch  = glyph->bitmap.pitch;
     bit3.buffer = glyph->bitmap.buffer;
 
-    switch (glyph->bitmap.pixel_mode)
+    switch ( glyph->bitmap.pixel_mode )
     {
     case FT_PIXEL_MODE_MONO:
       bit3.mode  = gr_pixel_mode_mono;
@@ -214,16 +215,16 @@
   }
 
 
-  static
-  void  Reset_Scale( int  pointSize )
+  static void
+  Reset_Scale( int  pointSize )
   {
     (void)FT_Set_Char_Size( face, pointSize << 6, pointSize << 6, res, res );
   }
 
 
-  static
-  FT_Error  LoadChar( int  idx,
-                      int  hint )
+  static FT_Error
+  LoadChar( int  idx,
+            int  hint )
   {
     int  flags;
 
@@ -240,9 +241,9 @@
   }
 
 
-  static
-  FT_Error  Render_All( int  first_glyph,
-                        int  pt_size )
+  static FT_Error
+  Render_All( int  first_glyph,
+              int  pt_size )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
@@ -303,8 +304,8 @@
   }
 
 
-  static
-  FT_Error  Render_Text( int  first_glyph )
+  static FT_Error
+  Render_Text( int  first_glyph )
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
@@ -372,8 +373,8 @@
   }
 
 
-  static
-  void Help( void )
+  static void
+  Help( void )
   {
     grEvent  dummy_event;
 
@@ -384,44 +385,51 @@
     grSetMargin( 2, 1 );
     grGotobitmap( &bit );
 
-    grWriteln("FreeType Glyph Viewer - part of the FreeType test suite" );
+    grWriteln( "FreeType Multiple Masters Glyph Viewer - part of the FreeType test suite" );
     grLn();
-    grWriteln("This program is used to display all glyphs from one or" );
-    grWriteln("several font files, with the FreeType library.");
+    grWriteln( "This program is used to display all glyphs from one or" );
+    grWriteln( "several Multiple Masters font files, with the FreeType library.");
     grLn();
-    grWriteln("Use the following keys:");
+    grWriteln( "Use the following keys:");
     grLn();
-    grWriteln("  F1 or ?   : display this help screen" );
-    grWriteln("  a         : toggle anti-aliasing" );
-    grWriteln("  h         : toggle outline hinting" );
-    grWriteln("  b         : toggle embedded bitmaps" );
-    grWriteln("  l         : toggle low precision rendering" );
-    grWriteln("  space     : toggle rendering mode" );
+    grWriteln( "  F1 or ?   : display this help screen" );
+    grWriteln( "  a         : toggle anti-aliasing" );
+    grWriteln( "  h         : toggle outline hinting" );
+    grWriteln( "  b         : toggle embedded bitmaps" );
+    grWriteln( "  l         : toggle low precision rendering" );
+    grWriteln( "  space     : toggle rendering mode" );
     grLn();
-    grWriteln("  Up        : increase pointsize by 1 unit" );
-    grWriteln("  Down      : decrease pointsize by 1 unit" );
-    grWriteln("  Page Up   : increase pointsize by 10 units" );
-    grWriteln("  Page Down : decrease pointsize by 10 units" );
+    grWriteln( "  n         : next font" );
+    grWriteln( "  p         : previous font" );
     grLn();
-    grWriteln("  Right     : increment first glyph index" );
-    grWriteln("  Left      : decrement first glyph index" );
+    grWriteln( "  Up        : increase pointsize by 1 unit" );
+    grWriteln( "  Down      : decrease pointsize by 1 unit" );
+    grWriteln( "  Page Up   : increase pointsize by 10 units" );
+    grWriteln( "  Page Down : decrease pointsize by 10 units" );
     grLn();
-    grWriteln("  F3        : decrement first axis position by 20" );
-    grWriteln("  F4        : increment first axis position by 20" );
-    grWriteln("  F5        : decrement second axis position by 20" );
-    grWriteln("  F6        : increment second axis position by 20" );
-    grWriteln("  F7        : decrement third axis position by 20" );
-    grWriteln("  F8        : increment third axis position by 20" );
+    grWriteln( "  Right     : increment first glyph index" );
+    grWriteln( "  Left      : decrement first glyph index" );
     grLn();
-    grWriteln("press any key to exit this help screen");
+    grWriteln( "  F3        : decrement first axis position by 20" );
+    grWriteln( "  F4        : increment first axis position by 20" );
+    grWriteln( "  F5        : decrement second axis position by 20" );
+    grWriteln( "  F6        : increment second axis position by 20" );
+    grWriteln( "  F7        : decrement third axis position by 20" );
+    grWriteln( "  F8        : increment third axis position by 20" );
+    grWriteln( "  F9        : decrement index by 100" );
+    grWriteln( "  F10       : increment index by 100" );
+    grWriteln( "  F11       : decrement index by 1000" );
+    grWriteln( "  F12       : increment index by 1000" );
+    grLn();
+    grWriteln( "press any key to exit this help screen" );
 
     grRefreshSurface( surface );
     grListenSurface( surface, gr_event_key, &dummy_event );
   }
 
 
-  static
-  int  Process_Event( grEvent*  event )
+  static int
+  Process_Event( grEvent*  event )
   {
     int  i, axis;
 
@@ -587,8 +595,8 @@
   }
 
 
-  static
-  void  usage( char*  execname )
+  static void
+  usage( char*  execname )
   {
     fprintf( stderr,  "\n" );
     fprintf( stderr,  "ftmulti: multiple masters font viewer - part of FreeType\n" );
@@ -617,7 +625,8 @@
     int    option;
     int    file_loaded;
 
-    grEvent   event;
+    grEvent  event;
+
 
     execname = ft_basename( argv[0] );
 
@@ -789,7 +798,7 @@
       }
       else
       {
-        sprintf( Header, "%s : not an MM font file, or could not be opened",
+        sprintf( Header, "%s: not an MM font file, or could not be opened",
                          ft_basename( argv[file] ) );
       }
 
@@ -836,12 +845,14 @@
     grDone();
 #endif
 
+    FT_Done_FreeType( library );
+
     printf( "Execution completed successfully.\n" );
     printf( "Fails = %d\n", Fail );
 
     exit( 0 );      /* for safety reasons */
     return 0;       /* never reached */
-}
+  }
 
 
 /* End */

@@ -1,0 +1,19 @@
+2000-12-09  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile: Added $(LDFLAGS) for `unix' link target.
+
+2000-12-01  David Turner  <david.turner@freetype.org>
+
+	* Version 2.0.1 released.
+	=========================
+
+2000-11-09  David Turner  <david@freetype.org>
+
+	* Version 2.0 released.
+	=======================
+
+
+Local Variables:
+version-control: never
+coding: latin-1
+End:

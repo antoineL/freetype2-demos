@@ -1,7 +1,10 @@
 2004-03-26  Ulrich  <ulrich@infopuls.com>
 
-        * graph/x11/grx11.c: fixes visual selection problems
-
+	* graph/x11/grx11.c (grX11DeviceRec): Add `visual' member.
+	(gr_x11_device_init): Directly manipulate `x11dev'.
+	Use XGetVisualInfo.
+	(gr_x11_surface_init): Directly use `x11dev'.
+	Fix other visual selection problems.
 
 2004-03-20  Steve Hartwell  <shspamsink@comcast.net>
 

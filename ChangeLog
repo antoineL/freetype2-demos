@@ -1,3 +1,17 @@
+2004-06-03  Werner Lemberg  <wl@gnu.org>
+
+	Add autohinting toggling (using the `f' key) to ftstring.
+	Handle new inter-letter spacing support for autohinting.
+
+	* src/ftstring.c (autohint): New global variable.
+	(layout_glyphs): Handle `autohint' variable.
+	Handle new `lsb_delta' and `rsb_delta' elements of
+	face->glyph->metrics.
+	Remove some dead code.
+	(Help): Updated.
+	(Process_Event): Handle key `f'.
+	Extend key `k'.
+
 2004-05-23  Werner Lemberg  <wl@gnu.org>
 
 	* graph/gblender_blit.c: Renamed to...

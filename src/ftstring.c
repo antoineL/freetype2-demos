@@ -51,10 +51,13 @@
   static int  Rotation = 0;
   static int  Fail;
 
-  static int  hinted    = 1;        /* is glyph hinting active ?    */
-  static int  antialias = 1;        /* is anti-aliasing active ?    */
-  static int  use_sbits = 0;        /* do we use embedded bitmaps ? */
-  static int  kerning   = 1;
+  static int  hinted    = 1;        /* is glyph hinting active?        */
+  static int  antialias = 1;        /* is anti-aliasing active?        */
+  static int  use_sbits = 0;        /* do we use embedded bitmaps?     */
+  static int  kerning   = 2;        /* 0: no kerning;                  */
+                                    /* 1: `kern' values                */
+                                    /* 2: `kern' + side bearing errors */
+  static int  autohint  = 0;        /* is forced hinting active?       */
   static int  use_gamma = 0;
 
   static int  res = 72;             /* default resolution in dpi */
@@ -278,10 +281,10 @@
     PGlyph     glyph = glyphs;
     int        n;
     FT_Vector  origin;
-    FT_Pos     origin_x = 0;
+    FT_Pos     origin_x       = 0;
     FT_UInt    load_flags;
-    FT_UInt    num_grays;
-    FT_UInt    prev_index = 0;
+    FT_UInt    prev_index     = 0;
+    FT_Pos     prev_rsb_delta = 0;
 
 
     load_flags = FT_LOAD_DEFAULT;
@@ -289,10 +292,8 @@
       load_flags |= FT_LOAD_NO_HINTING;
     if ( !use_sbits )
       load_flags |= FT_LOAD_NO_BITMAP;
-
-    num_grays = 256;
-    if ( !antialias )
-      num_grays = 0;
+    if ( autohint )
+      load_flags |= FT_LOAD_FORCE_AUTOHINT;
 
     for ( n = 0; n < num_glyphs; n++, glyph++ )
     {
@@ -313,18 +314,28 @@
         prev_index = glyph->glyph_index;
       }
 
-      origin.x = origin_x;
-      origin.y = 0;
-
       /* clear existing image if there is one */
       if ( glyph->image )
         FT_Done_Glyph( glyph->image );
 
-      /* load the glyph image (in its native format); */
-      /* for now, we take a monochrome glyph bitmap   */
+      /* load the glyph image (in its native format) */
       error = FT_Load_Glyph( face, glyph->glyph_index, load_flags );
       if ( error )
         continue;
+
+      if ( n && kerning > 1 )
+      {
+        if ( prev_rsb_delta - face->glyph->metrics.lsb_delta >= 32 )
+          origin_x -= 64;
+
+        else if ( prev_rsb_delta - face->glyph->metrics.lsb_delta < -32 )
+          origin_x += 64;
+      }
+
+      origin.x = origin_x;
+      origin.y = 0;
+
+      prev_rsb_delta = face->glyph->metrics.rsb_delta;
 
       error = FT_Get_Glyph( face->glyph, &glyph->image );
       if ( error )
@@ -332,7 +343,7 @@
 
       glyph->pos = origin;
 
-      origin_x  += face->glyph->advance.x;
+      origin_x += face->glyph->advance.x;
     }
 
     string_center.x = ( origin_x / 2 ) & -64;
@@ -595,6 +606,7 @@
     grLn();
     grWriteln("  F1 or ?   : display this help screen" );
     grWriteln("  a         : toggle anti-aliasing" );
+    grWriteln( " f         : toggle forced auto-hinting" );
     grWriteln("  h         : toggle outline hinting" );
     grWriteln("  k         : toggle kerning" );
     grWriteln("  g         : toggle gamma correction" );
@@ -631,18 +643,25 @@
     case grKEY( 'q' ):
       return 0;
 
+    case grKEY( 'f' ):
+      autohint = !autohint;
+      new_header = autohint ? (char *)"forced auto-hinting is now on"
+                            : (char *)"forced auto-hinting is now off";
+      return 1;
+
     case grKEY( 'k' ):
-      kerning = !kerning;
-      new_header = kerning
-                     ? (char *)"kerning is now active"
-                     : (char *)"kerning is now ignored";
+      kerning = ( kerning + 1 ) % 3;
+      new_header =
+        kerning == 2
+          ? (char *)"kerning and side bearing correction is now active"
+          : kerning == 1 ? (char *)"kerning is now active"
+                         : (char *)"kerning is now ignored";
       return 1;
 
     case grKEY( 'a' ):
       antialias  = !antialias;
-      new_header = antialias
-                     ? (char *)"anti-aliasing is now on"
-                     : (char *)"anti-aliasing is now off";
+      new_header = antialias ? (char *)"anti-aliasing is now on"
+                             : (char *)"anti-aliasing is now off";
       return 1;
 
     case grKEY( 'b' ):
@@ -662,16 +681,14 @@
 
     case grKEY( 'h' ):
       hinted     = !hinted;
-      new_header = hinted
-                     ? (char *)"glyph hinting is now active"
-                     : (char *)"glyph hinting is now ignored";
+      new_header = hinted ? (char *)"glyph hinting is now active"
+                          : (char *)"glyph hinting is now ignored";
       break;
 
     case grKEY( 'g' ):
       use_gamma = !use_gamma;
-      new_header = use_gamma
-                     ? (char *)"gamma correction is now on"
-                     : (char *)"gamma correction is now off";
+      new_header = use_gamma ? (char *)"gamma correction is now on"
+                             : (char *)"gamma correction is now off";
       return 1;
 
     case grKeyF1:

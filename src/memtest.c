@@ -158,14 +158,25 @@ void*  my_realloc( FT_Memory memory,
 }
 
 
-struct FT_MemoryRec_  my_memory =
-{
-  0,
-  my_alloc,
-  my_free,
-  my_realloc
-};
 
+static FT_Memory  my_memory( void )
+{
+  FT_Memory  memory;
+  
+  memory = my_alloc( 0, sizeof(*memory) );
+  if (!memory)
+  {
+    fprintf( stderr, "Unable to allocate debug memory manager !?!\n" );
+    exit(2);
+  }
+  
+  memory->user    = 0;
+  memory->alloc   = my_alloc;
+  memory->free    = my_free;
+  memory->realloc = my_realloc;
+
+  return memory;
+}
 
 static void  dump_mem( void )
 {
@@ -231,7 +242,7 @@ int  main( int argc, char** argv )
       Usage( execname );
 
     /* Create a new library with our own memory manager */
-    error = FT_New_Library( &my_memory, &library );
+    error = FT_New_Library( my_memory(), &library );
     if (error) Panic( "Could not create library object" );
 
     /* the new library has no drivers in it, add the default ones */

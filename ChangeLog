@@ -1,3 +1,10 @@
+2001-02-22  Davdi Turner  <david.turner@freetype.org>
+
+	* src/memtest.c: fixed the debug memory allocator. the constant
+	"my_memory" was replaced by a function that allocates a new
+	"memory allocator through "my_alloc()" and returns it.
+
+
 2001-02-06  James H. Cloos Jr.  <cloos@jhcloos.com>
 
 	* src/ftview.c (Render_Text): Fix rendering of test string.

@@ -1,3 +1,7 @@
+2002-06-23  Vincent Caron
+
+        * src/ftstring.c: adding support for gamma-corrected display
+
 2002-06-14  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile, graph/rules.mk: s/TOP/TOP_DIR/, s/TOP2/TOP_DIR_2/.

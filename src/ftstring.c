@@ -55,6 +55,7 @@
   static int  antialias = 1;        /* is anti-aliasing active ?    */
   static int  use_sbits = 0;        /* do we use embedded bitmaps ? */
   static int  kerning   = 1;
+  static int  use_gamma = 0;
 
   static int  res = 72;             /* default resolution in dpi */
 
@@ -161,6 +162,58 @@
   /*                                                                       */
   static TGlyph  glyphs[ MAX_GLYPHS ];
   static int     num_glyphs;
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Gamma correction.                                                     */
+  /*                                                                       */
+  /*                                                                       */
+  static double  gamma_value = 2.0f;
+  static FT_Byte gamma_ramp[256];
+
+  static void
+  init_gamma( void )
+  {
+    int i;
+    double gamma_inv = 1.0f / gamma_value;
+
+    for (i = 0; i < 256; i++)
+      gamma_ramp[i] = (FT_Byte)( pow((double)i / 255.0f, gamma_inv) * 255.0f );
+  }
+
+  static void
+  apply_gamma( grBitmap* bmp )
+  {
+    int       i, j;
+    FT_Byte*  buffer = (FT_Byte*) bmp->buffer;
+
+    for (i = 0; i < bmp->rows; i++)
+    {
+      for (j = 0; j < bmp->width; j++)
+        /* bitmap color is the inverse of coverage values, hence the '255-x' */
+        buffer[j] = (FT_Byte)(255 - gamma_ramp[255 - buffer[j]]);
+
+      buffer += bmp->pitch;
+    }
+  }
+
+  static void
+  draw_gamma_ramp( void )
+  {
+    int   i, x, y;
+    long  pitch = bit.pitch;
+    long  start = 0;
+    
+    if ( pitch < 0 )
+      start = -pitch*(bit.rows-1);
+    
+    x = (bit.width - 256) / 2;
+    y = (bit.rows + 256) / 2;
+    for (i = 0; i < 256; i++, x++)
+    {
+      bit.buffer[start + pitch*(y - gamma_ramp[i]) + x ] = 80;
+    }
+  }
 
 
   /*************************************************************************/
@@ -384,6 +437,8 @@
             case ft_pixel_mode_grays:
               bit3.mode  = gr_pixel_mode_gray;
               bit3.grays = source->num_grays;
+              if (use_gamma)
+                apply_gamma(&bit3);
               break;
 
             default:
@@ -484,6 +539,7 @@
     grWriteln("  a         : toggle anti-aliasing" );
     grWriteln("  h         : toggle outline hinting" );
     grWriteln("  k         : toggle kerning" );
+    grWriteln("  g         : toggle gamma correction" );
     grLn();
     grWriteln("  Up        : increase pointsize by 1 unit" );
     grWriteln("  Down      : decrease pointsize by 1 unit" );
@@ -494,6 +550,9 @@
     grWriteln("  Left      : rotate clockwise" );
     grWriteln("  F7        : big rotate counter-clockwise");
     grWriteln("  F8        : big rotate clockwise");
+    grLn();
+    grWriteln("  F9        : decrease gamma by 0.1" );
+    grWriteln("  F10       : increase gamma by 0.1" );
     grLn();
     grWriteln("press any key to exit this help screen");
 
@@ -550,6 +609,13 @@
                      : (char *)"glyph hinting is now ignored";
       break;
 
+    case grKEY( 'g' ):
+      use_gamma = !use_gamma;
+      new_header = use_gamma
+                     ? (char *)"gamma correction is now on"
+                     : (char *)"gamma correction is now off";
+      return 1;
+
     case grKeyF1:
     case grKEY( '?' ):
       Help();
@@ -571,6 +637,9 @@
     case grKeyRight: i =   1; goto Do_Rotate;
     case grKeyF7:    i = -10; goto Do_Rotate;
     case grKeyF8:    i =  10; goto Do_Rotate;
+
+    case grKeyF9 : if (gamma_value > 0.1f) gamma_value -= 0.1f; goto Do_Gamma_Set;
+    case grKeyF10:                         gamma_value += 0.1f; goto Do_Gamma_Set;
     default:
       ;
     }
@@ -579,6 +648,16 @@
   Do_Rotate:
     Rotation = ( Rotation + i ) & 127;
     return 1;
+
+  Do_Gamma_Set:
+  {
+    static char header_buffer[64];
+
+    sprintf(header_buffer, "gamma is %.1f", gamma_value);
+    new_header = header_buffer;
+    init_gamma();
+    return 1;
+  }
 
   Do_Scale:
     ptsize += i;
@@ -731,6 +810,8 @@
       goto Display_Font;
 
   Success:
+    init_gamma();
+
     /* prepare the text to be rendered */
     prepare_text( (unsigned char*)Text );
 
@@ -773,6 +854,8 @@
         {
           reset_transform();
           layout_glyphs();
+          if (use_gamma)
+            draw_gamma_ramp();
           render_string( bit.width/2, bit.rows/2 );
         }
 

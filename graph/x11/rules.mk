@@ -39,6 +39,11 @@ ifndef X11_PATH
     X11_PATH := $(subst ;, ,$(PATH)) $(subst :, ,$(PATH))
     X11_PATH := $(filter %$(xversion)$(SEP)bin,$(X11_PATH))
     X11_PATH := $(X11_PATH:%$(SEP)bin=%)
+  else
+    # on Debian Linux systems, and a few others, only "/usr/bin/X11"
+    # is in the path. As a last fallback, we test for "/usr/X11R6"
+    #
+    X11_PATH = $(strip $(wildcard /usr/X11R6) $(wilcard /usr/local/X11R6))
   endif
 endif
 

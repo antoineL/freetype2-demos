@@ -5,8 +5,8 @@ WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   downloaded one of the stable FreeType 2 source packages from our server,
   you'll most probably need to rename its directory, for example:
   
-    mv freetype-2.0.4 freetype2       on Unix
-    rename freetype-2.0.4 freetype2   on Windows
+    mv freetype-2.0.6 freetype2       on Unix
+    rename freetype-2.0.6 freetype2   on Windows
 
 WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 

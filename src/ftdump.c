@@ -25,10 +25,10 @@
 #include <string.h>
 
 
-  FT_Library    library;      /* the FreeType library            */
-  FT_Face       face;         /* the font face                   */
+  FT_Library  library;      /* the FreeType library            */
+  FT_Face     face;         /* the font face                   */
 
-  FT_Error      error;
+  FT_Error    error;
 
   int  comma_flag = 0;
 
@@ -50,9 +50,9 @@
   void  Print_Comma( const char*  message )
   {
     if ( comma_flag )
-      printf(", ");
+      printf( ", " );
 
-    printf("%s", message);
+    printf( "%s", message );
     comma_flag = 1;
   }
 
@@ -74,7 +74,7 @@
   {
     printf( "font name entries\n" );
 
-    /* XXX: Foundry? Copyright? Version? ... */
+    /* XXX: Foundry?  Copyright?  Version? ... */
 
     printf( "   family: %s\n", face->family_name );
     printf( "   style:  %s\n", face->style_name );
@@ -153,7 +153,7 @@
 
 
     /* CharMaps */
-    printf("charmaps\n");
+    printf( "charmaps\n" );
 
     for( i = 0; i < face->num_charmaps; i++ )
     {
@@ -227,6 +227,8 @@
 
     /* Load face */
     error = FT_New_Face( library, filename, 0, &face );
+    if ( error )
+      PanicZ( "Could not open face." );
 
   Success:
     num_faces = face->num_faces;
@@ -240,10 +242,12 @@
     for( i = 0; i < num_faces; i++ )
     {
       error = FT_New_Face( library, filename, i, &face );
+      if ( error )
+        PanicZ( "Could not open face." );
 
-      printf("\n----- Face number: %d -----\n\n", i);
+      printf( "\n----- Face number: %d -----\n\n", i );
       Print_Name( face );
-      printf("\n");
+      printf( "\n" );
       Print_Type( face );
 
       if ( face->num_fixed_sizes )
@@ -254,7 +258,7 @@
 
       if( face->num_charmaps )
       {
-        printf("\n");
+        printf( "\n" );
         Print_Charmaps( face );
       }
 

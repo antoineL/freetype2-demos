@@ -15,6 +15,7 @@
 /*                                                                          */
 /****************************************************************************/
 
+
 #include "ftcommon.i"
 
   static
@@ -24,18 +25,20 @@
     int         i;
     grBitmap    bit3;
 
+
     start_x = 4;
     start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.font, &face, &size );
-    if (error)
+    error = FTC_Manager_Lookup_Size( manager, &current_font.font,
+                                     &face, &size );
+    if ( error )
     {
-      /* this should never happen !! */
+      /* this should never happen! */
       return 0;
     }
 
     step_x = size->metrics.x_ppem + 4;
-    step_y = (size->metrics.height >> 6) + 4;
+    step_y = ( size->metrics.height >> 6 ) + 4;
 
     x = start_x;
     y = start_y;
@@ -50,37 +53,39 @@
     {
       FT_Glyph  glyph;
       
+
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
                                       i,
                                       &glyph );
-      if (!error)
+      if ( !error )
       {
         FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
         FT_Bitmap*      source = &bitmap->bitmap;
         FT_Pos          x_top, y_top;
         
-        if (glyph->format != ft_glyph_format_bitmap)
-          PanicZ( "invalid glyph format returned !!" );
+
+        if ( glyph->format != ft_glyph_format_bitmap )
+          PanicZ( "invalid glyph format returned!" );
           
         bit3.rows   = source->rows;
         bit3.width  = source->width;
         bit3.pitch  = source->pitch;
         bit3.buffer = source->buffer;
 
-        switch (source->pixel_mode)
+        switch ( source->pixel_mode )
         {
-          case ft_pixel_mode_mono:
-            bit3.mode  = gr_pixel_mode_mono;
-            break;
+        case ft_pixel_mode_mono:
+          bit3.mode  = gr_pixel_mode_mono;
+          break;
 
-          case ft_pixel_mode_grays:
-            bit3.mode  = gr_pixel_mode_gray;
-            bit3.grays = source->num_grays;
-            break;
+        case ft_pixel_mode_grays:
+          bit3.mode  = gr_pixel_mode_gray;
+          bit3.grays = source->num_grays;
+          break;
 
-          default:
-            continue;
+        default:
+          continue;
         }
     
         /* now render the bitmap into the display surface */
@@ -90,7 +95,7 @@
 
         x += ( glyph->advance.x >> 16 ) + 1;
 
-        if ( x > bit.width )
+        if ( x + size->metrics.x_ppem > bit.width )
         {
           x  = start_x;
           y += step_y;
@@ -109,7 +114,6 @@
   }
 
 
-
   static
   FT_Error  Render_Text( int  first_glyph )
   {
@@ -119,18 +123,20 @@
 
     const unsigned char*  p;
 
+
     start_x = 4;
     start_y = 16 + current_font.font.pix_height;
 
-    error = FTC_Manager_Lookup_Size( manager, &current_font.font, &face, &size );
-    if (error)
+    error = FTC_Manager_Lookup_Size( manager, &current_font.font,
+                                     &face, &size );
+    if ( error )
     {
-      /* this should never happen */
+      /* this should never happen! */
       return 0;
     }
 
     step_x = size->metrics.x_ppem + 4;
-    step_y = (size->metrics.height >> 6) + 4;
+    step_y = ( size->metrics.height >> 6 ) + 4;
 
     x = start_x;
     y = start_y;
@@ -147,37 +153,39 @@
     {
       FT_Glyph  glyph;
       
+
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
                                       FT_Get_Char_Index( face, *p ),
                                       &glyph );
-      if (!error)
+      if ( !error )
       {
         FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
         FT_Bitmap*      source = &bitmap->bitmap;
         FT_Pos          x_top, y_top;
         
-        if (glyph->format != ft_glyph_format_bitmap)
-          PanicZ( "invalid glyph format returned !!" );
+
+        if ( glyph->format != ft_glyph_format_bitmap )
+          PanicZ( "invalid glyph format returned!" );
           
         bit3.rows   = source->rows;
         bit3.width  = source->width;
         bit3.pitch  = source->pitch;
         bit3.buffer = source->buffer;
 
-        switch (source->pixel_mode)
+        switch ( source->pixel_mode )
         {
-          case ft_pixel_mode_mono:
-            bit3.mode  = gr_pixel_mode_mono;
-            break;
+        case ft_pixel_mode_mono:
+          bit3.mode  = gr_pixel_mode_mono;
+          break;
 
-          case ft_pixel_mode_grays:
-            bit3.mode  = gr_pixel_mode_gray;
-            bit3.grays = source->num_grays;
-            break;
+        case ft_pixel_mode_grays:
+          bit3.mode  = gr_pixel_mode_gray;
+          bit3.grays = source->num_grays;
+          break;
 
-          default:
-            continue;
+        default:
+          continue;
         }
     
         /* now render the bitmap into the display surface */
@@ -207,15 +215,13 @@
   }
 
 
-
-
- /*************************************************************************/
- /*************************************************************************/
- /*****                                                               *****/
- /*****                    REST OF THE APPLICATION/PROGRAM            *****/
- /*****                                                               *****/
- /*************************************************************************/
- /*************************************************************************/
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                REST OF THE APPLICATION/PROGRAM                *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
 
   static
   void Help( void )
@@ -456,15 +462,14 @@
     for ( ; argc > 0; argc--, argv++ )
       install_font_file( argv[0] );
 
-    if (num_fonts == 0)
+    if ( num_fonts == 0 )
       PanicZ( "could not find/open any font file" );
-      
-    
+
     font_index = 0;
     ptsize     = orig_ptsize;
     
   NewFile:
-    set_current_face( fonts[ font_index ] );
+    set_current_face( fonts[font_index] );
     set_current_pointsize( ptsize );
     set_current_image_type();
     num_glyphs = fonts[font_index]->num_glyphs;
@@ -500,20 +505,20 @@
 
       if ( num_fonts >= 1 )
       {
-        switch (render_mode)
+        switch ( render_mode )
         {
-          case 0:
-            Render_Text( Num );
-            break;
+        case 0:
+          Render_Text( Num );
+          break;
             
-          default:
-            Render_All( Num );
+        default:
+          Render_All( Num );
         }
 
         sprintf( Header, "%s %s (file `%s')",
-                         face->family_name,
-                         face->style_name,
-                         ft_basename( ((PFont)current_font.font.face_id)->filepathname ) );
+          face->family_name,
+          face->style_name,
+          ft_basename( ( (PFont)current_font.font.face_id)->filepathname ) );
 
         if ( !new_header )
           new_header = Header;
@@ -535,7 +540,7 @@
 
       if ( key == 'n' )
       {
-        if ( font_index+1 < num_fonts )
+        if ( font_index + 1 < num_fonts )
           font_index++;
 
         goto NewFile;

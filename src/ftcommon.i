@@ -10,15 +10,15 @@
 /*                                                                          */
 /****************************************************************************/
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_CACHE_H
 
-#include <freetype/freetype.h>
-#include <freetype/ftcache.h>
-
-#include <freetype/cache/ftcimage.h>
-#include <freetype/cache/ftcsbits.h>
+#include FT_CACHE_IMAGE_H
+#include FT_CACHE_SMALL_BITMAPS_H
 
   /* the following header shouldn't be used in normal programs */
-#include <freetype/internal/ftdebug.h>
+#include FT_INTERNAL_DEBUG_H
 
 #include "common.h"
 

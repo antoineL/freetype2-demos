@@ -10,8 +10,9 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
 #include "common.h"
 
 #include <stdio.h>

@@ -26,10 +26,13 @@
 #endif
 
 
-#include <freetype/freetype.h>
-#include <truetype/ttobjs.h>
-#include <truetype/ttdriver.h>
-#include <truetype/ttinterp.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+/* "freetype2/src/truetype" must be in the current include path */
+#include "ttobjs.h"
+#include "ttdriver.h"
+#include "ttinterp.h"
 
 
 FT_Library      library;    /* root library object */

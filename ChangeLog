@@ -1,3 +1,7 @@
+2001-03-23  David Turner    <david@freetype.org>
+
+	* Makefile, src/*.c: changed to new header inclusion scheme
+
 2001-03-13  Werner Lemberg  <wl@gnu.org>
 
 	* graph/x11/grx11.c: Increase MAX_PIXEL_MODES to 100.

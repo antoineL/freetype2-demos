@@ -8,15 +8,16 @@
 /****************************************************************************/
 
 
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
   /* the following header shouldn't be used in normal programs */
-#include <freetype/internal/ftdebug.h>
+#include FT_INTERNAL_DEBUG_H
 
   /* showing driver name */
-#include <freetype/ftmodule.h>
-#include <freetype/internal/ftobjs.h>
-#include <freetype/internal/ftdriver.h>
+#include FT_MODULE_H
+#include FT_INTERNAL_OBJECTS_H
+#include FT_INTERNAL_DRIVER_H
 
 #include "common.h"
 

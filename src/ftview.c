@@ -147,7 +147,7 @@
       else
         Fail++;
 
-      i++;
+      p++;
     }
 
     return FT_Err_Ok;

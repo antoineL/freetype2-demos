@@ -1,3 +1,8 @@
+2004-07-14  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (get_glyph_bitmap): Don't accept a `missing'
+	character with zero or negative width.
+
 2004-07-13  David Turner  <david@freetype.org>
 
 	* graph/x11/grx11.c (gr_x11_device_init): Fix memory leak.

@@ -545,6 +545,8 @@
 
 
 #if 0
+
+
   static FT_Error
   get_glyph_bitmap( FT_ULong     Index,
                     grBitmap*    target,
@@ -702,6 +704,8 @@
 
 
 #else /* !0 */
+
+
   static FT_Error
   glyph_to_bitmap( FT_Glyph    glyf,
                    grBitmap*   target,
@@ -713,6 +717,7 @@
   {
     FT_BitmapGlyph  bitmap;
     FT_Bitmap*      source;
+
 
     *aref = NULL;
 
@@ -871,7 +876,15 @@
     }
 
   Exit:
+    /* don't accept a `missing' character with zero or negative width */
+    if ( Index == 0 && *x_advance <= 0 )
+      *x_advance = 1;
+
     return error;
   }
+
+
 #endif /* !0 */
+
+
 /* End */

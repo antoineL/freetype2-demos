@@ -172,7 +172,7 @@
     bit3.rows   = glyph->bitmap.rows;
     bit3.width  = glyph->bitmap.width;
     bit3.pitch  = glyph->bitmap.pitch;
-    bit3.buffer = glyph->bitmap.buffer;
+    bit3.buffer = (char*)glyph->bitmap.buffer;
 
     switch ( glyph->bitmap.pixel_mode )
     {

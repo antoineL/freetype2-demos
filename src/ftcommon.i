@@ -498,7 +498,7 @@
 
     if ( antialias && lcd_mode > 0 )
     {
-      if ( lcd_mode == 1 || lcd_mode == 3 )
+      if ( lcd_mode == 1 || lcd_mode == 2 )
         current_font.flags |= FT_LOAD_TARGET_LCD;
       else
         current_font.flags |= FT_LOAD_TARGET_LCD_V;
@@ -577,12 +577,14 @@
           break;
 
         case FT_PIXEL_MODE_LCD:
-          target->mode  = gr_pixel_mode_lcd;
+          target->mode  = lcd_mode == 1 ? gr_pixel_mode_lcd
+                                        : gr_pixel_mode_lcd2;
           target->grays = sbit->max_grays + 1;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
-          target->mode  = gr_pixel_mode_lcdv;
+          target->mode  = lcd_mode == 3 ? gr_pixel_mode_lcdv
+                                        : gr_pixel_mode_lcdv2;
           target->grays = sbit->max_grays + 1;
           break;
 
@@ -652,12 +654,14 @@
           break;
 
         case FT_PIXEL_MODE_LCD:
-          target->mode  = gr_pixel_mode_lcd;
+          target->mode  = lcd_mode == 1 ? gr_pixel_mode_lcd
+                                        : gr_pixel_mode_lcd2 ;
           target->grays = source->num_grays;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
-          target->mode  = gr_pixel_mode_lcdv;
+          target->mode  = lcd_mode == 3 ? gr_pixel_mode_lcdv
+                                        : gr_pixel_mode_lcdv2;
           target->grays = source->num_grays;
           break;
 

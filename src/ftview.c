@@ -395,10 +395,10 @@
         new_header = (char *)"horizontal LCD-optimized rendering on (RGB)";
         break;
       case 2:
-        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
         break;
       case 3:
-        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
+        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
         break;
       case 4:
         new_header = (char *)"vertical LCD-optimized rendering on (BGR)";

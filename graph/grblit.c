@@ -34,10 +34,12 @@
       break;
 
     case gr_pixel_mode_lcd:
+    case gr_pixel_mode_lcd2:
       width /= 3;
       break;
 
     case gr_pixel_mode_lcdv:
+    case gr_pixel_mode_lcdv2:
       height /= 3;
       break;
 

@@ -130,6 +130,7 @@
       int      left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt  gindex;
 
+
       gindex = *(unsigned char*)p;
       if ( encoding == ft_encoding_none )
         gindex = get_glyph_index( gindex );

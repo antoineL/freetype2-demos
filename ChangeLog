@@ -1,7 +1,12 @@
 2002-06-07  David Turner  <david@freetype.org>
 
-        * Makefile, src/Jamfile, src/ftbench.c: adding Vincent Caron's
-        benchmark program
+	Adding Vincent Caron's benchmark program.
+
+	* src/ftbench.c: New file.
+	* Makefile, src/Jamfile: Updated.
+	Other minor fixes.
+
+	* src/ftview.c (Render_Text): Call get_glyph_index() conditionally.
 
 2002-05-20  Werner Lemberg  <wl@gnu.org>
 

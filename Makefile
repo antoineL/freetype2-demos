@@ -173,9 +173,12 @@ else
 #  EXES := ftlint ftview fttimer compos ftstring memtest ftmulti
   EXES := ftlint ftview fttimer ftstring memtest ftmulti
 
-  ifneq ($(findstring $(PLATFORM),os2 unix win32),)
-    EXES += ttdebug
-  endif
+# Only uncomment the following lines if the truetype driver was
+# compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined..
+#
+#  ifneq ($(findstring $(PLATFORM),os2 unix win32),)
+#    EXES += ttdebug
+#  endif
 
   exes: $(EXES:%=$(BIN_)%$E)
 

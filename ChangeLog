@@ -1,9 +1,22 @@
+2001-04-04  Werner Lemberg  <wl@gnu.org>
+
+	* graph/allegro/gralleg.c, graph/mac/grmac.c, graph/os2/gros2pm.c,
+	graph/x11/grx11.c: Don't include system-specific header but
+	`grobjs.h'.
+	* graph/x11/grx11.c: Some structural reorderings.
+	Include `grdevice.h'.
+	* graph/grinit.c: Use subdirectories for #include.
+	* graph/rules.mk, graph/*/rules.mk (DEVICE_INCLUDE): Removed.
+
+	* Jamrules, Jamfile, */Jamfile: Updated.  It now compiles with
+	X11 also (no checking for X header and lib locations yet).
+
 2001-04-04  David Turner  <david@freetype.org>
 
-	* Jamrules, Jamfile, graph/Jamfile, graph/x11/Jamfile, graph/win32/Jamfile,
-	graph/os2/Jamfile, src/Jamfile: added Jamfiles to build the FreeType 2
-	demos with Jam.	Be careful, they probably don't work on Unix and OS/2 yet..
-	
+	* Jamrules, Jamfile, graph/Jamfile, graph/x11/Jamfile,
+	graph/win32/Jamfile, graph/os2/Jamfile, src/Jamfile: Added Jamfiles
+	to build the FreeType 2 demos with Jam.  Be careful, they probably
+	don't work on Unix and OS/2 yet.
 
 2000-03-24  David Turner  <david.turner@freetype.org>
 

@@ -13,7 +13,7 @@
  ******************************************************************/
 
 /* FT graphics subsystem */
-#include "gralleg.h"
+#include "grobjs.h"
 #include "grdevice.h"
 
 /* Allegro header */

@@ -26,7 +26,7 @@
 #include <Windows.h>
 
 /* FT graphics subsystem */
-#include "grmac.h"
+#include "grobjs.h"
 #include "grdevice.h"
 
 /* CodeWarrior's poor excuse for a console */

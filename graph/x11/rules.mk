@@ -76,7 +76,6 @@ ifneq ($(X11_PATH),)
   GR_X11_ := $(GR_X11)$(SEP)
 
   DEVICES         += X11
-  DEVICE_INCLUDES += $(GR_X11)
 
   # the rule used to compile the X11 driver
   #

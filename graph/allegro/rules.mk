@@ -20,7 +20,6 @@ GRAPH_OBJS += $(OBJ_)gralleg.$O
 # add Allegro driver to list of devices
 #
 DEVICES += ALLEGRO
-DEVICE_INCLUDES += $(GR_ALLEG)
 
 # our compilation rule
 #

@@ -1,4 +1,4 @@
-#include "gros2pm.h"
+#include "grobjs.h"
 #include "grdevice.h"
 
 #define INCL_DOS

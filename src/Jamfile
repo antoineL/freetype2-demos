@@ -1,7 +1,10 @@
-SubDir FT2DEMO_TOP src ;
+# FreeType 2 src Jamfile (c) 2001 David Turner
+#
 
-SubDirHdrs  [ FT2DEMO_SubDir src ] ;
-SubDirHdrs  [ FT2DEMO_SubDir graph ] ;
+SubDir  FT2DEMO_TOP src ;
+
+SubDirHdrs  [ FT2DEMO_SubDir  src ] ;
+SubDirHdrs  [ FT2DEMO_SubDir  graph ] ;
 
 COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 
@@ -11,17 +14,23 @@ PROGRAMS = ftlint ftdump memtest fttimer memtest ;
 
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
 {
-  local t ;
+  local  t ;
   
   for t in $(PROGRAMS) $(GRAPHIC_PROGRAMS)
   {
-    Main  $(t)          : $(t).c ;
-	LinkLibraries  $(t) : $(COMMON_LIB) $(FT2_LIB) ;
+    Main           $(t) : $(t).c ;
+    LinkLibraries  $(t) : $(COMMON_LIB) $(FT2_LIB) ;
   }
   
+  if $(UNIX)
+  {
+    LINKFLAGS += -lX11 -L/usr/X11R6/lib ;
+  }
+
   for t in $(GRAPHIC_PROGRAMS)
   {
-    LinkLibraries $(t) : $(GRAPH_LIB) ;
+    LinkLibraries  $(t) : $(GRAPH_LIB) ;
   }
 }
 
+# end of src Jamfile

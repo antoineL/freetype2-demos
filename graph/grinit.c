@@ -6,11 +6,11 @@
 #define GR_INIT_BUILD
 
 #ifdef DEVICE_X11
-#include "grx11.h"
+#include "x11/grx11.h"
 #endif
 
 #ifdef DEVICE_OS2_PM
-#include "gros2pm.h"
+#include "os2/gros2pm.h"
 #endif
 
 #ifdef DEVICE_WIN32
@@ -18,7 +18,7 @@
 #endif
 
 #ifdef macintosh
-#include "grmac.h"
+#include "mac/grmac.h"
 #endif
 
 #ifdef DEVICE_ALLEGRO

@@ -1,5 +1,4 @@
-# Jamfile for the FreeType 2 demo programs
-#
+# FreeType2 demos top Jamfile (c) 2001 David Turner
 #
 
 if $(FT2DEMO_TOP) != $(DOT)
@@ -7,19 +6,28 @@ if $(FT2DEMO_TOP) != $(DOT)
   SubDir  FT2DEMO_TOP ;
 }
 
-# path to FreeType 2 directory tree
+# The path to FreeType 2 directory tree.
 #
-FT2_TOP ?= [ FSubDir $(DOTDOT) freetype2 ] ;
+FT2_TOP ?= [ FSubDir  $(DOTDOT) freetype2 ] ;
 
-FT2DEMO_SRC     = [ FT2DEMO_SubDir src ] ;
-FT2DEMO_GRAPH   = [ FT2DEMO_SubDir graph ] ;
+FT2DEMO_SRC   = [ FT2DEMO_SubDir  src ] ;
+FT2DEMO_GRAPH = [ FT2DEMO_SubDir  graph ] ;
 
-# Include FreeType 2 rules
-SubInclude  FT2_TOP ;
+{
+  local ALL_LOCATE_TARGET = [ FDirName  $(FT2_TOP) objs ] ;
+
+  # Include FreeType 2 rules
+  #
+  SubInclude  FT2_TOP ;
+}
 
 # Include Graph sub-system rules
+#
 SubInclude  FT2DEMO_GRAPH ;
 
 # Include demos rules
+#
 SubInclude  FT2DEMO_SRC ;
 
+
+# end of top Jamfile

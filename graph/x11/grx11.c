@@ -1,4 +1,5 @@
-#include "grx11.h"
+#include <grobjs.h>
+#include <grdevice.h>
 
 #define TEST
 
@@ -14,13 +15,6 @@
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 
-
-  static void  Panic( const char*  message )
-  {
-    fprintf( stderr, "%s", message );
-
-    exit( 1 );
-  }
 
 
   typedef struct  Translator
@@ -110,6 +104,37 @@
     int        image_height;
 
   } grXSurface;
+
+
+  static int   init_device( void );
+  static void  done_device( void );
+  grXSurface*  init_surface( grXSurface*  surface,
+                             grBitmap*    bitmap );
+
+
+  grDevice  gr_x11_device =
+  {
+    sizeof( grXSurface ),
+    "x11",
+
+    init_device,
+    done_device,
+
+    (grDeviceInitSurfaceFunc) init_surface,
+
+    0,
+    0
+
+  };
+
+
+  static
+  void  Panic( const char*  message )
+  {
+    fprintf( stderr, "%s", message );
+
+    exit( 1 );
+  }
 
 
   /* close a given window */
@@ -836,22 +861,6 @@
 
     return surface;
   }
-
-
-  grDevice  gr_x11_device =
-  {
-    sizeof( grXSurface ),
-    "x11",
-
-    init_device,
-    done_device,
-
-    (grDeviceInitSurfaceFunc) init_surface,
-
-    0,
-    0
-
-  };
 
 
 #ifdef TEST

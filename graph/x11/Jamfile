@@ -1,8 +1,10 @@
-# Jamfile for the X11 graphics driver
+# FreeType2 demos graph/x11 Jamfile (c) 2001 David Turner
 #
-SubDir FT2DEMO_TOP graph x11 ;
 
-SubDirHdrs $(GRAPH_INCLUDE) ;
+SubDir  FT2DEMO_TOP graph x11 ;
+
+SubDirHdrs  $(GRAPH_INCLUDE) ;
+
 Library  $(GRAPH_LIB) : grx11.c ;
 
-
+# end of graph/x11 Jamfile

@@ -17,7 +17,6 @@ GR_WIN32_ := $(GR_WIN32)$(SEP)
 GRAPH_OBJS += $(OBJ_)grwin32.$O
 
 DEVICES         += WIN32
-DEVICE_INCLUDES += $(GR_WIN32)
 
 # the rule used to compile the graphics driver
 #

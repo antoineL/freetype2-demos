@@ -99,6 +99,5 @@ $(OBJ_)%.$(SO): $(GRAPH_)%.c $(GRAPH_H)
 #
 $(OBJ_)grinit.$(SO): $(GRAPH_)grinit.c $(GRAPH_H)
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%)  \
-                    $(DEVICE_INCLUDES:%=$I%) \
                     $(DEVICES:%=$DDEVICE_%) $T$@ $<
 

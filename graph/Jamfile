@@ -1,8 +1,7 @@
-# The Jamfile used to compile the graph sub-system of the FreeType 2
-# demonstration programs..
+# FreeType2 demo graph Jamfile (c) 2001 David Turner
 #
 
-SubDir FT2DEMO_TOP graph ;
+SubDir  FT2DEMO_TOP graph ;
 
 GRAPH_INCLUDE = $(FT2DEMO_GRAPH) ;
 GRAPH_LIB     = $(LIBPREFIX)graph$(SUFLIB) ;
@@ -23,21 +22,20 @@ else if $(OS2)
 }
 
 CCFLAGS on <graph>grinit$(SUFOBJ) = $(CCFLAGS) $(DEVICE_DEFINE) ;
-Library $(GRAPH_LIB) : $(graph_sources).c ;
+
+Library  $(GRAPH_LIB) : $(graph_sources).c ;
 
 if $(UNIX)
 {
-  SubInclude FT2DEMO_TOP graph x11 ;
+  SubInclude  FT2DEMO_TOP graph x11 ;
 }
 else if $(NT)
 {
-  SubInclude FT2DEMO_TOP graph win32 ;
+  SubInclude  FT2DEMO_TOP graph win32 ;
 }
 else if $(OS2)
 {
-  SubInclude FT2DEMO_TOP graph os2 ;
+  SubInclude  FT2DEMO_TOP graph os2 ;
 }
 
-
-
-
+# end of graph Jamfile

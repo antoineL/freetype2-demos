@@ -1,3 +1,16 @@
+2005-02-12  Werner Lemberg  <wl@gnu.org>
+
+	Make ft2demos support a separate build directory.
+
+	* Makefile (have_makefile): New variable.  Set if the build
+	directory is the same as the source directory.
+	(GRAPH_DIR): Give full path.
+	(BIN_DIR, OBJ_DIR): Updated.
+	(FT_INCLUDES): Include $(OBJ_BUILD).
+	(LINK) <unix>: Fix path to `libtool'.
+
+	* README: Updated.
+
 2004-12-15  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (glyph_to_bitmap): Don't convert 1bpp bitmaps.

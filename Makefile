@@ -29,8 +29,8 @@ endif
 
 ######################################################################
 #
-# MY_CONFIG_MK points to the current `config.mk' to use.  It is
-# defined by default as $(TOP_DIR)/config.mk.
+# CONFIG_MK points to the current `config.mk' to use.  It is defined
+# by default as $(TOP_DIR)/config.mk.
 #
 ifndef CONFIG_MK
   PROJECT   := freetype
@@ -64,6 +64,7 @@ else
   #
   include $(CONFIG_MK)
 
+  have_makefile := $(strip $(wildcard Makefile))
 
   ####################################################################
   #
@@ -73,14 +74,24 @@ else
     # without absolute paths libtool fails
     TOP_DIR   := $(shell cd $(TOP_DIR); pwd)
     TOP_DIR_2 := $(shell cd $(TOP_DIR_2); pwd)
-    BIN_DIR   := $(TOP_DIR_2)/bin
-    OBJ_DIR   := $(TOP_DIR_2)/obj
+    ifneq ($(have_makefile),)
+      BIN_DIR := $(TOP_DIR_2)/bin
+      OBJ_DIR := $(TOP_DIR_2)/obj
+    else
+      BIN_DIR := .
+      OBJ_DIR := .
+    endif
   else
-    BIN_DIR := bin
-    OBJ_DIR := obj
+    ifneq ($(have_makefile),)
+      BIN_DIR := bin
+      OBJ_DIR := obj
+    else
+      BIN_DIR := .
+      OBJ_DIR := .
+    endif
   endif
 
-  GRAPH_DIR := graph
+  GRAPH_DIR := $(TOP_DIR_2)/graph
 
   ifeq ($(TOP_DIR),..)
     SRC_DIR := src
@@ -88,7 +99,7 @@ else
     SRC_DIR := $(TOP_DIR_2)/src
   endif
 
-  FT_INCLUDES := $(BUILD_DIR) $(TOP_DIR)/include $(SRC_DIR)
+  FT_INCLUDES := $(OBJ_BUILD) $(BUILD_DIR) $(TOP_DIR)/include $(SRC_DIR)
 
   COMPILE = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
 
@@ -109,7 +120,7 @@ else
   #
   ifeq ($(PLATFORM),unix)
     CC   = $(CCraw)
-    LINK = $(subst /,$(SEP),$(BUILD_DIR)/libtool) --mode=link $(CC) \
+    LINK = $(subst /,$(SEP),$(OBJ_BUILD)/libtool) --mode=link $(CC) \
            $T$(subst /,$(COMPILER_SEP),$@ $< $(LDFLAGS) $(FTLIB) $(EFENCE))
   else
     ifeq ($(PLATFORM),unixdev)

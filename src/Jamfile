@@ -11,17 +11,18 @@ COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 
 Library  $(COMMON_LIB) : common.c ;
 
+
 PROGRAMS = ftlint ftdump ftmemchk fttimer fttry ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
 {
   local  t ;
-  
+
   for t in $(PROGRAMS) $(GRAPHIC_PROGRAMS)
   {
     Main           $(t) : $(t).c ;
     LinkLibraries  $(t) : $(FT2_LIB) $(COMMON_LIB) ;
   }
-   
+
   for t in $(GRAPHIC_PROGRAMS)
   {
     LINKLIBS on $(t)$(SUFEXE) = $(GRAPH_LINKLIBS) ;

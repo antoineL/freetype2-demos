@@ -5,6 +5,9 @@ SubDir  FT2DEMO_TOP graph os2 ;
 
 SubDirHdrs  $(GRAPH_INCLUDE) ;
 
+GROS2_PATH     = [ FT2_SubDir graph os2 ];
+GRAPH_LINKLIBS = $(GROS2_PATH)gros2pm.def ;
+
 Library  $(GRAPH_LIB) : grxos2.c ;
 
 # end of graph/os2 Jamfile

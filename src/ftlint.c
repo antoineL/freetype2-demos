@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/*  The FreeType project -- a free and portable quality TrueType renderer.  */
+/*  The FreeType project -- a free and portable quality font engine         */
 /*                                                                          */
 /*  Copyright 1996-1998 by                                                  */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
@@ -84,7 +84,7 @@
     for ( file_index = 2; file_index < argc; file_index++ )
     {
       fname = argv[file_index];
-      
+
       /* try to open the file with no extra extension first */
       error = FT_New_Face( library, fname, 0, &face );
       if (!error)
@@ -102,7 +102,7 @@
 
       /* ok, we could not load the file, try to add an extension to */
       /* its name if possible..                                     */
-      
+
       i     = strlen( fname );
       while ( i > 0 && fname[i] != '\\' && fname[i] != '/' )
       {

@@ -203,10 +203,10 @@
     int   i, x, y;
     long  pitch = bit.pitch;
     long  start = 0;
-    
+
     if ( pitch < 0 )
       start = -pitch*(bit.rows-1);
-    
+
     x = (bit.width - 256) / 2;
     y = (bit.rows + 256) / 2;
     for (i = 0; i < 256; i++, x++)
@@ -500,8 +500,8 @@
 
     transform       = ( angle != 0 );
     trans_matrix.xx = cosinus;
-    trans_matrix.xy = sinus;
-    trans_matrix.yx = -sinus;
+    trans_matrix.yx = sinus;
+    trans_matrix.xy = -sinus;
     trans_matrix.yy = cosinus;
   }
 

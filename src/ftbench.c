@@ -253,21 +253,26 @@ sbit_cache_test(FT_UInt idx,
 
 void usage(void)
 {
-  fprintf(stderr, "ftbench: bench some common FreeType paths\n");
-  fprintf(stderr, "-----------------------------------------\n\n");
-  fprintf(stderr, "Usage: ftbench [options] fontname\n\n");
-  fprintf(stderr, "options:\n");
-  fprintf(stderr, "   -m : cache size max in KB (default is %d)\n", CACHE_SIZE);
-  fprintf(stderr, "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME);
-  fprintf(stderr, "   -b tests : perform choosen tests (default is all)\n");
-  fprintf(stderr, "      a : Load\n");
-  fprintf(stderr, "      b : Load + Get_Glyph\n");
-  fprintf(stderr, "      c : Load + Get_Glyph + Get_CBox\n");
-  fprintf(stderr, "      d : Get_Char_Index\n");
-  fprintf(stderr, "      e : CMap cache\n");
-  fprintf(stderr, "      f : Outline cache\n");
-  fprintf(stderr, "      g : Bitmap cache\n");
-  fprintf(stderr, "      h : SBit cache\n");
+  fprintf( stderr,
+    "ftbench: bench some common FreeType paths\n"
+    "-----------------------------------------\n\n"
+    "Usage: ftbench [options] fontname\n\n"
+    "options:\n" );
+  fprintf( stderr,
+  "   -m : cache size max in KB (default is %d)\n", CACHE_SIZE );
+  fprintf( stderr,
+  "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME );
+  fprintf( stderr,
+  "   -p : preload font file in memory\n"
+  "   -b tests : perform choosen tests (default is all)\n"
+  "      a : Load\n"
+  "      b : Load + Get_Glyph\n"
+  "      c : Load + Get_Glyph + Get_CBox\n"
+  "      d : Get_Char_Index\n"
+  "      e : CMap cache\n"
+  "      f : Outline cache\n"
+  "      g : Bitmap cache\n"
+  "      h : SBit cache\n" );
 
   exit( 1 );
 }
@@ -283,6 +288,9 @@ main(int argc,
   FT_ULong max_bytes = CACHE_SIZE * 1024;
   char* tests = NULL;
   int size;
+  int preload = 0;
+  FT_Byte*  memory_file = NULL;
+  long      memory_size;
 
   while (argc > 1 && argv[1][0] == '-')
   {
@@ -295,6 +303,10 @@ main(int argc,
           sscanf(argv[1], "%ld", &max_bytes) != 1)
         usage();
       max_bytes *= 1024;
+      break;
+
+    case 'p':
+      preload = 1;
       break;
 
     case 't':
@@ -326,10 +338,41 @@ main(int argc,
   if ( argc != 2 )
     usage();
 
-  if (FT_Init_FreeType(&lib) ||
-      FT_New_Face(lib, argv[1], 0, &face))
+  if (FT_Init_FreeType(&lib))
   {
-    printf("couldn't load font ressource\n");
+    fprintf( stderr, "could not initialize font library\n" );
+    return 1;
+  }
+
+  if ( preload )
+  {
+    FILE*  file = fopen( argv[1], "rb" );
+    if ( file == NULL )
+    {
+      fprintf( stderr, "couldn't find or open '%s'\n", argv[1] );
+      return 1;
+    }
+    fseek( file, 0, SEEK_END );
+    memory_size = ftell( file );
+    fseek( file, 0, SEEK_SET );
+
+    memory_file = malloc( memory_size );
+    if ( memory_file == NULL )
+    {
+      fprintf( stderr, "couldn't allocate memory to pre-load font file\n" );
+      return 1;
+    }
+
+    fread( memory_file, 1, memory_size, file );
+    if ( FT_New_Memory_Face( lib, memory_file, memory_size, 0, &face ) )
+    {
+      fprintf( stderr, "couldn't load font resource\n" );
+      return 1;
+    }
+  }
+  else if ( FT_New_Face(lib, argv[1], 0, &face) )
+  {
+    fprintf( stderr, "couldn't load font resource\n");
     return 1;
   }
 

@@ -1,3 +1,12 @@
+2002-07-01  David Turner  <david@freetype.org>
+
+    * src/ftbench.c: adding the "-p" option to pre-load font files in memory.
+    This is a very useful thing to quantify the performance improvements
+    achieved by many of FreeType internal optimizations regarding stream
+    i/o.
+
+    * src/ftstring.c (reset_transform): Fix Werner's incorrect fix :-)
+
 2002-06-25  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftstring.c (reset_transform): Fix transformation matrix.

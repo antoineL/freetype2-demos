@@ -182,7 +182,7 @@
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     FT_Pointer  glyf;
-    int         pix_size;
+    int         pix_size, max_size = 100000;
     grBitmap    bit3;
 
     unsigned char         text[256];
@@ -192,6 +192,18 @@
     start_y = 16;
 
     pix_size = first_size;
+
+    if ( !FT_IS_SCALABLE( face ) )
+    {
+      int  i;
+
+
+      max_size = 0;
+      for ( i = 0; i < face->num_fixed_sizes; i++ )
+        if ( face->available_sizes[i].height >= max_size )
+          max_size = face->available_sizes[i].height;
+    }
+
     for (;;)
     {
       sprintf( (char*)text,
@@ -202,6 +214,8 @@
 
       set_current_size( pix_size );
 
+      if ( pix_size > max_size )
+        break;
       pix_size++;
 
       error = FTC_Manager_Lookup_Size( cache_manager, &current_font.font,

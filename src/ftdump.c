@@ -25,9 +25,6 @@
 #include <string.h>
 
 
-  FT_Library  library;      /* the FreeType library            */
-  FT_Face     face;         /* the font face                   */
-
   FT_Error    error;
 
   int  comma_flag = 0;
@@ -180,6 +177,9 @@
     char*  execname;
     int    num_faces;
     int    option;
+
+    FT_Library  library;      /* the FreeType library            */
+    FT_Face     face;         /* the font face                   */
 
 
     execname = ft_basename( argv[0] );

@@ -327,9 +327,9 @@
   /*                                                                       */
   /* In this program, the face IDs are simply pointers to TFont objects.   */
   /*                                                                       */
-  static
+  LOCAL_FUNC_X
   FT_Error  my_face_requester( FTC_FaceID  face_id,
-                               FT_Library  library,
+                               FT_Library  lib,
                                FT_Pointer  request_data,
                                FT_Face*    aface )
   {
@@ -338,7 +338,7 @@
     FT_UNUSED( request_data );
 
 
-    return FT_New_Face( library,
+    return FT_New_Face( lib,
                         font->filepathname,
                         font->face_index,
                         aface );
@@ -422,8 +422,6 @@
                               int       *x_advance,
                               int       *y_advance )
   {
-    FT_Error  error;
-
     if (use_sbits_cache)
     {
       FTC_SBit  sbit;
@@ -463,20 +461,20 @@
     }
     else
     {
-      FT_Glyph  glyph;
+      FT_Glyph  glyf;
       
       
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
                                       glyph_index,
-                                      &glyph );
+                                      &glyf );
       if ( !error )
       {
-        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyph;
+        FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyf;
         FT_Bitmap*      source = &bitmap->bitmap;
         
 
-        if ( glyph->format != ft_glyph_format_bitmap )
+        if ( glyf->format != ft_glyph_format_bitmap )
           PanicZ( "invalid glyph format returned!" );
         
         target->rows   = source->rows;
@@ -502,8 +500,8 @@
         *left = bitmap->left;
         *top  = bitmap->top;
 
-        *x_advance = (glyph->advance.x+0x8000) >> 16;
-        *y_advance = (glyph->advance.y+0x8000) >> 16;
+        *x_advance = (glyf->advance.x+0x8000) >> 16;
+        *y_advance = (glyf->advance.y+0x8000) >> 16;
       }
     }
     return 0;

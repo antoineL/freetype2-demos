@@ -226,8 +226,6 @@
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     int         i;
 
-    FT_Error    error;
-
 
     start_x = 4;
     start_y = 36 + pt_size;

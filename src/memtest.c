@@ -111,7 +111,7 @@ void  forget_my_block( void*  base )
 }
 
 
-static
+LOCAL_FUNC_X
 void*  my_alloc( FT_Memory  memory,
                  long       size )
 {
@@ -123,7 +123,8 @@ void*  my_alloc( FT_Memory  memory,
   return p;
 }
 
-static
+
+LOCAL_FUNC_X
 void   my_free( FT_Memory memory, void*  block )
 {
   memory=memory;
@@ -131,7 +132,8 @@ void   my_free( FT_Memory memory, void*  block )
   /* free(block);  WE DO NOT REALLY FREE THE BLOCK */
 }
 
-static
+
+LOCAL_FUNC_X
 void*  my_realloc( FT_Memory memory,
                    long      cur_size,
                    long      new_size,

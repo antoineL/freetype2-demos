@@ -1,3 +1,10 @@
+2002-02-14  Detlef Würkner  <tetisoft@apg.lahn.de>
+
+	* src/fttimer.c (ConvertRaster): Handle embedded bitmaps properly.
+	* src/ftstring.c (use_sbits): Default value is no 0.
+	(layout_glyphs): Handle `use_sbits'.
+	(Process_Event): Make friendlier error messages.
+
 2002-02-09  David Turner  <david@freetype.org>
 
 

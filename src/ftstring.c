@@ -24,59 +24,60 @@
 #include "graph.h"
 #include "grfont.h"
 
-#define  DIM_X   500
-#define  DIM_Y   400
+#define DIM_X  500
+#define DIM_Y  400
 
-#define  CENTER_X   (bit.width/2)
-#define  CENTER_Y   (bit.rows/2)
+#define CENTER_X  ( bit.width / 2 )
+#define CENTER_Y  ( bit.rows  / 2 )
 
-#define  MAXPTSIZE  500                 /* dtp */
+#define MAXPTSIZE  500                 /* dtp */
 
-  static char  Header[128];
-  static char* new_header = 0;
+  static char   Header[128];
+  static char*  new_header = 0;
 
   static char*  Text = (char *)"The quick brown fox jumps over the lazy dog";
 
-  static FT_Library    library;      /* the FreeType library            */
-  static FT_Face       face;         /* the font face                   */
-  static FT_Error      error;        /* error returned by FreeType ?    */
+  static FT_Library  library;       /* the FreeType library            */
+  static FT_Face     face;          /* the font face                   */
+  static FT_Error    error;         /* error returned by FreeType ?    */
 
-  static grSurface*     surface;     /* current display surface         */
-  static grBitmap       bit;         /* current display bitmap          */
+  static grSurface*  surface;       /* current display surface         */
+  static grBitmap    bit;           /* current display bitmap          */
 
-  static int  ptsize;                /* current point size */
+  static int  ptsize;               /* current point size */
   static int  Num;
   static int  Rotation = 0;
   static int  Fail;
 
-  static int  hinted    = 1;       /* is glyph hinting active ?    */
-  static int  antialias = 1;       /* is anti-aliasing active ?    */
-  static int  use_sbits = 1;       /* do we use embedded bitmaps ? */
+  static int  hinted    = 1;        /* is glyph hinting active ?    */
+  static int  antialias = 1;        /* is anti-aliasing active ?    */
+  static int  use_sbits = 0;        /* do we use embedded bitmaps ? */
   static int  kerning   = 1;
 
-  static int  res = 72;  /* default resolution in dpi */
+  static int  res = 72;             /* default resolution in dpi */
 
   static grColor  fore_color = { 255 };
 
   static int  graph_init  = 0;
   static int  render_mode = 1;
 
-  static FT_Matrix      trans_matrix;
-  static int            transform = 0;
+  static FT_Matrix  trans_matrix;
+  static int        transform = 0;
 
-  static FT_Vector      string_center;
+  static FT_Vector  string_center;
 
-  typedef struct TGlyph_
+  typedef struct  TGlyph_
   {
-    FT_UInt    glyph_index;    /* glyph index in face      */
-    FT_Vector  pos;            /* position of glyph origin */
-    FT_Glyph   image;          /* glyph image              */
+    FT_UInt    glyph_index;         /* glyph index in face      */
+    FT_Vector  pos;                 /* position of glyph origin */
+    FT_Glyph   image;               /* glyph image              */
 
   } TGlyph, *PGlyph;
 
-#define FLOOR(x)  ((x) & -64)
-#define CEIL(x)   (((x)+63) & -64)
-#define TRUNC(x)  ((x) >> 6)
+
+#define FLOOR( x )  ( (x) & -64 )
+#define CEIL( x )   ( ( (x) + 63 ) & -64 )
+#define TRUNC ( x)  ( (x) >> 6 )
 
 
 
@@ -84,8 +85,7 @@
 /****************************************************************************/
 /****************************************************************************/
 /****                                                                    ****/
-/****    U T I L I T Y   F U N C T I O N S                               ****/
-/****                                                                    ****/
+/****                 U T I L I T Y   F U N C T I O N S                  ****/
 /****                                                                    ****/
 /****************************************************************************/
 /****************************************************************************/
@@ -94,15 +94,17 @@
 #define DEBUGxxx
 
 #ifdef DEBUG
-#define LOG(x)  LogMessage##x
+#define LOG( x )  LogMessage##x
 #else
-#define LOG(x)  /* rien */
+#define LOG( x )  /* empty */
 #endif
 
 #ifdef DEBUG
-  static void  LogMessage( const char*  fmt, ... )
+  static void
+  LogMessage( const char*  fmt, ... )
   {
     va_list  ap;
+
 
     va_start( ap, fmt );
     vfprintf( stderr, fmt, ap );
@@ -111,10 +113,11 @@
 #endif
 
   /* PanicZ */
-  static void PanicZ( const char* message )
+  static void
+  PanicZ( const char* message )
   {
     fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
-    exit(1);
+    exit( 1 );
   }
 
 
@@ -122,8 +125,7 @@
 /****************************************************************************/
 /****************************************************************************/
 /****                                                                    ****/
-/****    D I S P L A Y   M A N A G E M E N T                             ****/
-/****                                                                    ****/
+/****                D I S P L A Y   M A N A G E M E N T                 ****/
 /****                                                                    ****/
 /****************************************************************************/
 /****************************************************************************/
@@ -131,92 +133,104 @@
 
 #define MAX_GLYPHS 512
 
- /***********************************************************************
-  *
-  *  The following arrays are used to store the glyph set that makes
-  *  up a string of text..
-  *
-  */
+  /*************************************************************************/
+  /*                                                                       */
+  /*  The following arrays are used to store the glyph set that makes      */
+  /*  up a string of text.                                                 */
+  /*                                                                       */
+  /*                                                                       */
   static TGlyph  glyphs[ MAX_GLYPHS ];
   static int     num_glyphs;
 
 
- /**************************************************************
-  *
-  *  Initialise the display surface
-  *
-  */
-  static int  init_display( void )
+  /*************************************************************************/
+  /*                                                                       */
+  /* Initialize the display surface.                                       */
+  /*                                                                       */
+  /*                                                                       */
+  static int
+  init_display( void )
   {
     grInitDevices();
 
-    bit.mode   = gr_pixel_mode_gray;
-    bit.width  = DIM_X;
-    bit.rows   = DIM_Y;
-    bit.grays  = 256;
+    bit.mode  = gr_pixel_mode_gray;
+    bit.width = DIM_X;
+    bit.rows  = DIM_Y;
+    bit.grays = 256;
 
     surface = grNewSurface( 0, &bit );
-    if (!surface)
+    if ( !surface )
       PanicZ( "could not allocate display surface\n" );
 
     graph_init = 1;
     return 0;
   }
 
- /**************************************************************
-  *
-  *  Clears the display surface
-  *
-  */
-  static void  clear_display( void )
+
+  /*************************************************************************/
+  /*                                                                       */
+  /*  Clear the display surface.                                           */
+  /*                                                                       */
+  /*                                                                       */
+  static void
+  clear_display( void )
   {
     long  size = (long)bit.pitch * bit.rows;
 
-    if (size < 0) size = -size;
+
+    if ( size < 0 )
+      size = -size;
     memset( bit.buffer, 0, size );
   }
 
 
-  static void  reset_scale( int  pointSize )
+  static void
+  reset_scale( int  pointSize )
   {
-    (void)FT_Set_Char_Size( face, pointSize << 6,
+    (void)FT_Set_Char_Size( face,
+                            pointSize << 6,
                             pointSize << 6,
                             res,
                             res );
   }
 
 
- /**************************************************************
-  *
-  *  Layout a string of glyphs, the glyphs are untransformed..
-  *
-  */
-  static void  layout_glyphs( void )
+  /*************************************************************************/
+  /*                                                                       */
+  /*  Layout a string of glyphs.  The glyphs are untransformed.            */
+  /*                                                                       */
+  /*                                                                       */
+  static void
+  layout_glyphs( void )
   {
-    PGlyph    glyph = glyphs;
-    int       n;
-    FT_Vector origin;
-    FT_Pos    origin_x = 0;
-    FT_UInt   load_flags;
-    FT_UInt   num_grays;
-    FT_UInt   prev_index = 0;
+    PGlyph     glyph = glyphs;
+    int        n;
+    FT_Vector  origin;
+    FT_Pos     origin_x = 0;
+    FT_UInt    load_flags;
+    FT_UInt    num_grays;
+    FT_UInt    prev_index = 0;
+
 
     load_flags = FT_LOAD_DEFAULT;
-    if( !hinted )
+    if ( !hinted )
       load_flags |= FT_LOAD_NO_HINTING;
+    if ( !use_sbits )
+      load_flags |= FT_LOAD_NO_BITMAP;
 
     num_grays = 256;
-    if (!antialias)
+    if ( !antialias )
       num_grays = 0;
 
     for ( n = 0; n < num_glyphs; n++, glyph++ )
     {
       /* compute glyph origin */
-      if (kerning)
+      if ( kerning )
       {
-        if (prev_index)
+        if ( prev_index )
         {
           FT_Vector  kern;
+
 
           FT_Get_Kerning( face, prev_index, glyph->glyph_index,
                           hinted ? ft_kerning_default : ft_kerning_unfitted,
@@ -231,76 +245,82 @@
       origin.y = 0;
 
       /* clear existing image if there is one */
-      if (glyph->image)
-        FT_Done_Glyph(glyph->image);
+      if ( glyph->image )
+        FT_Done_Glyph( glyph->image );
 
-      /* load the glyph image (in its native format) */
-      /* for now, we take a monochrome glyph bitmap  */
-      error = FT_Load_Glyph( face, glyph->glyph_index,
-                             hinted ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING );
-      if (error) continue;
+      /* load the glyph image (in its native format); */
+      /* for now, we take a monochrome glyph bitmap   */
+      error = FT_Load_Glyph( face, glyph->glyph_index, load_flags );
+      if ( error )
+        continue;
 
       error = FT_Get_Glyph ( face->glyph, &glyph->image );
-      if (error) continue;
-
+      if ( error )
+        continue;
 
       glyph->pos = origin;
 
       origin_x  += face->glyph->advance.x;
     }
-    string_center.x = (origin_x / 2) & -64;
+
+    string_center.x = ( origin_x / 2 ) & -64;
     string_center.y = 0;
 
-    if (transform)
+    if ( transform )
       FT_Vector_Transform( &string_center, &trans_matrix );
   }
 
- /**************************************************************
-  *
-  *  Renders a given glyph vector set
-  *
-  */
-  static  void  render_string( FT_Pos  x, FT_Pos  y )
-  {
-    PGlyph    glyph = glyphs;
-    grBitmap  bit3;
-    int       n;
-    FT_Vector delta;
 
-    /* first of all, we must compute the general delta for the glyph */
-    /* set..                                                         */
-    delta.x = (x << 6) - string_center.x;
-    delta.y = ((bit.rows-y) << 6) - string_center.y;
+  /*************************************************************************/
+  /*                                                                       */
+  /* Render a given glyph vector set.                                      */
+  /*                                                                       */
+  /*                                                                       */
+  static void
+  render_string( FT_Pos  x, FT_Pos  y )
+  {
+    PGlyph     glyph = glyphs;
+    grBitmap   bit3;
+    int        n;
+    FT_Vector  delta;
+
+
+    /* first of all, we must compute the general delta for the glyph set */
+    delta.x = ( x << 6 ) - string_center.x;
+    delta.y = ( ( bit.rows - y ) << 6 ) - string_center.y;
 
     for ( n = 0; n < num_glyphs; n++, glyph++ )
     {
       FT_Glyph   image;
       FT_Vector  vec;
 
-      if (!glyph->image)
+
+      if ( !glyph->image )
         continue;
 
-     /* copy image */
+      /* copy image */
       error = FT_Glyph_Copy( glyph->image, &image );
-      if (error) continue;
+      if ( error )
+        continue;
 
-     /* transform it */
+      /* transform it */
       vec = glyph->pos;
       FT_Vector_Transform( &vec, &trans_matrix );
       vec.x += delta.x;
       vec.y += delta.y;
       error = FT_Glyph_Transform( image, &trans_matrix, &vec );
-      if (!error)
+      if ( !error )
       {
         FT_BBox  bbox;
 
-        /* check bounding box, if it's not within the display surface, we */
-        /* don't need to render it..                                      */
+
+        /* check bounding box; if it is not within the display surface, */
+        /* we don't need to render it                                   */
 
         FT_Glyph_Get_CBox( image, ft_glyph_bbox_pixels, &bbox );
 
 #if 0
-        if (n == 0)
+        if ( n == 0 )
         {
           fprintf( stderr, "bbox = [%ld %ld %ld %ld]\n",
                     bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax );
@@ -315,14 +335,14 @@
                                       antialias ? ft_render_mode_normal
                                                 : ft_render_mode_mono,
                                       0, 1 );
-          if (!error)
+          if ( !error )
           {
             FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)image;
             FT_Bitmap*      source = &bitmap->bitmap;
             FT_Pos          x_top, y_top;
 
 #if 0
-            if (n == 0)
+            if ( n == 0 )
             {
               fprintf( stderr, "bearing = [%d %d] dims = [%d %d]\n",
                        bitmap->left, bitmap->top, source->width, source->rows );
@@ -335,19 +355,19 @@
             bit3.pitch  = source->pitch;
             bit3.buffer = source->buffer;
 
-            switch (source->pixel_mode)
+            switch ( source->pixel_mode )
             {
-              case ft_pixel_mode_mono:
-                bit3.mode  = gr_pixel_mode_mono;
-                break;
+            case ft_pixel_mode_mono:
+              bit3.mode = gr_pixel_mode_mono;
+              break;
 
-              case ft_pixel_mode_grays:
-                bit3.mode  = gr_pixel_mode_gray;
-                bit3.grays = source->num_grays;
-                break;
+            case ft_pixel_mode_grays:
+              bit3.mode  = gr_pixel_mode_gray;
+              bit3.grays = source->num_grays;
+              break;
 
-              default:
-                continue;
+            default:
+              continue;
             }
 
             /* now render the bitmap into the display surface */
@@ -362,61 +382,67 @@
   }
 
 
- /**************************************************************
-  *
-  *  Convert a string of text into a glyph vector
-  *
-  *  XXX: For now, we perform a trivial conversion
-  *
-  */
-  static  void  prepare_text( const unsigned char*  string )
+  /*************************************************************************/
+  /*                                                                       */
+  /*  Convert a string of text into a glyph vector.                        */
+  /*                                                                       */
+  /*  XXX: For now, we perform a trivial conversion.                       */
+  /*                                                                       */
+  /*                                                                       */
+  static void
+  prepare_text( const unsigned char*  string )
   {
     const unsigned char*  p     = (const unsigned char*)string;
     PGlyph                glyph = glyphs;
     FT_UInt               glyph_index;
 
+
     num_glyphs = 0;
-    while (*p)
+    while ( *p )
     {
       glyph_index = FT_Get_Char_Index( face, (FT_ULong)*p );
       glyph->glyph_index = glyph_index;
       glyph++;
       num_glyphs++;
-      if (num_glyphs >= MAX_GLYPHS)
+      if ( num_glyphs >= MAX_GLYPHS )
         break;
       p++;
     }
   }
 
 
-  static void  reset_transform( void )
+  static void
+  reset_transform( void )
   {
-    double    angle   = Rotation*3.14159/64.0;
-    FT_Fixed  cosinus = (FT_Fixed)(cos(angle)*65536.0);
-    FT_Fixed  sinus   = (FT_Fixed)(sin(angle)*65536.0);
+    double    angle   = Rotation * 3.14159 / 64.0;
+    FT_Fixed  cosinus = (FT_Fixed)( cos( angle ) * 65536.0 );
+    FT_Fixed  sinus   = (FT_Fixed)( sin( angle ) * 65536.0 );
 
-    transform       = (angle != 0);
+
+    transform       = ( angle != 0 );
     trans_matrix.xx = cosinus;
     trans_matrix.xy = -sinus;
     trans_matrix.yx = sinus;
     trans_matrix.yy = cosinus;
   }
 
+
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
 /****                                                                    ****/
-/****    E V E N T   H A N D L I N G                                     ****/
-/****                                                                    ****/
+/****                     E V E N T   H A N D L I N G                    ****/
 /****                                                                    ****/
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
 
 
-  static void Help( void )
+  static void
+  Help( void )
   {
     grEvent  dummy_event;
+
 
     clear_display();
     grGotoxy( 0, 0 );
@@ -452,49 +478,55 @@
   }
 
 
-  static int  Process_Event( grEvent*  event )
+  static int
+  Process_Event( grEvent*  event )
   {
     int  i;
+
 
     switch ( event->key )
     {
     case grKeyEsc:            /* ESC or q */
-    case grKEY('q'):
+    case grKEY( 'q' ):
       return 0;
 
-    case grKEY('k'):
+    case grKEY( 'k' ):
       kerning = !kerning;
       new_header = kerning
                      ? (char *)"kerning is now active"
                      : (char *)"kerning is now ignored";
       return 1;
 
-    case grKEY('a'):
+    case grKEY( 'a' ):
       antialias  = !antialias;
       new_header = antialias
                      ? (char *)"anti-aliasing is now on"
                      : (char *)"anti-aliasing is now off";
       return 1;
 
-    case grKEY('b'):
+    case grKEY( 'b' ):
+#if 0
       use_sbits  = !use_sbits;
       new_header = use_sbits
                      ? (char *)"embedded bitmaps are now used when available"
                      : (char *)"embedded bitmaps are now ignored";
+#else
+      new_header = (char *)"embedded bitmaps can't be rotated/transformed";
+#endif
       return 1;
 
-    case grKEY('n'):
-    case grKEY('p'):
+    case grKEY( 'n' ):
+    case grKEY( 'p' ):
       return (int)event->key;
 
-    case grKEY('h'):
+    case grKEY( 'h' ):
       hinted     = !hinted;
       new_header = hinted
                      ? (char *)"glyph hinting is now active"
                      : (char *)"glyph hinting is now ignored";
       break;
 
-    case grKEY(' '):
+    case grKEY( ' ' ):
       render_mode ^= 1;
       new_header   = render_mode
                        ? (char *)"rendering all glyphs in font"
@@ -502,15 +534,15 @@
       break;
 
     case grKeyF1:
-    case grKEY('?'):
+    case grKEY( '?' ):
       Help();
       return 1;
 
 #if 0
-    case grKeyF3:  i =  16; goto Do_Rotate;
-    case grKeyF4:  i = -16; goto Do_Rotate;
-    case grKeyF5:  i =   1; goto Do_Rotate;
-    case grKeyF6:  i =  -1; goto Do_Rotate;
+    case grKeyF3: i =  16; goto Do_Rotate;
+    case grKeyF4: i = -16; goto Do_Rotate;
+    case grKeyF5: i =   1; goto Do_Rotate;
+    case grKeyF6: i =  -1; goto Do_Rotate;
 #endif
 
     case grKeyPageUp:   i =  10; goto Do_Scale;
@@ -528,20 +560,20 @@
     return 1;
 
   Do_Rotate:
-    Rotation = (Rotation + i) & 127;
+    Rotation = ( Rotation + i ) & 127;
     return 1;
 
   Do_Scale:
     ptsize += i;
-    if (ptsize < 1)         ptsize = 1;
-    if (ptsize > MAXPTSIZE) ptsize = MAXPTSIZE;
+    if ( ptsize < 1 )         ptsize = 1;
+    if ( ptsize > MAXPTSIZE ) ptsize = MAXPTSIZE;
     return 1;
 
 #if 0
   Do_Glyph:
     Num += i;
-    if (Num < 0)           Num = 0;
-    if (Num >= num_glyphs) Num = num_glyphs-1;
+    if ( Num < 0 )           Num = 0;
+    if ( Num >= num_glyphs ) Num = num_glyphs - 1;
     return 1;
 #endif
   }
@@ -551,15 +583,15 @@
 /****************************************************************************/
 /****************************************************************************/
 /****                                                                    ****/
-/****    M A I N   P R O G R A M                                         ****/
-/****                                                                    ****/
+/****                       M A I N   P R O G R A M                      ****/
 /****                                                                    ****/
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
 
 
-  static void  usage( char*  execname )
+  static void
+  usage( char*  execname )
   {
     fprintf( stderr,  "\n" );
     fprintf( stderr,  "ftstring: string viewer -- part of the FreeType project\n" );
@@ -576,7 +608,9 @@
   }
 
 
-  int  main( int  argc, char**  argv )
+  int
+  main( int     argc,
+        char**  argv )
   {
     int    i, old_ptsize, orig_ptsize, file;
     int    first_glyph = 0;
@@ -588,6 +622,7 @@
     int    file_loaded;
 
     grEvent   event;
+
 
     execname = ft_basename( argv[0] );
 
@@ -607,7 +642,7 @@
         break;
 
       case 'm':
-        if (argc < 3)
+        if ( argc < 3 )
           usage( execname );
         Text = optarg;
         break;
@@ -631,7 +666,8 @@
 
     /* Initialize engine */
     error = FT_Init_FreeType( &library );
-    if (error) PanicZ( "Could not initialise FreeType library" );
+    if ( error )
+      PanicZ( "Could not initialise FreeType library" );
 
   NewFile:
     ptsize      = orig_ptsize;
@@ -654,9 +690,10 @@
     strncpy( filename, argv[file], 128 );
     strncpy( alt_filename, argv[file], 128 );
 
-   /* first, try to load the glyph name as-is */
+    /* first, try to load the glyph name as-is */
     error = FT_New_Face( library, filename, 0, &face );
-    if (!error) goto Success;
+    if ( !error )
+      goto Success;
 
 #ifndef macintosh
     if ( i >= 0 )
@@ -666,9 +703,10 @@
     }
 #endif
 
-   /* if it didn't work, try to add ".ttf" at the end */
+    /* if it didn't work, try to add ".ttf" at the end */
     error = FT_New_Face( library, filename, 0, &face );
-    if (error) goto Display_Font;
+    if ( error )
+      goto Display_Font;
 
   Success:
     /* prepare the text to be rendered */
@@ -695,7 +733,7 @@
       Num  = first_glyph;
 
       if ( Num >= num_glyphs )
-        Num = num_glyphs-1;
+        Num = num_glyphs - 1;
 
       if ( Num < 0 )
         Num = 0;
@@ -733,7 +771,7 @@
       }
       else
       {
-        sprintf( Header, "%s : is not a font file or could not be opened",
+        sprintf( Header, "`%s' is not a font file or could not be opened",
                          ft_basename(filename) );
       }
 
@@ -746,7 +784,7 @@
 
       if ( key == 'n' )
       {
-        if (file_loaded >= 1)
+        if ( file_loaded >= 1 )
           FT_Done_Face( face );
 
         if ( file < argc - 1 )
@@ -757,7 +795,7 @@
 
       if ( key == 'p' )
       {
-        if (file_loaded >= 1)
+        if ( file_loaded >= 1 )
           FT_Done_Face( face );
 
         if ( file > 1 )
@@ -776,7 +814,7 @@
 
   Fin:
 #if 0
-    grDoneSurface(surface);
+    grDoneSurface( surface );
     grDone();
 #endif
     printf( "Execution completed successfully.\n" );
@@ -788,4 +826,3 @@
 
 
 /* End */
-

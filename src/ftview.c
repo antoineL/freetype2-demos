@@ -198,6 +198,17 @@
 
     pix_size = first_size;
 
+    {
+      FT_Face   face;
+
+      error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
+      if ( error )
+      {
+        /* can't access the font file. do not render anything */
+        fprintf( stderr, "can't access font file %p\n", current_font.face_id );
+        return;
+      }
+
     if ( !FT_IS_SCALABLE( face ) )
     {
       int  i;
@@ -207,6 +218,7 @@
       for ( i = 0; i < face->num_fixed_sizes; i++ )
         if ( face->available_sizes[i].height >= max_size )
           max_size = face->available_sizes[i].height;
+      }
     }
 
     for (;;)

@@ -37,6 +37,7 @@ typedef struct charmap_t_
 } charmap_t;
 
 
+
 /*
  * Globals
  */
@@ -45,7 +46,6 @@ typedef struct charmap_t_
 #define BENCH_TIME 2.0f
 
 FT_Library        lib;
-const char*       file_path;
 FT_Face           face;
 FTC_Manager       cache_man;
 FTC_CMapCache     cmap_cache;
@@ -67,9 +67,11 @@ face_requester (FTC_FaceID face_id,
                 FT_Face* aface)
 {
   FT_UNUSED( face_id );
+  FT_UNUSED( library );
   FT_UNUSED( request_data );
 
-  return FT_New_Face( library, file_path, 0, aface );
+  *aface = face;
+  return 0;
 }
 
 
@@ -386,8 +388,6 @@ main(int argc,
   }
   else
     size = face->available_sizes[0].width;
-
-  file_path = argv[1];
 
   if (TEST('a')) bench( load_test,  "Load", 0);
   if (TEST('b')) bench( fetch_test, "Load + Get_Glyph", 0);

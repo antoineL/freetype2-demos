@@ -1,3 +1,8 @@
+2006-06-16  YAMANO-UCHI Hidetoshi  <mer@din.or.jp>
+
+	* graph/x11/rules.mk (GRAPH_LINK): Add run-time search path on
+	Unix systems.
+
 2006-06-16  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcheckfixedwidth.c: Renamed to...

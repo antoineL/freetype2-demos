@@ -1,9 +1,12 @@
-2001-02-22  Davdi Turner  <david.turner@freetype.org>
+2001-03-06  Werner Lemberg  <wl@gnu.org>
 
-	* src/memtest.c: fixed the debug memory allocator. the constant
-	"my_memory" was replaced by a function that allocates a new
-	"memory allocator through "my_alloc()" and returns it.
+	* src/memtest.c (my_memory): Add cast to remove C++ compiler error.
 
+2001-02-22  David Turner  <david.turner@freetype.org>
+
+	* src/memtest.c: Fixed the debug memory allocator.  The constant
+	"my_memory" was replaced by a function that allocates a new "memory
+	allocator through "my_alloc()" and returns it.
 
 2001-02-06  James H. Cloos Jr.  <cloos@jhcloos.com>
 

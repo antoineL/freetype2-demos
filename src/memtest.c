@@ -163,7 +163,7 @@ static FT_Memory  my_memory( void )
 {
   FT_Memory  memory;
   
-  memory = my_alloc( 0, sizeof(*memory) );
+  memory = (FT_Memory)my_alloc( 0, sizeof(*memory) );
   if (!memory)
   {
     fprintf( stderr, "Unable to allocate debug memory manager !?!\n" );

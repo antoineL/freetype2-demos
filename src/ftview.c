@@ -357,7 +357,7 @@
   {
     FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
     FT_Pointer  glyf;
-    int         pix_size, max_size = 100000;
+    int         pt_size, max_size = 100000;
     grBitmap    bit3;
 
     unsigned char         text[256];
@@ -367,7 +367,7 @@
     start_x = 4;
     start_y = 16;
 
-    pix_size = first_size;
+    pt_size = first_size;
 
     {
       error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
@@ -397,15 +397,15 @@
 
       sprintf( (char*)text,
                 "%d: the quick brown fox jumps over the lazy dog "
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size );
 
       p = text;
 
-      set_current_size( pix_size );
+      set_current_pointsize( pt_size );
 
-      if ( pix_size > max_size )
+      if ( pt_size > max_size )
         break;
-      pix_size++;
+      pt_size++;
 
       scaler.face_id = current_font.face_id;
       scaler.width   = current_font.width;
@@ -466,7 +466,7 @@
       }
     }
 
-    set_current_size( first_size );
+    set_current_pointsize( first_size );
 
     return FT_Err_Ok;
   }

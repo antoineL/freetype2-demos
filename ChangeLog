@@ -1,3 +1,8 @@
+2004-11-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c (Render_Waterfall): Handle size as points, not as
+	pixels.
+
 2004-11-16  Dr. Martin P.J. Zinser  <zinser@decus.de>
 
 	* vms_make.com: Updated to be in sync with vms_make.com from FT2.

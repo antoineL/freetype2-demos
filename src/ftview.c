@@ -109,7 +109,6 @@
     start_x = 4;
     start_y = 16 + current_font.height;
 
-
     scaler.face_id = current_font.face_id;
     scaler.width   = current_font.width;
     scaler.height  = current_font.height;
@@ -198,17 +197,6 @@
 
     pix_size = first_size;
 
-    {
-      FT_Face   face;
-
-      error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
-      if ( error )
-      {
-        /* can't access the font file. do not render anything */
-        fprintf( stderr, "can't access font file %p\n", current_font.face_id );
-        return;
-      }
-
     if ( !FT_IS_SCALABLE( face ) )
     {
       int  i;
@@ -218,12 +206,12 @@
       for ( i = 0; i < face->num_fixed_sizes; i++ )
         if ( face->available_sizes[i].height >= max_size )
           max_size = face->available_sizes[i].height;
-      }
     }
 
     for (;;)
     {
       FTC_ScalerRec  scaler;
+
 
       sprintf( (char*)text,
                 "%d: the quick brown fox jumps over the lazy dog "
@@ -635,6 +623,16 @@
     set_current_image_type();
     num_indices = fonts[font_index]->num_indices;
 
+    error = FTC_Manager_LookupFace( cache_manager,
+                                    current_font.face_id, &face );
+    if ( error )
+    {
+      /* can't access the font file; do not render anything */
+      fprintf( stderr, "can't access font file %p\n",
+               current_font.face_id );
+      exit( 1 );
+    }
+
     /* initialize graphics if needed */
     if ( !XisSetup )
     {
@@ -683,19 +681,22 @@
           error = Render_Waterfall( ptsize );
         }
 
-        if ( face )
+        if ( size )
           sprintf( Header, "%s %s (file `%s')",
             face->family_name,
             face->style_name,
-            ft_basename( ( (PFont)current_font.face_id)->filepathname ) );
+            ft_basename( ((PFont)current_font.face_id)->filepathname ) );
         else
         {
           if ( error == FT_Err_Invalid_Pixel_Size )
             sprintf( Header, "Invalid pixel size (file `%s')",
-              ft_basename( ( (PFont)current_font.face_id)->filepathname ) );
+              ft_basename( ((PFont)current_font.face_id)->filepathname ) );
+          else if ( error == FT_Err_Invalid_PPem )
+            sprintf( Header, "Invalid ppem value (file `%s')",
+              ft_basename( ((PFont)current_font.face_id)->filepathname ) );
           else
             sprintf( Header, "File `%s': error 0x%04x",
-              ft_basename( ( (PFont)current_font.face_id)->filepathname ),
+              ft_basename( ((PFont)current_font.face_id)->filepathname ),
               (FT_UShort)error );
         }
 

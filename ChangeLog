@@ -1,3 +1,37 @@
+2003-12-26  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (set_current_size): Don't allow values larger than
+	0xFFFF.
+	* src/ftview.c (main): Set `face'.
+	(Render_Waterfall): Don't set `face'.
+	use precomputed value instead.
+	(main): Don't use `face->' but `size->face->'.
+	Use `exit' in case of fatal error.
+	Don't test `face' but `size' for printing error messages.
+	Print proper error message for FT_Err_Invalid_PPem.
+
+2003-12-21  David Turner  <david@freetype.org>
+
+	* graph/graph.h (grPixelMode): Add `gr_pixel_mode_lcd2' and
+	`gr_pixel_mode_lcdv2' modes.
+	(grBlitGlyphToBitmap): Remove `is_bgr' argument.
+	Updated all callers.
+	* graph/grblit.c (blit_mono_to_pal8): Speed up loop.
+	(blit_lcd_to_24, blit_lcdv_to_24): Remove `is_bgr' argument.
+	(blit_lcd2_to_24, blit_lcdv2_to_24): New functions.
+	(compute_clips): Updated.
+	(grBlitGlyphToBitmap): Remove `is_bgr' argument.
+	Use new blitter functions for the two new modes.
+
+	* graph/win32/Jamfile: s/TOOLSET/JAM_TOOLSET/.
+
+	* src/gbench.c, src/gbench.h: New files.
+
+	* src/Jamfile: Handle `gbench'.
+
+	* src/ftbench.c, src/ftcommon.i, src/ftview.c: Updated to use new
+	FreeType cache implementation and new blitter modes.
+
 2003-11-10  Werner Lemberg  <wl@gnu.org>
 
 	Add display of bitmap fonts to ftstring.

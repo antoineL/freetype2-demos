@@ -82,8 +82,9 @@ else
 
   FT_INCLUDES := $(BUILD) $(TOP_)config $(TOP_)include $(SRC_) $(SRC_DIR)
 
-  COMPILE    = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
-  FTLIB     := $(TOP_)$(LIB_DIR)$(SEP)$(LIBRARY).$A
+  COMPILE = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
+
+  FTLIB := $(LIB_DIR)$(SEP)$(LIBRARY).$A
 
   # the default commands used to link the executables. These can
   # be re-defined for platform-specific stuff..

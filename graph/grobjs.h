@@ -179,8 +179,4 @@
   extern void  grFree( const void*  block );
 
 
-  extern grDevice*  gr_devices[];
-  extern int        gr_num_devices;
-  extern int        gr_max_devices;
-
 #endif /* GROBJS_H */

@@ -2,6 +2,15 @@ all: exes
 
 ####################################################################
 #
+# The `space' variable is used to avoid trailing spaces in defining the
+# `T' variable later.
+#
+empty :=
+space := $(empty) $(empty)
+
+
+####################################################################
+#
 # TOP is the directory where the main FreeType source is found,
 # as well as the 'config.mk' file
 #

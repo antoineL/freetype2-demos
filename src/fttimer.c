@@ -114,25 +114,25 @@
 /*                                                                 */
 /*******************************************************************/
 
-  FT_Error  ConvertRaster( int  index )
+  FT_Error  ConvertRaster( int  idx )
   {
     FT_Glyph  bitmap;
 
     
-    bitmap = glyphs[index];
-    error = FT_Glyph_To_Bitmap( &bitmap,
-                                antialias ? ft_render_mode_normal
-                                          : ft_render_mode_mono,
-                                0,
-                                0 );
-    if (!error)
+    bitmap = glyphs[idx];
+    error  = FT_Glyph_To_Bitmap( &bitmap,
+                                 antialias ? ft_render_mode_normal
+                                           : ft_render_mode_mono,
+                                 0,
+                                 0 );
+    if ( !error )
       FT_Done_Glyph( bitmap );
       
     return error;
   }
 
 
-  static void Usage()
+  static void Usage( void )
   {
       fprintf( stderr, "fttimer: simple performance timer -- part of the FreeType project\n" );
       fprintf( stderr, "-----------------------------------------------------------------\n\n" );

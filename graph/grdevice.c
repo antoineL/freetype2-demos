@@ -9,22 +9,22 @@
   static
   grDevice*  find_device( const char*  device_name )
   {
-    int  index = 0;
+    int  idx = 0;
 
     if (device_name)
     {
-      for ( index = gr_num_devices-1; index > 0; index-- )
-        if ( strcmp( device_name, gr_device_chain[index].name ) == 0 )
+      for ( idx = gr_num_devices-1; idx > 0; idx-- )
+        if ( strcmp( device_name, gr_device_chain[idx].name ) == 0 )
           break;
     }
 
-    if ( index < 0 || gr_num_devices <= 0 || !gr_device_chain[index].device )
+    if ( idx < 0 || gr_num_devices <= 0 || !gr_device_chain[idx].device )
     {
       grError = gr_err_invalid_device;
       return 0;
     }
 
-    return gr_device_chain[index].device;
+    return gr_device_chain[idx].device;
   }
 
 

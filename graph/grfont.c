@@ -345,7 +345,7 @@
     }
   }
 
-  extern void grLn()
+  extern void grLn( void )
   {
     gr_cursor_y ++;
     gr_cursor_x = 0;

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003 by                                            */
+/*  Copyright 1996-2000, 2003, 2004 by                                      */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /****************************************************************************/
@@ -10,6 +10,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -31,6 +33,7 @@
   int  comma_flag  = 0;
   int  debug       = 0;
   int  trace_level = 0;
+  int  name_tables = 0;
 
 
   /* PanicZ */
@@ -60,7 +63,15 @@
     fprintf( stderr, "ftdump: simple font dumper -- part of the FreeType project\n" );
     fprintf( stderr, "-----------------------------------------------------------\n" );
     fprintf( stderr, "\n" );
-    fprintf( stderr, "Usage: %s fontname[.ttf|.ttc]\n", execname );
+    fprintf( stderr, "Usage: %s [options] fontname\n", execname );
+    fprintf( stderr, "\n" );
+#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0 && FREETYPE_PATCH <= 8
+    fprintf( stderr, "  -d        enable debug information\n" );
+#  ifdef FT_DEBUG_LEVEL_TRACE
+    fprintf( stderr, "  -l level  trace level for debug information\n" );
+#  endif
+#endif
+    fprintf( stderr, "  -n        print SFNT name tables\n" );
     fprintf( stderr, "\n" );
 
     exit( 1 );
@@ -145,6 +156,317 @@
     }
   }
 
+  static const char*
+  platform_id( int  id )
+  {
+    switch ( id )
+    {
+    case TT_PLATFORM_APPLE_UNICODE:
+      return "Apple (Unicode)";
+    case TT_PLATFORM_MACINTOSH:
+      return "Macintosh";
+    case TT_PLATFORM_ISO:
+      return "ISO (deprecated)";
+    case TT_PLATFORM_MICROSOFT:
+      return "Microsoft";
+    case TT_PLATFORM_CUSTOM:
+      return "custom";
+    case TT_PLATFORM_ADOBE:
+      return "Adobe";
+
+    default:
+      return "UNKNOWN";
+    }
+  }
+
+
+  static const char*
+  name_id( int  id )
+  {
+    switch ( id )
+    {
+    case TT_NAME_ID_COPYRIGHT:
+      return "copyright";
+    case TT_NAME_ID_FONT_FAMILY:
+      return "font family";
+    case TT_NAME_ID_FONT_SUBFAMILY:
+      return "font subfamily";
+    case TT_NAME_ID_UNIQUE_ID:
+      return "unique ID";
+    case TT_NAME_ID_FULL_NAME:
+      return "full name";
+    case TT_NAME_ID_VERSION_STRING:
+      return "version string";
+    case TT_NAME_ID_PS_NAME:
+      return "PostScript name";
+    case TT_NAME_ID_TRADEMARK:
+      return "trademark";
+
+   /* the following values are from the OpenType spec */
+    case TT_NAME_ID_MANUFACTURER:
+      return "manufacturer";
+    case TT_NAME_ID_DESIGNER:
+      return "designer";
+    case TT_NAME_ID_DESCRIPTION:
+      return "description";
+    case TT_NAME_ID_VENDOR_URL:
+      return "vendor URL";
+    case TT_NAME_ID_DESIGNER_URL:
+      return "designer URL";
+    case TT_NAME_ID_LICENSE:
+      return "license";
+    case TT_NAME_ID_LICENSE_URL:
+      return "license URL";
+    /* number 15 is reserved */
+    case TT_NAME_ID_PREFERRED_FAMILY:
+      return "preferred family";
+    case TT_NAME_ID_PREFERRED_SUBFAMILY:
+      return "preferred subfamily";
+    case TT_NAME_ID_MAC_FULL_NAME:
+      return "Mac full name";
+
+   /* The following code is new as of 2000-01-21 */
+    case TT_NAME_ID_SAMPLE_TEXT:
+      return "sample text";
+
+   /* This is new in OpenType 1.3 */
+    case TT_NAME_ID_CID_FINDFONT_NAME:
+      return "CID `findfont' name";
+
+    default:
+      return "UNKNOWN";
+    }
+  }
+
+
+  static void
+  put_ascii( FT_Byte*  string,
+             FT_UInt   string_len,
+             FT_UInt   indent )
+  {
+    FT_UInt  i, j;
+
+
+    for ( j = 0; j < indent; j++ )
+      putchar( ' ' );
+    putchar( '"' );
+
+    for ( i = 0; i < string_len; i++ )
+    {
+      switch ( string[i] )
+      {
+      case '\n':
+        fputs( "\\n\"", stdout );
+        if ( i + 1 < string_len )
+        {
+          putchar( '\n' );
+          for ( j = 0; j < indent; j++ )
+            putchar( ' ' );
+          putchar( '"' );
+        }
+        break;
+      case '\r':
+        fputs( "\\r", stdout );
+        break;
+      case '\t':
+        fputs( "\\t", stdout );
+        break;
+      case '\\':
+        fputs( "\\\\", stdout );
+        break;
+      case '"':
+        fputs( "\\\"", stdout );
+        break;
+
+      default:
+        putchar( string[i] );
+        break;
+      }
+    }
+    if ( string[i - 1] != '\n' )
+      putchar( '"' );
+  }
+
+
+  static void
+  put_unicode_be16( FT_Byte*  string,
+                    FT_UInt   string_len,
+                    FT_UInt   indent )
+  {
+    FT_Int   ch;
+    FT_UInt  i, j;
+
+
+    for ( j = 0; j < indent; j++ )
+      putchar( ' ' );
+    putchar( '"' );
+
+    for ( i = 0; i < string_len; i += 2 )
+    {
+      ch = ( string[i] << 8 ) | string[i + 1];
+
+      switch ( ch )
+      {
+      case '\n':
+        fputs( "\\n\"", stdout );
+        if ( i + 2 < string_len )
+        {
+          putchar( '\n' );
+          for ( j = 0; j < indent; j++ )
+            putchar( ' ' );
+          putchar( '"' );
+        }
+        break;
+      case '\r':
+        fputs( "\\r", stdout );
+        break;
+      case '\t':
+        fputs( "\\t", stdout );
+        break;
+      case '\\':
+        fputs( "\\\\", stdout );
+        break;
+      case '"':
+        fputs( "\\\"", stdout );
+        break;
+
+      case 0x00A9:
+        fputs( "(c)", stdout );
+        break;
+      case 0x00AE:
+        fputs( "(r)", stdout );
+        break;
+
+      case 0x2013:
+        fputs( "--", stdout );
+        break;
+      case 0x2019:
+        fputs( "\'", stdout );
+        break;
+
+      case 0x2122:
+        fputs( "(tm)", stdout );
+        break;
+
+      default:
+        if ( ch < 256 )
+          putchar( ch );
+        else
+          printf( "\\U+%04X", ch );
+        break;
+      }
+    }
+    if ( ch != '\n' )
+      putchar( '"' );
+  }
+
+
+  void
+  Print_Sfnt_Names( FT_Face  face )
+  {
+    FT_SfntName  name;
+    FT_UInt      num_names, i;
+
+
+    printf( "font string entries\n" );
+
+    num_names = FT_Get_Sfnt_Name_Count( face );
+    for ( i = 0; i < num_names; i++ )
+    {
+      error = FT_Get_Sfnt_Name( face, i, &name );
+      if ( error == FT_Err_Ok )
+      {
+        printf( "   %-15s [%s]", name_id( name.name_id ),
+                                 platform_id( name.platform_id ) );
+
+        switch ( name.platform_id )
+        {
+        case TT_PLATFORM_APPLE_UNICODE:
+          switch ( name.encoding_id )
+          {
+          case TT_APPLE_ID_DEFAULT:
+          case TT_APPLE_ID_UNICODE_1_1:
+          case TT_APPLE_ID_ISO_10646:
+          case TT_APPLE_ID_UNICODE_2_0:
+            put_unicode_be16( name.string, name.string_len, 6 );
+            break;
+
+          default:
+            printf( "{unsupported encoding %d}", name.encoding_id );
+            break;
+          }
+          break;
+
+        case TT_PLATFORM_MACINTOSH:
+          if ( name.language_id != TT_MAC_LANGID_ENGLISH )
+            printf( " (language=%d)", name.language_id );
+          fputs( ":\n", stdout );
+
+          switch ( name.encoding_id )
+          {
+          case TT_MAC_ID_ROMAN:
+            /* FIXME: convert from MacRoman to ASCII/ISO8895-1/whatever */
+            /* (MacRoman is mostly like ISO8895-1 but there are         */
+            /* differences)                                             */
+            put_ascii( name.string, name.string_len, 6 );
+            break;
+
+          default:
+            printf( "{unsupported encoding %d}", name.encoding_id );
+            break;
+          }
+
+          break;
+
+        case TT_PLATFORM_ISO:
+          switch ( name.encoding_id )
+          {
+          case TT_ISO_ID_7BIT_ASCII:
+          case TT_ISO_ID_8859_1:
+            put_ascii( name.string, name.string_len, 6 );
+            break;
+
+          case TT_ISO_ID_10646:
+            put_unicode_be16( name.string, name.string_len, 6 );
+            break;
+
+          default:
+            printf( "{unsupported encoding %d}", name.encoding_id );
+            break;
+          }
+          break;
+
+        case TT_PLATFORM_MICROSOFT:
+          if ( name.language_id != TT_MS_LANGID_ENGLISH_UNITED_STATES )
+            printf( " (language=0x%04x)", name.language_id );
+          fputs( ":\n", stdout );
+
+          switch ( name.encoding_id )
+          {
+          /* TT_MS_ID_SYMBOL_CS is supposed to be Unicode, according to */
+          /* information from the MS font development team              */
+          case TT_MS_ID_SYMBOL_CS:
+          case TT_MS_ID_UNICODE_CS:
+            put_unicode_be16( name.string, name.string_len, 6 );
+            break;
+
+          default:
+            printf( "{unsupported encoding %d}", name.encoding_id );
+            break;
+          }
+
+          break;
+
+        default:
+          printf( "{unsupported platform}" );
+          break;
+        }
+
+        printf( "\n" );
+      }
+    }
+  }
+
 
   void
   Print_Fixed( FT_Face  face )
@@ -200,15 +522,15 @@
     int    num_faces;
     int    option;
 
-    FT_Library  library;      /* the FreeType library            */
-    FT_Face     face;         /* the font face                   */
+    FT_Library  library;      /* the FreeType library */
+    FT_Face     face;         /* the font face        */
 
 
     execname = ft_basename( argv[0] );
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "dl:" );
+      option = getopt( argc, argv, "dl:n" );
 
       if ( option == -1 )
         break;
@@ -223,6 +545,10 @@
         trace_level = atoi( optarg );
         if ( trace_level < 1 || trace_level > 7 )
           usage( execname );
+        break;
+
+      case 'n':
+        name_tables = 1;
         break;
 
       default:
@@ -266,7 +592,7 @@
     if ( error )
       PanicZ( "Could not initialize FreeType library" );
 
-    filename[128] = '\0';
+    filename[128]     = '\0';
     alt_filename[128] = '\0';
 
     strncpy( filename, argv[file], 128 );
@@ -317,6 +643,12 @@
       Print_Name( face );
       printf( "\n" );
       Print_Type( face );
+
+      if ( name_tables && FT_IS_SFNT( face ) )
+      {
+        printf( "\n" );
+        Print_Sfnt_Names( face );
+      }
 
       if ( face->num_fixed_sizes )
       {

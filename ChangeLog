@@ -1,3 +1,15 @@
+2004-04-29  Flavio Stanchina  <flavio@stanchina.net>
+
+	Parse SFNT `name' table in ftdump if new option -n is given.
+
+	* src/ftdump.c: Include FT_SFNT_NAMES_H and FT_TRUETYPE_IDS_H.
+	(name_tables): New global variable.
+	(usage): Show -d and -i info conditionally.
+	Add -n info.
+	(platform_id, name_id, put_ascii, put_unicode_be16,
+	Print_Sfnt_Names): New functions.
+	(main): Handle -n.
+
 2004-04-24  George Williams  <gww@silcom.com>
 
 	Add GX var font support to ftmulti.

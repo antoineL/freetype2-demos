@@ -1,3 +1,7 @@
+2001-03-13  Werner Lemberg  <wl@gnu.org>
+
+	* graph/x11/grx11.c: Increase MAX_PIXEL_MODES to 100.
+
 2001-03-06  Werner Lemberg  <wl@gnu.org>
 
 	* src/memtest.c (my_memory): Add cast to remove C++ compiler error.

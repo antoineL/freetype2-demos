@@ -77,7 +77,7 @@
 
   typedef XPixmapFormatValues  XDepth;
 
-#define MAX_PIXEL_MODES  32
+#define MAX_PIXEL_MODES  100
 
   static int          num_pixel_modes = 0;
   static grPixelMode  pixel_modes[MAX_PIXEL_MODES];

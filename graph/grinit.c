@@ -14,7 +14,7 @@
 #endif
 
 #ifdef DEVICE_WIN32
-#include "grwin32.h"
+#include "win32/grwin32.h"
 #endif
 
 #ifdef macintosh

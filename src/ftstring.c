@@ -236,9 +236,12 @@
       /* load the glyph image (in its native format) */
       /* for now, we take a monochrome glyph bitmap  */
       error = FT_Load_Glyph( face, glyph->glyph_index,
-                             hinted ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING ) ||
-              FT_Get_Glyph ( face->glyph, &glyph->image );
+                             hinted ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING );
       if (error) continue;
+
+      error = FT_Get_Glyph ( face->glyph, &glyph->image );
+      if (error) continue;
+
 
       glyph->pos = origin;
 
@@ -294,6 +297,14 @@
         /* don't need to render it..                                      */
         
         FT_Glyph_Get_CBox( image, ft_glyph_bbox_pixels, &bbox );
+
+#if 1
+        if (n == 0)
+        {
+          fprintf( stderr, "bbox = [%ld %ld %ld %ld]\n",
+                    bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax );
+        }
+#endif
         
         if ( bbox.xMax > 0         && bbox.yMax > 0        &&
              bbox.xMin < bit.width && bbox.yMin < bit.rows )
@@ -308,6 +319,15 @@
             FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)image;
             FT_Bitmap*      source = &bitmap->bitmap;
             FT_Pos          x_top, y_top;
+
+#if 1
+            if (n == 0)
+            {
+              fprintf( stderr, "bearing = [%d %d] dims = [%d %d]\n",
+                       bitmap->left, bitmap->top, source->width, source->rows );
+            }
+#endif
+
     
             bit3.rows   = source->rows;
             bit3.width  = source->width;

@@ -26,8 +26,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "grwin32.h"
-#include "grdevice.h"
+#include <grobjs.h>
+#include <grdevice.h>
 
 
 /* logging facility */

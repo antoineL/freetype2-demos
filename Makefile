@@ -218,13 +218,13 @@ else
 	  $(COMPILE) $T$@ $<
 
 
-  $(OBJ_)ftview.$(SO): $(SRC_DIR_)ftview.c $(GRAPH_LIB)
+  $(OBJ_)ftview.$(SO): $(SRC_DIR_)ftview.c $(GRAPH_LIB) $(SRC_DIR_)ftcommon.i
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
-  $(OBJ_)ftmulti.$(SO): $(SRC_DIR_)ftmulti.c $(GRAPH_LIB)
+  $(OBJ_)ftmulti.$(SO): $(SRC_DIR_)ftmulti.c $(GRAPH_LIB) $(SRC_DIR_)ftcommon.i
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
-  $(OBJ_)ftstring.$(SO): $(SRC_DIR_)ftstring.c $(GRAPH_LIB)
+  $(OBJ_)ftstring.$(SO): $(SRC_DIR_)ftstring.c $(GRAPH_LIB) $(SRC_DIR_)ftcommon.i
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
   $(OBJ_)fttimer.$(SO): $(SRC_DIR_)fttimer.c $(GRAPH_LIB)

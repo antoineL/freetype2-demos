@@ -26,7 +26,7 @@
 #include <string.h>
 
 
-  FT_Error    error;
+  FT_Error  error;
 
   int  comma_flag  = 0;
   int  debug       = 0;
@@ -42,7 +42,8 @@
   }
 
 
-  void  Print_Comma( const char*  message )
+  void
+  Print_Comma( const char*  message )
   {
     if ( comma_flag )
       printf( ", " );
@@ -52,8 +53,8 @@
   }
 
 
-  static
-  void  usage( char*  execname )
+  static void
+  usage( char*  execname )
   {
     fprintf( stderr, "\n" );
     fprintf( stderr, "ftview: simple font dumper -- part of the FreeType project\n" );
@@ -66,10 +67,12 @@
   }
 
 
-  void  Print_Name( FT_Face  face )
+  void
+  Print_Name( FT_Face  face )
   {
     const char*  ps_name;
     
+
     printf( "font name entries\n" );
 
     /* XXX: Foundry?  Copyright?  Version? ... */
@@ -85,7 +88,8 @@
   }
 
 
-  void  Print_Type( FT_Face  face )
+  void
+  Print_Type( FT_Face  face )
   {
     FT_ModuleRec*  module;
 
@@ -142,7 +146,8 @@
   }
 
 
-  void  Print_Fixed( FT_Face  face )
+  void
+  Print_Fixed( FT_Face  face )
   {
     int  i;
 
@@ -151,17 +156,22 @@
     printf( "fixed size\n" );
 
     /* available size */
-    for( i = 0; i < face->num_fixed_sizes; i++ )
+    for ( i = 0; i < face->num_fixed_sizes; i++ )
     {
-      printf( "   %d: height %d, width %d\n",
-              i,
-              face->available_sizes[i].height,
-              face->available_sizes[i].width );
+      FT_Bitmap_Size*  bsize = face->available_sizes + i;
+
+
+      printf( "   %3d: height %d, width %d\n",
+              i, bsize->height, bsize->width );
+      printf( "        size %.3f, x_ppem %.3f, y_ppem %.3f\n",
+              bsize->size / 64.0,
+              bsize->x_ppem / 64.0, bsize->y_ppem / 64.0 );
     }
   }
 
 
-  void  Print_Charmaps( FT_Face  face )
+  void
+  Print_Charmaps( FT_Face  face )
   {
     int  i;
 
@@ -179,8 +189,9 @@
   }
 
 
-  int  main( int    argc,
-             char*  argv[] )
+  int
+  main( int    argc,
+        char*  argv[] )
   {
     int    i, file;
     char   filename[128 + 4];
@@ -237,11 +248,12 @@
     }
 #elif 0
        /* "setenv/putenv" is not ANSI and I don't want to mess */
-       /* with this portability issue right now..              */
+       /* with this portability issue right now                */
     if ( debug )
     {
       char  temp[32];
       
+
       sprintf( temp, "any=%d", trace_level );
       setenv( "FT2_DEBUG", temp );
     }
@@ -295,7 +307,7 @@
             num_faces,
             num_faces == 1 ? (char *)"face" : (char *)"faces" );
 
-    for( i = 0; i < num_faces; i++ )
+    for ( i = 0; i < num_faces; i++ )
     {
       error = FT_New_Face( library, filename, i, &face );
       if ( error )
@@ -312,7 +324,7 @@
         Print_Fixed( face );
       }
 
-      if( face->num_charmaps )
+      if ( face->num_charmaps )
       {
         printf( "\n" );
         Print_Charmaps( face );

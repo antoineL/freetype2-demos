@@ -160,7 +160,7 @@
   /*  up a string of text.                                                 */
   /*                                                                       */
   /*                                                                       */
-  static TGlyph  glyphs[ MAX_GLYPHS ];
+  static TGlyph  glyphs[MAX_GLYPHS];
   static int     num_glyphs;
 
   /*************************************************************************/
@@ -326,7 +326,7 @@
       if ( error )
         continue;
 
-      error = FT_Get_Glyph ( face->glyph, &glyph->image );
+      error = FT_Get_Glyph( face->glyph, &glyph->image );
       if ( error )
         continue;
 
@@ -748,14 +748,15 @@
   main( int     argc,
         char**  argv )
   {
-    int    i, old_ptsize, orig_ptsize, file;
-    int    first_glyph = 0;
-    int    XisSetup = 0;
-    char   filename[128 + 4];
-    char   alt_filename[128 + 4];
-    char*  execname;
-    int    option;
-    int    file_loaded;
+    int     i, old_ptsize, orig_ptsize, file;
+    int     first_glyph = 0;
+    int     XisSetup = 0;
+    char    filename[128 + 4];
+    char    alt_filename[128 + 4];
+    char*   execname;
+    int     option;
+    int     file_loaded;
+    PGlyph  glyph;
 
     grEvent   event;
 
@@ -957,6 +958,14 @@
     }
 
   Fin:
+    glyph = glyphs;
+    for ( i = 0; i < MAX_GLYPHS; i++, glyph++ )
+      if ( glyph->image )
+        FT_Done_Glyph( glyph->image );
+
+    FT_Done_Face    ( face    );
+    FT_Done_FreeType( library );
+
 #if 0
     grDoneSurface( surface );
     grDone();
@@ -966,7 +975,7 @@
 
     exit( 0 );      /* for safety reasons */
     return 0;       /* never reached */
-}
+  }
 
 
 /* End */

@@ -1,3 +1,10 @@
+2003-10-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftmulti.c (main): Call `FT_Done_Face'.
+
+	* src/ftstring.c (main): Clean up glyph and face objects, then
+	finish FreeType library.
+
 2003-10-10  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftmulti.c (Help): Document all keys.

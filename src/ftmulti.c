@@ -845,6 +845,7 @@
     grDone();
 #endif
 
+    FT_Done_Face    ( face    );
     FT_Done_FreeType( library );
 
     printf( "Execution completed successfully.\n" );

@@ -1,3 +1,10 @@
+2002-04-17  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.0 released.
+	=========================
+
+
 2002-04-01  Werner Lemberg  <wl@gnu.org>
 
 	* graph/x11/grx11.c: Use `c_class' instead of `class' if compiling

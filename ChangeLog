@@ -1,6 +1,19 @@
-2002-06-23  Vincent Caron
+2002-06-25  Werner Lemberg  <wl@gnu.org>
 
-        * src/ftstring.c: adding support for gamma-corrected display
+	* src/ftstring.c (reset_transform): Fix transformation matrix.
+
+2002-06-23  Vincent Caron  <v.caron@zerodeux.net>
+
+	Adding support for gamma-corrected display to ftstring (assigned to
+	`g', F9, and F10 keys).
+
+	* src/ftstring.c (use_gamma, gamma_value, gamma_ramp): New global
+	variables.
+	(init_gamma, apply_gamma, draw_gamma_ramp): New functions.
+	(render_string): Use apply_gamma.
+	(Help): Updated.
+	(Process_Event): Handle `g', F9, and F10 keys.
+	(main): Call init_gamma and draw_gamma_ramp.
 
 2002-06-14  Werner Lemberg  <wl@gnu.org>
 

@@ -500,8 +500,8 @@
 
     transform       = ( angle != 0 );
     trans_matrix.xx = cosinus;
-    trans_matrix.xy = -sinus;
-    trans_matrix.yx = sinus;
+    trans_matrix.xy = sinus;
+    trans_matrix.yx = -sinus;
     trans_matrix.yy = cosinus;
   }
 

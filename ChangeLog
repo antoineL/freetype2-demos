@@ -1,6 +1,11 @@
-2001-03-23  David Turner    <david@freetype.org>
+2000-03-24  David Turner  <david.turner@freetype.org>
 
-	* Makefile, src/*.c: changed to new header inclusion scheme
+	* Version 2.0.2 released.
+	=========================
+
+2001-03-23  David Turner  <david@freetype.org>
+
+	* Makefile, src/*.c: Changed to new header inclusion scheme.
 
 2001-03-13  Werner Lemberg  <wl@gnu.org>
 

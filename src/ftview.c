@@ -448,7 +448,7 @@
     grLn();
     grWriteln( "  F1 or ?   : display this help screen" );
     grWriteln( "  a         : toggle anti-aliasing" );
-    grWriteln( "  L         : cycle through LCD-optimized modes" );
+    grWriteln( "  L         : cycle through rendering modes" );
     grWriteln( "  h         : toggle outline hinting" );
     grWriteln( "  b         : toggle embedded bitmaps" );
     grWriteln( "  l         : toggle low precision rendering" );
@@ -502,7 +502,7 @@
       return 1;
 
     case grKEY( 'L' ):
-      lcd_mode = ( lcd_mode + 1 ) % 5;
+      lcd_mode = ( lcd_mode + 1 ) % 6;
 
       switch ( lcd_mode )
       {
@@ -510,15 +510,18 @@
         new_header = (char *)"normal anti-aliased rendering on";
         break;
       case 1:
-        new_header = (char *)"horizontal LCD-optimized rendering on (RGB)";
+        new_header = (char *)"light anti-aliased rendering on";
         break;
       case 2:
-        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
+        new_header = (char *)"horizontal LCD-optimized rendering on (RGB)";
         break;
       case 3:
-        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
         break;
       case 4:
+        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        break;
+      case 5:
         new_header = (char *)"vertical LCD-optimized rendering on (BGR)";
         break;
       default:

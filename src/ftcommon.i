@@ -188,7 +188,7 @@
   int  use_sbits = 1;         /* do we use embedded bitmaps? */
   int  low_prec  = 0;         /* force low precision         */
   int  autohint  = 0;         /* force auto-hinting          */
-  int  lcd_mode  = 0;         /* 0 - 4                       */
+  int  lcd_mode  = 0;         /* 0 - 5                       */
   int  Num;                   /* current first index         */
 
   int  res = 72;
@@ -501,7 +501,9 @@
 
     if ( antialias && lcd_mode > 0 )
     {
-      if ( lcd_mode == 1 || lcd_mode == 2 )
+      if ( lcd_mode <= 1 )
+        current_font.flags |= FT_LOAD_TARGET_LIGHT;
+      else if ( lcd_mode <= 3 )
         current_font.flags |= FT_LOAD_TARGET_LCD;
       else
         current_font.flags |= FT_LOAD_TARGET_LCD_V;
@@ -581,13 +583,13 @@
           break;
 
         case FT_PIXEL_MODE_LCD:
-          target->mode  = lcd_mode == 1 ? gr_pixel_mode_lcd
+          target->mode  = lcd_mode == 2 ? gr_pixel_mode_lcd
                                         : gr_pixel_mode_lcd2;
           target->grays = sbit->max_grays + 1;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
-          target->mode  = lcd_mode == 3 ? gr_pixel_mode_lcdv
+          target->mode  = lcd_mode == 4 ? gr_pixel_mode_lcdv
                                         : gr_pixel_mode_lcdv2;
           target->grays = sbit->max_grays + 1;
           break;
@@ -658,13 +660,13 @@
           break;
 
         case FT_PIXEL_MODE_LCD:
-          target->mode  = lcd_mode == 1 ? gr_pixel_mode_lcd
-                                        : gr_pixel_mode_lcd2 ;
+          target->mode  = lcd_mode == 2 ? gr_pixel_mode_lcd
+                                        : gr_pixel_mode_lcd2;
           target->grays = source->num_grays;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
-          target->mode  = lcd_mode == 3 ? gr_pixel_mode_lcdv
+          target->mode  = lcd_mode == 4 ? gr_pixel_mode_lcdv
                                         : gr_pixel_mode_lcdv2;
           target->grays = source->num_grays;
           break;
@@ -735,12 +737,14 @@
       break;
 
     case FT_PIXEL_MODE_LCD:
-      target->mode  = ( lcd_mode == 1 ? gr_pixel_mode_lcd : gr_pixel_mode_lcd2 );
+      target->mode  = lcd_mode == 2 ? gr_pixel_mode_lcd
+                                    : gr_pixel_mode_lcd2;
       target->grays = source->num_grays;
       break;
 
     case FT_PIXEL_MODE_LCD_V:
-      target->mode  = ( lcd_mode == 3 ? gr_pixel_mode_lcdv : gr_pixel_mode_lcdv2 );
+      target->mode  = lcd_mode == 4 ? gr_pixel_mode_lcdv
+                                    : gr_pixel_mode_lcdv2;
       target->grays = source->num_grays;
       break;
 
@@ -810,14 +814,14 @@
           break;
 
         case FT_PIXEL_MODE_LCD:
-          target->mode  = ( lcd_mode == 1 ? gr_pixel_mode_lcd
-                                          : gr_pixel_mode_lcd2 );
+          target->mode  = lcd_mode == 2 ? gr_pixel_mode_lcd
+                                        : gr_pixel_mode_lcd2;
           target->grays = sbit->max_grays + 1;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
-          target->mode  = ( lcd_mode == 3 ? gr_pixel_mode_lcdv
-                                          : gr_pixel_mode_lcdv2 );
+          target->mode  = lcd_mode == 4 ? gr_pixel_mode_lcdv
+                                        : gr_pixel_mode_lcdv2;
           target->grays = sbit->max_grays + 1;
           break;
 

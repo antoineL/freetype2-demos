@@ -1,3 +1,9 @@
+2004-11-26  Jouk Jansen <joukj@hrem.stm.tudelft.nl>
+
+	* vms_make.com: Don't assume that the ft2demos package is a
+	subdirectory of freetype2.
+	Fix `ccopt'.
+
 2004-11-19  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (Render_Waterfall): Handle size as points, not as

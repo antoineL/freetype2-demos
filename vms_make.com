@@ -19,7 +19,7 @@ $! Setup variables holding "config" information
 $!
 $ name   = "FT2demos"
 $ optfile =  name + ".opt"
-$ ccopt    = ""
+$ ccopt    = "/name=(as_is,short)/float=ieee"
 $ lopts    = ""
 $!
 $! Check for MMK/MMS
@@ -36,9 +36,9 @@ $!
 $ open/write optf 'optfile'
 $ If f$getsyi("HW_MODEL") .gt. 1024
 $ Then
-$  write optf "[-.lib]freetype2shr.exe/share"
+$  write optf "[-.freetype2.lib]freetype2shr.exe/share"
 $ else
-$   write optf "[-.lib]freetype.olb/lib"
+$   write optf "[-.freetype2.lib]freetype.olb/lib"
 $ endif
 $ gosub check_create_vmslib
 $ write optf "sys$share:decw$xlibshr.exe/share"
@@ -51,7 +51,7 @@ $!
 $ exit
 $!
 $ERR_LIB:
-$ write sys$output "Error reading config file [-]vmslib.dat"
+$ write sys$output "Error reading config file [-.freetype2]vmslib.dat"
 $ goto err_exit
 $FT2_ERR:
 $ write sys$output "Could not locate Freetype 2 include files"
@@ -86,7 +86,7 @@ $ deck
 
 .FIRST
 
-        define freetype [-.include.freetype]
+        define freetype [-.freetype2.include.freetype]
 
 CC = cc
 
@@ -97,7 +97,7 @@ GRX11SRC = [.graph.x11]
 OBJDIR = [.obj]
 
 # include paths
-INCLUDES = /include=([-.include],[.graph])
+INCLUDES = /include=([-.freetype2.include],[.graph])
 
 GRAPHOBJ = $(OBJDIR)grblit.obj,  \
            $(OBJDIR)grobjs.obj,  \
@@ -214,9 +214,9 @@ $! ---> Attention slightly changed version to take into account special
 $!      Situation for Freetype2 demos
 $CHECK_CREATE_VMSLIB:
 $!
-$ if f$search("[-]VMSLIB.DAT") .eqs. ""
+$ if f$search("[-.freetype2]VMSLIB.DAT") .eqs. ""
 $ then
-$   write sys$output "Freetype2 driver file [-]vmslib.dat not found."
+$   write sys$output "Freetype2 driver file [-.freetype2]vmslib.dat not found."
 $   write sys$output "Either Ft2demos have been installed in the wrong location"
 $   write sys$output "or Freetype2 has not yet been configured."
 $   write sys$output "Exiting..."
@@ -230,7 +230,7 @@ $ libincs = ""
 $!
 $! Open data file with location of libraries
 $!
-$ open/read/end=end_lib/err=err_lib libdata [-]VMSLIB.DAT
+$ open/read/end=end_lib/err=err_lib libdata [-.freetype2]VMSLIB.DAT
 $LIB_LOOP:
 $ read/end=end_lib libdata libline
 $ libline = f$edit(libline, "UNCOMMENT,COLLAPSE")

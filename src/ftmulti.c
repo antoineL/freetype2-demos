@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003 by                                            */
+/*  Copyright 1996-2000, 2003, 2004 by                                      */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -76,8 +76,10 @@
   int  render_mode = 1;
   int  use_grays   = 1;
 
-  FT_Multi_Master  multimaster;
-  FT_Long          design_pos[T1_MAX_MM_AXIS];
+  FT_MM_Var       *multimaster = NULL;
+  FT_Fixed         design_pos   [T1_MAX_MM_AXIS];
+  FT_Fixed         requested_pos[T1_MAX_MM_AXIS];
+  int              requested_cnt = 0;
 
 #define RASTER_BUFF_SIZE  32768
   char             raster_buff[RASTER_BUFF_SIZE];
@@ -129,6 +131,20 @@
     }
 
     return l;
+  }
+
+
+  static void
+  parse_design_coords( char  *s )
+  {
+
+
+    for ( requested_cnt = 0; requested_cnt < T1_MAX_MM_AXIS && *s; requested_cnt++ )
+    {
+      requested_pos[requested_cnt] = strtod(s,&s)*65536.0 ;
+      while ( *s==' ' ) ++s;
+    }
+
   }
 
 
@@ -410,12 +426,12 @@
     grWriteln( "  Right     : increment first glyph index" );
     grWriteln( "  Left      : decrement first glyph index" );
     grLn();
-    grWriteln( "  F3        : decrement first axis position by 20" );
-    grWriteln( "  F4        : increment first axis position by 20" );
-    grWriteln( "  F5        : decrement second axis position by 20" );
-    grWriteln( "  F6        : increment second axis position by 20" );
-    grWriteln( "  F7        : decrement third axis position by 20" );
-    grWriteln( "  F8        : increment third axis position by 20" );
+    grWriteln( "  F3        : decrement first axis pos by 1/50th of its range" );
+    grWriteln( "  F4        : increment first axis pos by 1/50th of its range" );
+    grWriteln( "  F5        : decrement second axis pos by 1/50th of its range" );
+    grWriteln( "  F6        : increment second axis pos by 1/50th of its range" );
+    grWriteln( "  F7        : decrement third axis pos by 1/50th of its range" );
+    grWriteln( "  F8        : increment third axis pos by 1/50th of its range" );
     grWriteln( "  F9        : decrement index by 100" );
     grWriteln( "  F10       : increment index by 100" );
     grWriteln( "  F11       : decrement index by 1000" );
@@ -565,19 +581,22 @@
     return 1;
 
   Do_Axis:
-    if ( axis < (int)multimaster.num_axis )
+    if ( axis < (int)multimaster->num_axis )
     {
-      FT_MM_Axis*  a   = multimaster.axis + axis;
-      FT_Long      pos = design_pos[axis];
+      FT_Var_Axis* a   = multimaster->axis + axis;
+      FT_Fixed     pos = design_pos[axis];
 
-
-      pos += i;
+      /* Normalize i. changing by 20 is all very well for PostScript fonts  */
+      /*  which tend to have a range of ~1000 per axis, but it's not useful */
+      /*  for mac fonts which have a range of ~3.                           */
+      /* And it's rather extreme for optical size even in PS                */
+      pos += FT_MulDiv( i, a->maximum-a->minimum, 1000 );
       if ( pos < a->minimum ) pos = a->minimum;
       if ( pos > a->maximum ) pos = a->maximum;
 
       design_pos[axis] = pos;
 
-      FT_Set_MM_Design_Coordinates( face, multimaster.num_axis, design_pos );
+      FT_Set_Var_Design_Coordinates( face, multimaster->num_axis, design_pos );
     }
     return 1;
 
@@ -602,12 +621,14 @@
     fprintf( stderr,  "ftmulti: multiple masters font viewer - part of FreeType\n" );
     fprintf( stderr,  "--------------------------------------------------------\n" );
     fprintf( stderr,  "\n" );
-    fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
+    fprintf( stderr,  "Usage: %s [options below] ppem fontname[.pfb|.ttf] ...\n",
              execname );
     fprintf( stderr,  "\n" );
     fprintf( stderr,  "  -e encoding  select encoding (default: no encoding)\n" );
     fprintf( stderr,  "  -r R         use resolution R dpi (default: 72 dpi)\n" );
     fprintf( stderr,  "  -f index     specify first glyph index to display\n" );
+    fprintf( stderr,  "  -d \"axis1 axis2 ...\"\n"
+                      "               specify the design coordinates for each axis\n" );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -632,13 +653,17 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "e:f:r:" );
+      option = getopt( argc, argv, "d:e:f:r:" );
 
       if ( option == -1 )
         break;
 
       switch ( option )
       {
+      case 'd':
+        parse_design_coords( optarg );
+        break;
+
       case 'e':
         encoding = (FT_Encoding)make_tag( optarg );
         break;
@@ -693,23 +718,32 @@
     }
 
     /* retrieve multiple master information */
-    error = FT_Get_Multi_Master( face, &multimaster );
+    error = FT_Get_MM_Var( face, &multimaster );
     if ( error )
       goto Display_Font;
 
+    /* if the user specified a position, use it, otherwise */
     /* set the current position to the median of each axis */
     {
       int  n;
 
 
-      for ( n = 0; n < (int)multimaster.num_axis; n++ )
+      for ( n = 0; n < (int)multimaster->num_axis; n++ )
+      {
         design_pos[n] =
-          ( multimaster.axis[n].minimum + multimaster.axis[n].maximum ) / 2;
+          n < requested_cnt  ?
+            requested_pos[n] :
+            ( multimaster->axis[n].minimum + multimaster->axis[n].maximum ) / 2;
+        if ( design_pos[n] < multimaster->axis[n].minimum )
+          design_pos[n] = multimaster->axis[n].minimum;
+        else if ( design_pos[n] > multimaster->axis[n].maximum )
+          design_pos[n] = multimaster->axis[n].maximum;
+      }
     }
 
-    error = FT_Set_MM_Design_Coordinates( face,
-                                          multimaster.num_axis,
-                                          design_pos );
+    error = FT_Set_Var_Design_Coordinates( face,
+                                           multimaster->num_axis,
+                                           design_pos );
     if ( error )
       goto Display_Font;
 
@@ -779,14 +813,14 @@
           int  n;
 
 
-          for ( n = 0; n < (int)multimaster.num_axis; n++ )
+          for ( n = 0; n < (int)multimaster->num_axis; n++ )
           {
             char  temp[32];
 
 
-            sprintf( temp, "  %s:%ld",
-                           multimaster.axis[n].name,
-                           design_pos[n] );
+            sprintf( temp, "  %s:%g",
+                           multimaster->axis[n].name,
+                           design_pos[n]/65536. );
             strcat( Header, temp );
           }
         }
@@ -845,8 +879,9 @@
     grDone();
 #endif
 
-    FT_Done_Face    ( face    );
-    FT_Done_FreeType( library );
+    free            ( multimaster );
+    FT_Done_Face    ( face        );
+    FT_Done_FreeType( library     );
 
     printf( "Execution completed successfully.\n" );
     printf( "Fails = %d\n", Fail );

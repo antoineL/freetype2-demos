@@ -1,3 +1,22 @@
+2004-04-24  George Williams  <gww@silcom.com>
+
+	Add GX var font support to ftmulti.
+	Add command line option `-d' to ftmulti to select design
+	coordinates.
+
+	* src/ftmulti.c: New global variables `requested_pos' and
+	`requested_cnt'.
+	Make `multimaster' a pointer.
+	(parse_design_coords): New function.
+	(Help, usage): Updated.
+	(Process_Event) <do_axis>: Don't use fixed 20 unit steps but a
+	proportional granularity.
+	Use FT_Set_Var_Design_Coordinates instead of
+	FT_Set_MM_Design_Coordinates.
+	(main): Handle new option `-d'.
+	Use FT_Get_MM_Var and FT_Set_Var_Design_Coordinates instead of
+	FT_Get_Multi_Master and FT_Set_MM_Design_Coordinates.
+
 2004-04-23  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (TFont): Add `cmap_index'.

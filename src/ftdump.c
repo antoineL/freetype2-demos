@@ -32,10 +32,8 @@
 
   int  comma_flag = 0;
 
-#if 0
   int  debug       = 0;
   int  trace_level = 0;
-#endif
 
 
   /* PanicZ */
@@ -182,7 +180,6 @@
 
     file = 1;
 
-#if 0
     if ( debug )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
@@ -191,7 +188,6 @@
       trace_level = 0;
 #endif
     }
-#endif /* 0 */
 
     /* Initialize engine */
     error = FT_Init_FreeType( &library );

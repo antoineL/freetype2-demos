@@ -14,6 +14,9 @@
 #include <freetype/freetype.h>
 #include <freetype/ftcache.h>
 
+  /* the following header shouldn't be used in normal programs */
+#include <freetype/internal/ftdebug.h>
+
 #include "common.h"
 
 #include <stdio.h>

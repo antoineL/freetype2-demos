@@ -63,7 +63,7 @@
   typedef struct  _Translator
   {
     ULONG   winkey;
-	grKey   grkey;
+    grKey   grkey;
 
   } Translator;
 
@@ -137,6 +137,7 @@ void done_surface( grSurface*  surface )
   if ( pbmi ) free ( pbmi );
 }
 
+#if 0
   static
   const int  pixel_mode_bit_count[] =
   {
@@ -150,6 +151,7 @@ void done_surface( grSurface*  surface )
     24,  /* rgb24 */
     32   /* rgb32 */
   };
+#endif
 
   static
   void  refresh_rectangle( grSurface*  surface,
@@ -303,7 +305,7 @@ grSurface*  init_surface( grSurface*  surface,
       {
         color->rgbRed   =
         color->rgbGreen =
-        color->rgbBlue  = (((count-x)*255)/count);
+        color->rgbBlue  = (unsigned char)(((count-x)*255)/count);
         color->rgbReserved = 0;
       }
     }

@@ -1,3 +1,8 @@
+2002-03-21  David Turner    <david@freetype.org>
+
+        * graph/grblit.c, graph/win32/grwin32.c, src/common.c, src/ftcommon.i,
+          src/ftdump.c: getting rid of compiler warnings
+
 2002-03-06  David Turner    <david@freetype.org>
 
         * src/ftdump.c: added display of ascender/descender/text height

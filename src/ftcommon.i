@@ -427,8 +427,8 @@
   static void
   set_current_size( int  pixel_size )
   {
-    current_font.font.pix_width  = pixel_size;
-    current_font.font.pix_height = pixel_size;
+    current_font.font.pix_width  = (FT_UShort) pixel_size;
+    current_font.font.pix_height = (FT_UShort) pixel_size;
   }
 
 

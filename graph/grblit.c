@@ -182,7 +182,7 @@
       {
         unsigned char*  _read  = read;
         unsigned char*  _write = write;
-        unsigned char   old;
+        unsigned int    old;
         int             shift2 = (8-shift);
 
         if ( left_clip )
@@ -196,13 +196,13 @@
           unsigned char val;
 
           val = *_read++;
-          *_write++ |= ( (val >> shift) | old );
+          *_write++ |= (unsigned char)( (val >> shift) | old );
           old = val << shift2;
           x--;
         }
 
         if ( !blit->right_clip )
-          *_write |= old;
+          *_write |= (unsigned char)old;
 
         read  += blit->read_line;
         write += blit->write_line;
@@ -272,7 +272,7 @@
     int             x, y, phase,shift;
     unsigned char*  read;
     unsigned char*  write;
-    unsigned char   col;
+    unsigned int    col;
 
 
     col   = color.value & 15;
@@ -300,9 +300,9 @@
         if ( val & 0x80 )
         {
           if ( _phase )
-            *_write = (*_write & 0xF0) | col;
+            *_write = (unsigned char)((*_write & 0xF0) | col);
           else
-            *_write = (*_write & 0x0F) | (col << 4);
+            *_write = (unsigned char)((*_write & 0x0F) | (col << 4));
         }
 
         val <<= 1;
@@ -658,8 +658,8 @@
       conv->table        = table;
 
       for ( n = 0; n < source_grays; n++ )
-        ((unsigned char*)table)[n] = (unsigned char)(n*(target_grays-1)) /
-                                         (source_grays-1);
+        ((unsigned char*)table)[n] = (unsigned char)(n*(target_grays-1) /
+                                         (source_grays-1));
 
       gr_num_conversions++;
       gr_last_conversion = conv;
@@ -786,31 +786,31 @@
 
 
 
-#define  compose_pixel( a, b, n, max )       \
-   {                                         \
-     int  d, half = max >> 1;                \
-                                             \
-     d = (int)b.chroma[0] - a.chroma[0];     \
-     a.chroma[0] += (n*d + half)/max;        \
-                                             \
-     d = (int)b.chroma[1] - a.chroma[1];     \
-     a.chroma[1] += (n*d + half)/max;        \
-                                             \
-     d = (int)b.chroma[2] - a.chroma[2];     \
-     a.chroma[2] += (n*d + half)/max;        \
+#define  compose_pixel( a, b, n, max )                        \
+   {                                                          \
+     int  d, half = max >> 1;                                 \
+                                                              \
+     d = (int)b.chroma[0] - a.chroma[0];                      \
+     a.chroma[0] += (unsigned char)((n*d + half)/max);        \
+                                                              \
+     d = (int)b.chroma[1] - a.chroma[1];                      \
+     a.chroma[1] += (unsigned char)((n*d + half)/max);        \
+                                                              \
+     d = (int)b.chroma[2] - a.chroma[2];                      \
+     a.chroma[2] += (unsigned char)((n*d + half)/max);        \
    }
 
 
-#define  extract555( pixel, color )           \
-   color.chroma[0] = (pixel >> 10) & 0x1F;  \
-   color.chroma[1] = (pixel >>  5) & 0x1F;  \
-   color.chroma[2] = (pixel      ) & 0x1F;
+#define  extract555( pixel, color )                          \
+   color.chroma[0] = (unsigned char)((pixel >> 10) & 0x1F);  \
+   color.chroma[1] = (unsigned char)((pixel >>  5) & 0x1F);  \
+   color.chroma[2] = (unsigned char)((pixel      ) & 0x1F);
 
 
-#define  extract565( pixel, color )           \
-   color.chroma[0] = (pixel >> 11) & 0x1F;  \
-   color.chroma[1] = (pixel >>  5) & 0x3F;  \
-   color.chroma[2] = (pixel      ) & 0x1F;
+#define  extract565( pixel, color )                          \
+   color.chroma[0] = (unsigned char)((pixel >> 11) & 0x1F);  \
+   color.chroma[1] = (unsigned char)((pixel >>  5) & 0x3F);  \
+   color.chroma[2] = (unsigned char)((pixel      ) & 0x1F);
 
 
 #define  inject555( color )                           \
@@ -877,7 +877,7 @@
             extract555( pix16, pix );
 
             compose_pixel( pix, color, val, max );
-            *pixel = inject555(pix);
+            *pixel = (unsigned short)(inject555(pix));
           }
         }
         _write += 2;
@@ -944,7 +944,7 @@
             extract565( pix16, pix );
 
             compose_pixel( pix, color, val, max );
-            *pixel = inject565( pix );
+            *pixel = (short)inject565( pix );
           }
         }
         _write +=2;

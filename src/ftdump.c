@@ -68,7 +68,7 @@
 
   void  Print_Name( FT_Face  face )
   {
-    char*  ps_name;
+    const char*  ps_name;
     
     printf( "font name entries\n" );
 

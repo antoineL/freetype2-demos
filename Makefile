@@ -93,7 +93,7 @@ else
     MATH := -lm
   endif
 
-  ifeq ($(PLATFORM),unixdev )
+  ifeq ($(PLATFORM),unixdev)
     MATH := -lm
   endif
 

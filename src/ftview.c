@@ -279,6 +279,7 @@
   {
     int  i;
 
+
     switch ( event->key )
     {
     case grKeyEsc:            /* ESC or q */
@@ -362,7 +363,7 @@
     return 1;
 
   Do_Glyph:
-    Num   += i;
+    Num += i;
     if ( Num < 0 )           Num = 0;
     if ( Num >= num_glyphs ) Num = num_glyphs - 1;
     
@@ -400,7 +401,6 @@
     int    old_ptsize, orig_ptsize, font_index;
     int    first_glyph = 0;
     int    XisSetup = 0;
-    int    OldNum;
     char*  execname;
     int    option;
 
@@ -505,8 +505,6 @@
         Num = 0;
     }
 
-    OldNum = -1;
-
     for ( ;; )
     {
       int  key;
@@ -558,7 +556,6 @@
       grWriteCellString( &bit, 0, 8, Header, fore_color );
       grRefreshSurface( surface );
 
-      OldNum = Num;
       grListenSurface( surface, 0, &event );
       if ( !( key = Process_Event( &event ) ) )
         goto End;

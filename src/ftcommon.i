@@ -14,6 +14,9 @@
 #include <freetype/freetype.h>
 #include <freetype/ftcache.h>
 
+#include <freetype/cache/ftcimage.h>
+#include <freetype/cache/ftcsbits.h>
+
   /* the following header shouldn't be used in normal programs */
 #include <freetype/internal/ftdebug.h>
 
@@ -24,6 +27,9 @@
 #include <string.h>
 #include <stdarg.h>
 
+
+/* define if you want to use a SBits cache instead of an image one !! */
+#undef   USE_SBITS_CACHE
 
   /* forward declarations */
   extern void  PanicZ( const char*  message );
@@ -158,7 +164,8 @@
 
   FT_Library       library;      /* the FreeType library            */
   FTC_Manager      manager;      /* the cache manager               */
-  FTC_Image_Cache  image_cache;
+  FTC_Image_Cache  image_cache;  /* the glyph image cache           */
+  FTC_SBit_Cache   sbits_cache;  /* the glyph small bitmaps cache   */
 
   FT_Face          face;         /* the font face                   */
   FT_Size          size;         /* the font size                   */
@@ -326,6 +333,7 @@
                                FT_Face*    aface )
   {
     PFont  font = (PFont)face_id;
+
     FT_UNUSED( request_data );
 
 
@@ -347,8 +355,12 @@
                              my_face_requester, 0, &manager );
     if ( error )
       PanicZ( "could not initialize cache manager" );
-    
+
+#ifdef USE_SBITS_CACHE
+    error = FTC_SBit_Cache_New( manager, &sbits_cache );
+#else    
     error = FTC_Image_Cache_New( manager, &image_cache );
+#endif
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
   }

@@ -51,9 +51,11 @@
     while ( i < num_glyphs )
 #endif
     {
+
+#ifndef USE_SBITS_CACHE
       FT_Glyph  glyph;
       
-
+      
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
                                       i,
@@ -87,10 +89,46 @@
         default:
           continue;
         }
-    
-        /* now render the bitmap into the display surface */
+
         x_top = x + bitmap->left;
         y_top = y - bitmap->top;
+#else
+      FTC_SBit  sbit;
+      
+      
+      error = FTC_SBit_Cache_Lookup( sbits_cache,
+                                     &current_font,
+                                     i,
+                                     &sbit );
+      if ( !error )
+      {
+        FT_Pos          x_top, y_top;
+
+        bit3.rows       = sbit->height;
+        bit3.width      = sbit->width;
+        bit3.pitch      = sbit->pitch;
+        bit3.buffer     = sbit->buffer;
+
+        switch ( sbit->format )
+        {
+        case ft_pixel_mode_mono:
+          bit3.mode  = gr_pixel_mode_mono;
+          break;
+
+        case ft_pixel_mode_grays:
+          bit3.mode  = gr_pixel_mode_gray;
+          bit3.grays = 256;
+          break;
+
+        default:
+          continue;
+        }
+
+        x_top = x + sbit->left;
+        y_top = y - sbit->top;
+#endif
+
+        /* now render the bitmap into the display surface */
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
         x += ( glyph->advance.x >> 16 ) + 1;
@@ -151,12 +189,13 @@
 
     while ( *p )
     {
+#ifndef USE_SBITS_CACHE
       FT_Glyph  glyph;
       
-
+      
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
-                                      FT_Get_Char_Index( face, *p ),
+                                      i,
                                       &glyph );
       if ( !error )
       {
@@ -187,10 +226,46 @@
         default:
           continue;
         }
-    
-        /* now render the bitmap into the display surface */
+
         x_top = x + bitmap->left;
         y_top = y - bitmap->top;
+#else
+      FTC_SBit  sbit;
+      
+      
+      error = FTC_SBit_Cache_Lookup( sbits_cache,
+                                     &current_font,
+                                     i,
+                                     &sbit );
+      if ( !error )
+      {
+        FT_Pos          x_top, y_top;
+
+        bit3.rows       = sbit->height;
+        bit3.width      = sbit->width;
+        bit3.pitch      = sbit->pitch;
+        bit3.buffer     = sbit->buffer;
+
+        switch ( sbit->format )
+        {
+        case ft_pixel_mode_mono:
+          bit3.mode  = gr_pixel_mode_mono;
+          break;
+
+        case ft_pixel_mode_grays:
+          bit3.mode  = gr_pixel_mode_gray;
+          bit3.grays = 256;
+          break;
+
+        default:
+          continue;
+        }
+
+        x_top = x + sbit->left;
+        y_top = y - sbit->top;
+#endif
+    
+        /* now render the bitmap into the display surface */
         grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
 
         x += ( glyph->advance.x >> 16 ) + 1;
@@ -555,6 +630,18 @@
 
       grWriteCellString( &bit, 0, 8, Header, fore_color );
       grRefreshSurface( surface );
+
+#if 1
+      /* dump simple cache manager statistics */
+      fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
+                       " [ %d, %ld, %f ]\n",
+                       manager->num_nodes,
+                       manager->num_bytes,
+                       
+                       manager->num_nodes > 0 
+                          ? manager->num_bytes*1.0/manager->num_nodes
+                          : 0.0 );
+#endif
 
       grListenSurface( surface, 0, &event );
       if ( !( key = Process_Event( &event ) ) )

@@ -1,3 +1,9 @@
+2003-05-20  Martin Zinser  <zinser@decus.de>
+
+	* descrip.mms: Removed.  Now created by...
+
+	* vms_make.com: New file.
+
 2003-05-19  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (install_font_file): Use calloc to allocate

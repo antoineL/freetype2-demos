@@ -200,9 +200,9 @@
   {
     const char*  filepathname;
     int          face_index;
-    
+
     int          num_glyphs;
-  
+
   } TFont, *PFont;
 
   static PFont*  fonts;
@@ -226,22 +226,22 @@
     static char   filename[1024 + 5];
     int           i, len, suffix_len, num_faces;
     const char**  suffix;
-    
+
 
     len = strlen( filepath );
     if ( len > 1024 )
       len = 1024;
-      
+
     strncpy( filename, filepath, len );
     filename[len] = 0;
-    
+
     error = FT_New_Face( library, filename, 0, &face );
     if ( !error )
       goto Success;
-    
+
     /* could not open the file directly; we will know try various */
     /* suffixes like `.ttf' or `.pfb'                             */
-    
+
 #ifndef macintosh
 
     suffix     = file_suffixes;
@@ -263,7 +263,7 @@
       {
         /* try with current suffix */
         strcpy( filename + len, suffix[0] );
-        
+
         error = FT_New_Face( library, filename, 0, &face );
         if ( !error )
           goto Success;
@@ -271,10 +271,10 @@
     }
 
 #endif /* !macintosh */
-    
+
     /* really couldn't open this file */
-    return -1;    
-    
+    return -1;
+
   Success:
 
     /* allocate new font object */
@@ -290,16 +290,16 @@
         if ( error )
           continue;
       }
-      
+
       font = (PFont)malloc( sizeof ( *font ) );
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
       font->num_glyphs   = face->num_glyphs;
 
       strcpy( (char*)font->filepathname, filename );
-      
+
       FT_Done_Face( face );
-              
+
       if ( max_fonts == 0 )
       {
         max_fonts = 16;
@@ -310,7 +310,7 @@
         max_fonts *= 2;
         fonts = (PFont*)realloc( fonts, max_fonts * sizeof ( PFont ) );
       }
-      
+
       fonts[num_fonts++] = font;
     }
 
@@ -327,7 +327,7 @@
   /*                                                                       */
   /* In this program, the face IDs are simply pointers to TFont objects.   */
   /*                                                                       */
-  LOCAL_FUNC_X
+  FT_CALLBACK_DEF
   FT_Error  my_face_requester( FTC_FaceID  face_id,
                                FT_Library  lib,
                                FT_Pointer  request_data,
@@ -342,24 +342,24 @@
                         font->filepathname,
                         font->face_index,
                         aface );
-  }                               
-  
-  
+  }
+
+
   static
   void  init_freetype( void )
   {
     error = FT_Init_FreeType( &library );
     if ( error )
       PanicZ( "could not initialize FreeType" );
-    
+
     error = FTC_Manager_New( library, 0, 0, 0,
                              my_face_requester, 0, &manager );
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
     error = FTC_SBit_Cache_New( manager, &sbits_cache );
-    if (error)
-      PanicZ( "could not initialize small bitmap cache" );
+    if ( error )
+      PanicZ( "could not initialize small bitmaps cache" );
 
     error = FTC_Image_Cache_New( manager, &image_cache );
     if ( error )
@@ -372,14 +372,14 @@
   {
     FTC_Manager_Done( manager );
     FT_Done_FreeType( library );
-  }  
+  }
 
 
   static
   void  set_current_face( PFont  font )
   {
     current_font.font.face_id = (FTC_FaceID)font;
-  }  
+  }
 
 
   static
@@ -401,16 +401,16 @@
   void  set_current_image_type( void )
   {
     current_font.image_type = antialias ? ftc_image_grays : ftc_image_mono;
-    
+
     if ( !hinted )
       current_font.image_type |= ftc_image_flag_unhinted;
-      
+
     if ( autohint )
       current_font.image_type |= ftc_image_flag_autohinted;
 
     if ( !use_sbits )
       current_font.image_type |= ftc_image_flag_no_sbits;
-  }   
+  }
 
 
 
@@ -425,8 +425,8 @@
     if (use_sbits_cache)
     {
       FTC_SBit  sbit;
-      
-      
+
+
       error = FTC_SBit_Cache_Lookup( sbits_cache,
                                      &current_font,
                                      glyph_index,
@@ -462,8 +462,8 @@
     else
     {
       FT_Glyph  glyf;
-      
-      
+
+
       error = FTC_Image_Cache_Lookup( image_cache,
                                       &current_font,
                                       glyph_index,
@@ -472,11 +472,11 @@
       {
         FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)glyf;
         FT_Bitmap*      source = &bitmap->bitmap;
-        
+
 
         if ( glyf->format != ft_glyph_format_bitmap )
           PanicZ( "invalid glyph format returned!" );
-        
+
         target->rows   = source->rows;
         target->width  = source->width;
         target->pitch  = source->pitch;

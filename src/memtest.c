@@ -111,7 +111,7 @@ void  forget_my_block( void*  base )
 }
 
 
-LOCAL_FUNC_X
+FT_CALLBACK_DEF
 void*  my_alloc( FT_Memory  memory,
                  long       size )
 {
@@ -124,7 +124,7 @@ void*  my_alloc( FT_Memory  memory,
 }
 
 
-LOCAL_FUNC_X
+FT_CALLBACK_DEF
 void   my_free( FT_Memory memory, void*  block )
 {
   memory=memory;
@@ -133,7 +133,7 @@ void   my_free( FT_Memory memory, void*  block )
 }
 
 
-LOCAL_FUNC_X
+FT_CALLBACK_DEF
 void*  my_realloc( FT_Memory memory,
                    long      cur_size,
                    long      new_size,
@@ -145,11 +145,11 @@ void*  my_realloc( FT_Memory memory,
   if (p)
   {
     long  size;
-    
+
     size = cur_size;
     if (new_size < size)
       size = new_size;
-      
+
     memcpy( p, block, size );
     my_free( memory, block );
   }
@@ -165,6 +165,7 @@ struct FT_MemoryRec_  my_memory =
   my_free,
   my_realloc
 };
+
 
 static void  dump_mem( void )
 {

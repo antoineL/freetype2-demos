@@ -1,5 +1,5 @@
 ftbench
-ftcheckfixedwidth
+ftchkwd
 ftdump
 ftlint
 ftmemchk
@@ -7,5 +7,5 @@ ftmulti
 ftstring
 fttimer
 ftview
-testnames
+testname
 .libs

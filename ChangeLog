@@ -1,3 +1,10 @@
+2002-01-25  Martin Zinser  <zinser@decus.de>
+
+	* src/common.h ([VMS]): Alias stuff specific to getopt.
+	* graph/grinit.c ([DEVICE_X11]): Handle VMS.
+	* descrip.mms: New file for compiling the demo programs with
+	OpenVMS.
+
 2001-12-31  Werner Lemberg  <wl@gnu.org>
 
 	* graph/x11/rules.mk: Fix typo (wilcard -> wildcard).

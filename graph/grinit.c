@@ -6,7 +6,11 @@
 #define GR_INIT_BUILD
 
 #ifdef DEVICE_X11
+#ifndef VMS
 #include "x11/grx11.h"
+#else
+#include "grx11.h"
+#endif
 #endif
 
 #ifdef DEVICE_OS2_PM

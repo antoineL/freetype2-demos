@@ -1,3 +1,9 @@
+2002-12-02  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
+
+        * src\ftstring.c (prepare_text): 'message' for the -m option, is
+        now expected to be encoded with UTF-8. This allows testing of
+        Unicode chars, including non-BMP characters
+
 2002-12-01  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
 
         * graph/win32/rules.mk: adding link rules for Borland C++

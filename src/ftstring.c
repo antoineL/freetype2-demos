@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-1999 by                                                  */
+/*  Copyright 1996-2002 by                                                  */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -41,7 +41,7 @@
   static FT_Face      face;         /* the font face                   */
   static FT_Error     error;        /* error returned by FreeType?     */
 
-  static FT_Encoding  encoding = ft_encoding_unicode;
+  static FT_Encoding  encoding = FT_ENCODING_UNICODE;
 
   static grSurface*   surface;      /* current display surface         */
   static grBitmap     bit;          /* current display bitmap          */
@@ -470,22 +470,62 @@
     const unsigned char*  p     = (const unsigned char*)string;
     PGlyph                glyph = glyphs;
     FT_UInt               glyph_index;
+    FT_ULong              codepoint;
+    unsigned char         in_code;
+    int                   expect;
 
 
     error = FT_Select_Charmap( face, encoding );
     if ( error )
       PanicZ( "invalid charmap\n" );
 
-    num_glyphs = 0;
+    num_glyphs = expect = 0;
     while ( *p )
     {
-      glyph_index = FT_Get_Char_Index( face, (FT_ULong)*p );
+      in_code = *p++ ;
+
+      if ( in_code >= 0xC0 )
+      {
+        if ( in_code < 0xE0 )           /*  U+0080 - U+07FF   */
+        {
+          expect = 1;
+          codepoint = in_code & 0x1F;
+        }
+        else if ( in_code < 0xF0 )      /*  U+0800 - U+FFFF   */
+        {
+          expect = 2;
+          codepoint = in_code & 0x0F;
+        }
+        else if ( in_code < 0xF8 )      /* U+10000 - U+10FFFF */
+        {
+          expect = 3;
+          codepoint = in_code & 0x07;
+        }
+        continue;
+      }
+      else if ( in_code >= 0x80 )
+      {
+        --expect;
+
+        if ( expect >= 0 )
+        {
+          codepoint <<= 6;
+          codepoint  += in_code & 0x3F;
+        }
+        if ( expect >  0 )
+          continue;
+
+        expect = 0;
+      }
+      else                              /* ASCII, U+0000 - U+007F */
+        codepoint = in_code;
+
+      glyph_index = FT_Get_Char_Index( face, codepoint );
       glyph->glyph_index = glyph_index;
       glyph++;
       num_glyphs++;
       if ( num_glyphs >= MAX_GLYPHS )
         break;
-      p++;
     }
   }
 

@@ -413,7 +413,7 @@
 /****************************************************************************/
 
 
-  static void Help( )
+  static void Help( void )
   {
     grEvent  dummy_event;
 

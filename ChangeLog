@@ -1,9 +1,30 @@
+2002-02-09  David Turner  <david@freetype.org>
+
+
+	* Version 2.0.8 released.
+	=========================
+
+
+2002-02-02  David Turner  <david@freetype.org>
+
+
+	* Version 2.0.7 released.
+	=========================
+
+
 2002-01-25  Martin Zinser  <zinser@decus.de>
 
 	* src/common.h ([VMS]): Alias stuff specific to getopt.
 	* graph/grinit.c ([DEVICE_X11]): Handle VMS.
 	* descrip.mms: New file for compiling the demo programs with
 	OpenVMS.
+
+2002-01-07  David Turner  <david@freetype.org>
+
+
+	* Version 2.0.6 released.
+	=========================
+
 
 2001-12-31  Werner Lemberg  <wl@gnu.org>
 
@@ -102,6 +123,13 @@
 	* src/ftview.c (main): Update cache dump code.
 	* src/ftlint.c (main) [TEST_PSNAMES]: Add some debugging code.
 	* src/fttry.c (main) [DUMP_NAME]: Add some glyph name debugging code.
+
+2001-10-17  David Turner  <david@freetype.org>
+
+
+	* Version 2.0.5 released.
+	=========================
+
 
 2001-09-21  Eric Olson  <eric.olson@sympatico.ca>
 

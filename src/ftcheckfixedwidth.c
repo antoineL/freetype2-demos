@@ -2,11 +2,10 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality font engine         */
 /*                                                                          */
-/*  Copyright 1996-1998 by                                                  */
+/*  Copyright 2003 by                                                       */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
-/*  ftlint: a simple font tester. This program tries to load all the        */
-/*          glyphs of a given font.                                         */
+/*  ftcheckfixedwidth                                                       */
 /*                                                                          */
 /*  NOTE:  This is just a test program that is used to show off and         */
 /*         debug the current engine.                                        */

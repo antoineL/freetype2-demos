@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000 by                                                  */
+/*  Copyright 1996-2000, 2003 by                                            */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -194,8 +194,9 @@
     pix_size = first_size;
     for (;;)
     {
-      sprintf( (char*)text, "%d: the quick brown fox jumps over the lazy dog "
-                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
+      sprintf( (char*)text,
+                "%d: the quick brown fox jumps over the lazy dog "
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pix_size );
 
       p = text;
 

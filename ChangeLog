@@ -1,24 +1,39 @@
+2003-04-09  David Turner  <david@freetype.org>
+
+	* Jamfile: Set FT2_TOP.
+	* src/ftbench.c (main): Use `long' for `max_bytes'.
+	* src/ftcheckfixidwidth.c: New test program.
+	* src/ftstring.c: (prepare_text): Remove unused variable `codepoint'.
+	(apply_gamma): Fix initialization of `buffer'.
+	* src/ftview.c (Render_Waterfall): Print more characters.
+
 2002-12-02  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
 
-        * src\ftstring.c (prepare_text): 'message' for the -m option, is
-        now expected to be encoded with UTF-8. This allows testing of
-        Unicode chars, including non-BMP characters
+	* src/ftstring.c: Use `FT_ENCODING_*' everywhere instead of
+	deprecated lowercase variants.
+	(prepare_text): 'message' for the -m option is now expected to be
+	encoded with UTF-8.  This allows testing of Unicode chars, including
+	non-BMP characters.
 
 2002-12-01  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
 
-        * graph/win32/rules.mk: adding link rules for Borland C++
+	* graph/win32/rules.mk: Adding link rules for Borland C++.
+
+2002-11-10  David Turner  <david@freetype.org>
+
+	* src/Jamfile (PROGRAMS): Add `ftcheckfixedwidth'.
 
 2002-09-25  David Turner  <david@freetype.org>
 
-        * graph/win32/grwin32.c: removing compiler warnings
+	* graph/win32/grwin32.c: Removing compiler warnings.
 
-        * descrip.mms: removing 'ftmemchk' and 'testnames' from the list
-        of programs to compile, these are now obsolete
+	* descrip.mms: Removing 'ftmemchk' and 'testnames' from the list
+	of programs to compile, these are now obsolete.
 
 2002-09-25  Anthony Fok  <anthony@thizlinux.com>
 
-        * src/ftbench.c: the program did perform out-of-bound memory writes
-        with certain fonts containing a buggy charmap
+	* src/ftbench.c: The program did perform out-of-bound memory writes
+	with certain fonts containing a buggy charmap.
 
 2002-09-18  Werner Lemberg  <wl@gnu.org>
 

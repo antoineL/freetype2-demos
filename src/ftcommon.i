@@ -17,6 +17,7 @@
 
 #include FT_CACHE_IMAGE_H
 #include FT_CACHE_SMALL_BITMAPS_H
+#include FT_CACHE_CHARMAP_H
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -166,6 +167,7 @@
   FTC_Manager      cache_manager;/* the cache manager               */
   FTC_ImageCache   image_cache;  /* the glyph image cache           */
   FTC_SBitCache    sbits_cache;  /* the glyph small bitmaps cache   */
+  FTC_CMapCache    cmap_cache;   /* the charmap cache..             */
 
   FT_Face          face;         /* the font face                   */
   FT_Size          size;         /* the font size                   */
@@ -180,7 +182,7 @@
   int  num_indices;           /* number of glyphs or characters */
   int  ptsize;                /* current point size             */
 
-  unsigned long  encoding = ft_encoding_none;
+  FT_UInt32  encoding = 0;
 
   int  hinted    = 1;         /* is glyph hinting active?    */
   int  antialias = 1;         /* is anti-aliasing active?    */
@@ -401,6 +403,10 @@
     error = FTC_ImageCache_New( cache_manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
+
+    error = FTC_CMapCache_New( cache_manager, &cmap_cache );
+    if ( error )
+      PanicZ( "could not initialize charmap cache" );
   }
 
 
@@ -461,6 +467,19 @@
   }
 
 
+  static FT_UInt
+  get_glyph_index( FT_UInt32  charcode )
+  {
+    FTC_CMapDescRec  desc;
+
+    desc.face_id    = current_font.font.face_id;
+    desc.type       = FTC_CMAP_BY_ENCODING;
+    desc.u.encoding = encoding ? encoding : ft_encoding_unicode;
+
+    return FTC_CMapCache_Lookup( cmap_cache, &desc, charcode );
+  }
+
+
   static FT_Error
   get_glyph_bitmap( FT_ULong     Index,
                     grBitmap*    target,
@@ -471,23 +490,16 @@
                     FT_Pointer  *aglyf )
   {
     *aglyf = NULL;
-    
-    if ( encoding )
-    {
-      FT_Face  f;
 
-      /* yes, this is slow. We'd better have a way to cache charmaps outside  */
-      /* of face objects themselves, but for now, that is simply not possible */
-      FTC_Manager_Lookup_Face( cache_manager, current_font.font.face_id, &f );
-      Index = FT_Get_Char_Index( f, Index );
-    }
+    if ( encoding )
+      Index = get_glyph_index( Index );
 
     /* use the SBits cache to store small glyph bitmaps, this is a lot */
     /* more memory-efficient..                                         */
     /*                                                                 */
     if ( use_sbits_cache                   &&
-         current_font.font.pix_width  < 32 &&
-         current_font.font.pix_height < 32 )
+         current_font.font.pix_width  < 48 &&
+         current_font.font.pix_height < 48 )
     {
       FTC_SBit  sbit;
 
@@ -523,8 +535,8 @@
         *top       = sbit->top;
         *x_advance = sbit->xadvance;
         *y_advance = sbit->yadvance;
-        
-        
+
+
       }
       return error;
     }
@@ -538,7 +550,7 @@
 
 
       type              = current_font.type;
-      current_font.type = (type & ~ftc_image_format_mask) | 
+      current_font.type = (type & ~ftc_image_format_mask) |
                            ftc_image_format_outline;
 
       error = FTC_ImageCache_Lookup( image_cache,

@@ -54,7 +54,7 @@
 #endif
     {
       int  x_top, y_top, left, top, x_advance, y_advance;
- 
+
 
       error = get_glyph_bitmap( i, &bit3, &left, &top,
                                 &x_advance, &y_advance, &glyf );
@@ -129,10 +129,11 @@
     {
       int      left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt  gindex;
-      
 
-      gindex = FT_Get_Char_Index( face, (unsigned)*p );
- 
+      gindex = *(unsigned char*)p;
+      if (!encoding)
+        gindex = get_glyph_index(gindex);
+
       error = get_glyph_bitmap( gindex, &bit3, &left, &top,
                                 &x_advance, &y_advance, &glyf );
       if ( !error )
@@ -258,7 +259,7 @@
                             : (char *)"forced auto-hinting is now off";
       set_current_image_type();
       return 1;
-      
+
     case grKEY( 'b' ):
       use_sbits  = !use_sbits;
       new_header = use_sbits
@@ -325,7 +326,7 @@
     Num += i;
     if ( Num < 0 )            Num = 0;
     if ( Num >= num_indices ) Num = num_indices - 1;
-    
+
     return 1;
   }
 
@@ -388,7 +389,7 @@
       case 'D':
         dump_cache_stats = 1;
         break;
-        
+
       case 'e':
         encoding = make_tag( optarg );
         break;
@@ -450,7 +451,7 @@
 
     font_index = 0;
     ptsize     = orig_ptsize;
-    
+
   NewFile:
     set_current_face( fonts[font_index] );
     set_current_pointsize( ptsize );
@@ -496,7 +497,7 @@
         case 0:
           error = Render_Text( Num );
           break;
-            
+
         default:
           error = Render_All( Num );
         }
@@ -536,7 +537,7 @@
                          " [ %d, %ld, %f ]\n",
                          cache_manager->num_nodes,
                          cache_manager->cur_weight,
-                         cache_manager->num_nodes > 0 
+                         cache_manager->num_nodes > 0
                            ? cache_manager->cur_weight * 1.0 /
                                cache_manager->num_nodes
                            : 0.0 );

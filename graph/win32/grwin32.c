@@ -368,7 +368,7 @@ BOOL CreateTheWindow ( int width, int height )
     window_width  = width;
     window_height = height;
 
-    if ( ! (hwndGraphic = CreateWindow(
+    if ( (hwndGraphic = CreateWindow(
         /* LPCSTR lpszClassName;    */ "FreeTypeTestGraphicDriver",
         /* LPCSTR lpszWindowName;   */ "FreeType Test Graphic Driver",
         /* DWORD dwStyle;           */  WS_OVERLAPPED | WS_SYSMENU,
@@ -380,7 +380,7 @@ BOOL CreateTheWindow ( int width, int height )
         /* HWND hwndParent;         */  HWND_DESKTOP,
         /* HMENU hmenu;             */  0,
         /* HINSTANCE hinst;         */  GetModuleHandle( NULL ),
-        /* void FAR* lpvParam;      */  NULL))
+        /* void FAR* lpvParam;      */  NULL)) == 0
        )
          /*  creation failed... */
          return 0;

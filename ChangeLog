@@ -1,3 +1,8 @@
+2004-06-24  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile (GRAPH_LINK): Add $(MATH).
+	Remove $(MATH) from link rule for ftstring.
+
 2004-06-23  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftbench.c: Fix compiler warnings.

@@ -122,7 +122,7 @@ else
   endif
   
   COMMON_LINK = $(LINK) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ))
-  GRAPH_LINK  = $(COMMON_LINK) $(subst /,$(COMPILER_SEP),$(GRAPH_LIB))
+  GRAPH_LINK  = $(COMMON_LINK) $(subst /,$(COMPILER_SEP),$(GRAPH_LIB)) $(MATH)
   GRAPH_LINK2 = $(GRAPH_LINK) $(subst /,$(COMPILER_SEP),$(EXTRA_GRAPH_OBJS))
 
   .PHONY: exes clean distclean
@@ -369,7 +369,7 @@ else
 
   $(BIN_DIR)/ftstring$E: $(OBJ_DIR)/ftstring.$(SO) $(FTLIB) \
                          $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK) $(MATH)
+	  $(GRAPH_LINK)
 
   $(BIN_DIR)/fttimer$E: $(OBJ_DIR)/fttimer.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)

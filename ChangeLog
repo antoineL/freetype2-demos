@@ -1,8 +1,14 @@
+2004-06-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftbench.c: Fix compiler warnings.
+	(usage): Updated.
+
 2004-06-23  David Turner  <david@freetype.org>
 
-	* src/ftbench.c: Added new benchmark to measure face open/close
-        performance (controlled by the 'i' flag for the -b command-line
-        option flag)
+	* src/ftbench.c (bench_open_close): New benchmark to measure face
+	open/close performance (controlled by the `i' flag for the `-b'
+	command-line option flag).
+	(main): Use it.
 
 2004-06-11  Werner Lemberg  <wl@gnu.org>
 

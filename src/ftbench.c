@@ -256,8 +256,8 @@ bench_open_close( const char*  filename,
                   const char* title,
                   int max)
 {
-  int      i, n, done;
-  double   t0, delta;
+  int     n, done;
+  double  t0, delta;
 
   printf("%-30s : ", title);
   fflush(stdout);
@@ -267,13 +267,13 @@ bench_open_close( const char*  filename,
   t0 = get_time();
   do
   {
-    FT_Face   face;
+    FT_Face   bench_face;
     FT_Error  error;
     
-    error = FT_New_Face( lib, filename, 0, &face );
+    error = FT_New_Face( lib, filename, 0, &bench_face );
     if ( !error )
     {
-      FT_Done_Face( face );
+      FT_Done_Face( bench_face );
     }
     done++;
     n++;
@@ -297,12 +297,12 @@ void usage(void)
     "Usage: ftbench [options] fontname\n\n"
     "options:\n" );
   fprintf( stderr,
-  "   -m : max cache size in kByte (default is %d)\n", CACHE_SIZE );
+  "   -m : max cache size in KByte (default is %d)\n", CACHE_SIZE );
   fprintf( stderr,
   "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME );
   fprintf( stderr,
   "   -p : preload font file in memory\n"
-  "   -b tests : perform choosen tests (default is all)\n"
+  "   -b tests : perform chosen tests (default is all)\n"
   "      a : Load\n"
   "      b : Load + Get_Glyph\n"
   "      c : Load + Get_Glyph + Get_CBox\n"
@@ -310,7 +310,8 @@ void usage(void)
   "      e : CMap cache\n"
   "      f : Outline cache\n"
   "      g : Bitmap cache\n"
-  "      h : SBit cache\n" );
+  "      h : SBit cache\n"
+  "      i : Open/Close\n" );
 
   exit( 1 );
 }

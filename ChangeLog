@@ -1,3 +1,9 @@
+2003-04-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcheckfixedwidth.c: Remove unused global variables; make
+	global variables local to `main' if possible.
+	Fixed compiler warnings (s/index/idx/).
+
 2003-04-25  Davor Buvinic  <davor@vtr.net>
 
 	* Makefile: Add rules to build ftcheckfixedwidth.

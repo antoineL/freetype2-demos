@@ -172,7 +172,7 @@
     bit3.rows   = glyph->bitmap.rows;
     bit3.width  = glyph->bitmap.width;
     bit3.pitch  = glyph->bitmap.pitch;
-    bit3.buffer = (char*)glyph->bitmap.buffer;
+    bit3.buffer = glyph->bitmap.buffer;
 
     switch ( glyph->bitmap.pixel_mode )
     {
@@ -440,21 +440,21 @@
 
     case grKEY( 'a' ):
       antialias  = !antialias;
-      new_header = antialias ? "anti-aliasing is now on"
-                             : "anti-aliasing is now off";
+      new_header = antialias ? (char *)"anti-aliasing is now on"
+                             : (char *)"anti-aliasing is now off";
       return 1;
 
     case grKEY( 'f' ):
       autohint = !autohint;
-      new_header = autohint ? "forced auto-hinting is now on"
-                            : "forced auto-hinting is now off";
+      new_header = autohint ? (char *)"forced auto-hinting is now on"
+                            : (char *)"forced auto-hinting is now off";
       return 1;
       
     case grKEY( 'b' ):
       use_sbits  = !use_sbits;
       new_header = use_sbits
-                     ? "embedded bitmaps are now used when available"
-                     : "embedded bitmaps are now ignored";
+                     ? (char *)"embedded bitmaps are now used when available"
+                     : (char *)"embedded bitmaps are now ignored";
       return 1;
 
     case grKEY( 'n' ):
@@ -464,20 +464,20 @@
     case grKEY( 'l' ):
       low_prec   = !low_prec;
       new_header = low_prec
-                     ? "rendering precision is now forced to low"
-                     : "rendering precision is now normal";
+                     ? (char *)"rendering precision is now forced to low"
+                     : (char *)"rendering precision is now normal";
       break;
 
     case grKEY( 'h' ):
       hinted     = !hinted;
-      new_header = hinted ? "glyph hinting is now active"
-                          : "glyph hinting is now ignored";
+      new_header = hinted ? (char *)"glyph hinting is now active"
+                          : (char *)"glyph hinting is now ignored";
       break;
 
     case grKEY( ' ' ):
       render_mode ^= 1;
-      new_header   = render_mode ? "rendering all glyphs in font"
-                                 : "rendering test text string" ;
+      new_header   = render_mode ? (char *)"rendering all glyphs in font"
+                                 : (char *)"rendering test text string";
       break;
 
     case grKeyF1:

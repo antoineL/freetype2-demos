@@ -22,11 +22,11 @@
   *
   ********************************************************************/
 
-  char*  grAlloc( long size )
+  unsigned char*  grAlloc( long size )
   {
-    char*  p;
+    unsigned char*  p;
 
-    p = (char*)malloc(size);
+    p = (unsigned char*)malloc(size);
     if (!p && size > 0)
     {
       grError = gr_err_memory;
@@ -56,11 +56,11 @@
   *
   ********************************************************************/
 
-  char*  grRealloc( const char*  block, long size )
+  unsigned char*  grRealloc( const unsigned char*  block, long size )
   {
-    char*  p;
+    unsigned char*  p;
 
-    p = realloc( (char*)block, size );
+    p = (unsigned char *)realloc( (void*)block, size );
     if (!p && size > 0)
     {
       grError = gr_err_memory;
@@ -85,7 +85,7 @@
   void  grFree( const void*  block )
   {
     if (block)
-      free( (char*)block );
+      free( (void *)block );
   }
 
 

@@ -99,8 +99,8 @@
     /* set read and write to the top-left corner of the read */
     /* and write areas before clipping.                      */
 
-    blit->read  = (unsigned char*)blit->source.buffer;
-    blit->write = (unsigned char*)blit->target.buffer;
+    blit->read  = blit->source.buffer;
+    blit->write = blit->target.buffer;
 
     blit->read_line  = blit->source.pitch;
     blit->write_line = blit->target.pitch;
@@ -723,8 +723,8 @@
     max1  = (unsigned char)(blit->source.grays-1);
     max2  = (unsigned char)(blit->target.grays-1);
 
-    read  = (unsigned char*)blit->read  + blit->xread;
-    write = (unsigned char*)blit->write + blit->xwrite;
+    read  = blit->read  + blit->xread;
+    write = blit->write + blit->xwrite;
 
     y = blit->height;
     do
@@ -778,8 +778,8 @@
 
     max   = (unsigned char)(blit->source.grays-1);
 
-    read  = (unsigned char*)blit->read  + blit->xread;
-    write = (unsigned char*)blit->write + blit->xwrite;
+    read  = blit->read  + blit->xread;
+    write = blit->write + blit->xwrite;
 
     y = blit->height;
     do

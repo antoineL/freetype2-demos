@@ -1,3 +1,4 @@
+
 #include "grfont.h"
 #include <string.h>
 
@@ -269,8 +270,8 @@
   {
     8,                    /* rows  */
     8,                    /* width */
-    gr_pixel_mode_mono,   /* mode  */
     1,                    /* pitch */
+    gr_pixel_mode_mono,   /* mode  */
     0,                    /* grays */
     0                     /* buffer */
   };
@@ -284,7 +285,7 @@
     if (charcode < 0 || charcode > 255)
       return;
 
-    gr_charcell.buffer = (char*)font_8x8 + 8*charcode;
+    gr_charcell.buffer = (unsigned char*)font_8x8 + 8 * charcode;
     grBlitGlyphToBitmap( target, &gr_charcell, x, y, color );
   }
 
@@ -297,7 +298,8 @@
   {
     while (*string)
     {
-      gr_charcell.buffer = (char*)font_8x8 + 8*(int)(unsigned char)*string++;
+      gr_charcell.buffer = (unsigned char *)font_8x8 +
+                             8 * (int)(unsigned char)*string++;
       grBlitGlyphToBitmap( target, &gr_charcell, x, y, color );
       x += 8;
     }

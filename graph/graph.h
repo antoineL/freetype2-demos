@@ -88,12 +88,12 @@
 
   typedef struct grBitmap_
   {
-    int          rows;
-    int          width;
-    int          pitch;
-    grPixelMode  mode;
-    int          grays;
-    char*        buffer;
+    int             rows;
+    int             width;
+    int             pitch;
+    grPixelMode     mode;
+    int             grays;
+    unsigned char*  buffer;
 
   } grBitmap;
 

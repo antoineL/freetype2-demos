@@ -173,7 +173,7 @@
       int          count;
       XDepth*      format;
       XDepth*      formats;
-      XVisualInfo  template;
+      XVisualInfo  templ;
 
       formats = XListPixmapFormats( display, &count );
       format  = formats;
@@ -209,11 +209,11 @@
             XVisualInfo*  visual;
             const char*  string = "unknown";
 
-            template.depth = format->depth;
-            visuals        = XGetVisualInfo( display,
-                                             VisualDepthMask,
-                                             &template,
-                                             &count2 );
+            templ.depth = format->depth;
+            visuals     = XGetVisualInfo( display,
+                                          VisualDepthMask,
+                                          &templ,
+                                          &count2 );
             visual = visuals;
 
             switch (visual->class)
@@ -249,11 +249,11 @@
           XVisualInfo*  visuals;
           XVisualInfo*  visual;
 
-          template.depth = format->depth;
-          visuals        = XGetVisualInfo( display,
-                                           VisualDepthMask,
-                                           &template,
-                                           &count2 );
+          templ.depth = format->depth;
+          visuals     = XGetVisualInfo( display,
+                                        VisualDepthMask,
+                                        &templ,
+                                        &count2 );
           visual = visuals;
 
           while ( count2-- > 0 )
@@ -726,7 +726,7 @@
       image->pitch  = bits >> 3;
     }
 
-    image->buffer = grAlloc( image->pitch * image->rows );
+    image->buffer = (unsigned char*)grAlloc( image->pitch * image->rows );
     if (!image->buffer) return 0;
 
     /* now, allocate a gray pal8 pixmap, only when we asked */
@@ -735,7 +735,8 @@
     {
       /* pad pitch to 32 bits */
       bitmap->pitch  = (bitmap->width + 3) & -4;
-      bitmap->buffer = grAlloc( bitmap->pitch * bitmap->rows );
+      bitmap->buffer = (unsigned char*)grAlloc(
+                         bitmap->pitch * bitmap->rows );
       if (!bitmap->buffer)
         Panic( "grX11: could not allocate surface bitmap!\n" );
     }

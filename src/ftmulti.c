@@ -142,14 +142,9 @@
   }
 
 
-#define MAX_BUFFER  300000
-
 #define FLOOR( x )  ( (x) & -64 )
 #define CEIL( x )   ( ( (x) + 63 ) & -64 )
 #define TRUNC( x )  ( (x) >> 6 )
-
-  static
-  char  bit_buffer[MAX_BUFFER];
 
 
   /* Render a single glyph with the `grays' component */
@@ -437,14 +432,15 @@
 
     case grKEY( 'a' ):
       antialias = !antialias;
-      new_header = antialias ? "anti-aliasing is now on"
-                             : "anti-aliasing is now off";
+      new_header = antialias ? (char *)"anti-aliasing is now on"
+                             : (char *)"anti-aliasing is now off";
       return 1;
 
     case grKEY( 'b' ):
       use_sbits  = !use_sbits;
-      new_header = use_sbits ? "embedded bitmaps are now used if available"
-                             : "embedded bitmaps are now ignored";
+      new_header = use_sbits
+                     ? (char *)"embedded bitmaps are now used if available"
+                     : (char *)"embedded bitmaps are now ignored";
       return 1;
 
     case grKEY( 'n' ):
@@ -453,20 +449,21 @@
 
     case grKEY( 'l' ):
       low_prec = !low_prec;
-      new_header = low_prec ? "rendering precision is now forced to low"
-                            : "rendering precision is now normal";
+      new_header = low_prec
+                     ? (char *)"rendering precision is now forced to low"
+                     : (char *)"rendering precision is now normal";
       break;
 
     case grKEY( 'h' ):
       hinted = !hinted;
-      new_header = hinted ? "glyph hinting is now active"
-                          : "glyph hinting is now ignored";
+      new_header = hinted ? (char *)"glyph hinting is now active"
+                          : (char *)"glyph hinting is now ignored";
       break;
 
     case grKEY( ' ' ):
       render_mode ^= 1;
-      new_header = render_mode ? "rendering all glyphs in font"
-                               : "rendering test text string";
+      new_header = render_mode ? (char *)"rendering all glyphs in font"
+                               : (char *)"rendering test text string";
       break;
 
     /* MM related keys */

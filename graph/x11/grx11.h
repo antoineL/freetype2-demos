@@ -1,6 +1,10 @@
 #ifndef GRX11_H
 #define GRX11_H
 
+#ifdef __cplusplus
+#define class  c_class
+#endif
+
 #include "grobjs.h"
 #include "grdevice.h"
 

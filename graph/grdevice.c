@@ -148,7 +148,7 @@
 
     if ( !device->init_surface( surface, bitmap ) )
     {
-      grFree( surface );
+      grFree( (void *)surface );
       surface = 0;
     }
     return surface;

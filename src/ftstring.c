@@ -447,23 +447,23 @@
 
     case grKEY('k'):
       kerning = !kerning;
-      new_header = ( kerning
-                   ? "kerning is now active"
-                   : "kerning is now ignored" );
+      new_header = kerning
+                     ? (char *)"kerning is now active"
+                     : (char *)"kerning is now ignored";
       return 1;
 
     case grKEY('a'):
-      antialias = !antialias;
-      new_header = ( antialias
-                   ? "anti-aliasing is now on"
-                   : "anti-aliasing is now off" );
+      antialias  = !antialias;
+      new_header = antialias
+                     ? (char *)"anti-aliasing is now on"
+                     : (char *)"anti-aliasing is now off";
       return 1;
 
     case grKEY('b'):
       use_sbits  = !use_sbits;
-      new_header = ( use_sbits
-                   ? "embedded bitmaps are now used when available"
-                   : "embedded bitmaps are now ignored" );
+      new_header = use_sbits
+                     ? (char *)"embedded bitmaps are now used when available"
+                     : (char *)"embedded bitmaps are now ignored";
       return 1;
 
     case grKEY('n'):
@@ -471,17 +471,17 @@
       return (int)event->key;
 
     case grKEY('h'):
-      hinted = !hinted;
-      new_header = ( hinted
-                   ? "glyph hinting is now active"
-                   : "glyph hinting is now ignored" );
+      hinted     = !hinted;
+      new_header = hinted
+                     ? (char *)"glyph hinting is now active"
+                     : (char *)"glyph hinting is now ignored";
       break;
 
     case grKEY(' '):
       render_mode ^= 1;
-      new_header = ( render_mode
-                   ? "rendering all glyphs in font"
-                   : "rendering test text string" );
+      new_header   = render_mode
+                       ? (char *)"rendering all glyphs in font"
+                       : (char *)"rendering test text string";
       break;
 
     case grKeyF1:

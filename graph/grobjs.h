@@ -140,7 +140,7 @@
   *
   ********************************************************************/
 
-  extern  char*  grAlloc( long size );
+  extern  unsigned char*  grAlloc( long size );
 
 
  /********************************************************************
@@ -160,7 +160,7 @@
   *
   ********************************************************************/
 
-  extern  char*  grRealloc( const char*  block, long size );
+  extern unsigned char*  grRealloc( const unsigned char*  block, long size );
 
 
  /********************************************************************
@@ -176,7 +176,7 @@
   *
   ********************************************************************/
 
-  extern  void   grFree( const void*  block );
+  extern void  grFree( const void*  block );
 
 
   extern grDevice*  gr_devices[];

@@ -5,8 +5,9 @@
 
 2002-07-03  David Turner  <david@freetype.org>
 
-	* src/ftcommon.i, src/ftview.c: Adding a "waterfall" rendering mode
-	(accessible by cycling modes with the space bar).
+	* src/ftview.c (Render_Waterfall): Adding a "waterfall" rendering
+	mode (accessible by cycling modes with the space bar).
+	(Process_Event, main): Use it.
 
 2002-07-01  David Turner  <david@freetype.org>
 

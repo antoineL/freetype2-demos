@@ -259,7 +259,7 @@ void usage(void)
     "Usage: ftbench [options] fontname\n\n"
     "options:\n" );
   fprintf( stderr,
-  "   -m : cache size max in KB (default is %d)\n", CACHE_SIZE );
+  "   -m : max cache size in kByte (default is %d)\n", CACHE_SIZE );
   fprintf( stderr,
   "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME );
   fprintf( stderr,
@@ -349,7 +349,7 @@ main(int argc,
     FILE*  file = fopen( argv[1], "rb" );
     if ( file == NULL )
     {
-      fprintf( stderr, "couldn't find or open '%s'\n", argv[1] );
+      fprintf( stderr, "couldn't find or open `%s'\n", argv[1] );
       return 1;
     }
     fseek( file, 0, SEEK_END );

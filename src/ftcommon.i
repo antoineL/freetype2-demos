@@ -29,7 +29,7 @@
 
 
 /* define if you want to use a SBits cache instead of an image one !! */
-#undef   USE_SBITS_CACHE
+#undef    USE_SBITS_CACHE
 
   /* forward declarations */
   extern void  PanicZ( const char*  message );
@@ -356,11 +356,13 @@
     if ( error )
       PanicZ( "could not initialize cache manager" );
 
-#ifdef USE_SBITS_CACHE
+#if 1
     error = FTC_SBit_Cache_New( manager, &sbits_cache );
-#else    
-    error = FTC_Image_Cache_New( manager, &image_cache );
+    if (error)
+      PanicZ( "could not initialize small bitmap cache" );
 #endif
+
+    error = FTC_Image_Cache_New( manager, &image_cache );
     if ( error )
       PanicZ( "could not initialize glyph image cache" );
   }

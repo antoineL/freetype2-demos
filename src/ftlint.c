@@ -21,6 +21,8 @@
 #include <string.h>
 
 
+#define  xxTEST_PSNAMES
+
 #define gettext( x )  ( x )
 
   FT_Error      error;
@@ -154,6 +156,14 @@
 
   Success:
       num_glyphs = face->num_glyphs;
+
+#ifdef  TEST_PSNAMES
+      {
+        const char*  ps_name = FT_Get_Postscript_Name( face );
+        
+        printf( "[%s] ", ps_name ? ps_name : "." );
+      }
+#endif
 
       error = FT_Set_Char_Size( face, ptsize << 6, ptsize << 6, 72, 72 );
       if (error) Panic( "Could not set character size" );

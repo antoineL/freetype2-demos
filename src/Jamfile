@@ -13,16 +13,13 @@ Library  $(COMMON_LIB) : common.c ;
 
 PROGRAMS = ftlint ftdump ftmemchk fttimer ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
-
-#PROGRAMS = ;
-#GRAPHIC_PROGRAMS = ftstring ;
 {
   local  t ;
   
   for t in $(PROGRAMS) $(GRAPHIC_PROGRAMS)
   {
     Main           $(t) : $(t).c ;
-    LinkLibraries  $(t) : $(COMMON_LIB) $(FT2_LIB) ;
+    LinkLibraries  $(t) : $(FT2_LIB) $(COMMON_LIB) ;
   }
    
   for t in $(GRAPHIC_PROGRAMS)

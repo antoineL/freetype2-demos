@@ -1,3 +1,16 @@
+2001-10-26  Leonard Rosenthol  <leonardr@lazerware.com>
+
+	* Added new /ft2demos/mac/codewarror/carbonprefix.h to define building
+	the demos Carbonized.
+	
+	* Updated the Mac version of ftview (/ft2demos/mac/codewarror/ftview.prj)
+	for CW7 and to build a Carbonized version.
+	
+	* Updated /ft2demos/mac/getargv.c to build Carbonized.
+
+	* Updated /ft2demos/mac/ftview_m.c to build Carbonized.
+
+
 2001-09-10  Werner Lemberg  <wl@gnu.org>
 
 	README: Slight update.

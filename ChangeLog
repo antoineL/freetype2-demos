@@ -1,3 +1,16 @@
+2004-04-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (TFont): Add `cmap_index'.
+	(my_face_requester): Set `font->cmap_index'.
+	(get_glyph_index): Properly set third argument.
+
+2004-04-21  David Turner  <david@freetype.org>
+
+
+	* Version 2.1.8 released.
+	=========================
+
+
 2004-04-10  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftbench.c (cmap_cache_test, main): Use proper cast for

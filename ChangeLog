@@ -1,3 +1,11 @@
+2001-05-28  David Turner <david@freetype.org>
+
+    * Jamfile, src/Jamfile, graph/os2/Jamfile, graph/win32/Jamfile,
+    graph/x11/Jamfile: updating Jamfiles to correctly link the graphics
+    programs on all platforms with Jam
+    
+    * src/ftstring.c : removing debugging output
+
 2001-04-25  David Turner <david@freetype.org>
 
         * graph/beos/grbeos.cpp, graph/beos/grbeos.h, graph/beos/rules.mk,

@@ -12,8 +12,10 @@ COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 Library  $(COMMON_LIB) : common.c ;
 
 PROGRAMS = ftlint ftdump memtest fttimer memtest ;
-
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
+
+#PROGRAMS = ;
+#GRAPHIC_PROGRAMS = ftstring ;
 {
   local  t ;
   
@@ -22,14 +24,10 @@ GRAPHIC_PROGRAMS = ftview ftmulti ftstring ;
     Main           $(t) : $(t).c ;
     LinkLibraries  $(t) : $(COMMON_LIB) $(FT2_LIB) ;
   }
-  
-  if $(UNIX)
-  {
-    LINKFLAGS += -lX11 -L/usr/X11R6/lib ;
-  }
-
+   
   for t in $(GRAPHIC_PROGRAMS)
   {
+    LINKLIBS on $(t)$(SUFEXE) = $(GRAPH_LINKLIBS) ;
     LinkLibraries  $(t) : $(GRAPH_LIB) ;
   }
 }

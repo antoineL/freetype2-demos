@@ -271,7 +271,7 @@ grSurface*  init_surface( grSurface*  surface,
   surface->bitmap = *bitmap;
 
   /* initialize the PixMap to appropriate values */
-  thePixMap.baseAddr = bitmap->buffer;
+  thePixMap.baseAddr = (char*)bitmap->buffer;
   thePixMap.rowBytes = bitmap->pitch;
   if (thePixMap.rowBytes < 0)
      thePixMap.rowBytes = -thePixMap.rowBytes;

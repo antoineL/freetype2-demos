@@ -28,8 +28,7 @@
 
   FT_Error    error;
 
-  int  comma_flag = 0;
-
+  int  comma_flag  = 0;
   int  debug       = 0;
   int  trace_level = 0;
 
@@ -69,12 +68,20 @@
 
   void  Print_Name( FT_Face  face )
   {
+    char*  ps_name;
+    
     printf( "font name entries\n" );
 
     /* XXX: Foundry?  Copyright?  Version? ... */
 
-    printf( "   family: %s\n", face->family_name );
-    printf( "   style:  %s\n", face->style_name );
+    printf( "   family:     %s\n", face->family_name );
+    printf( "   style:      %s\n", face->style_name );
+    
+    ps_name = FT_Get_Postscript_Name( face );
+    if ( ps_name == NULL )
+      ps_name = "UNAVAILABLE";
+    
+    printf( "   postscript: %s\n", ps_name );
   }
 
 
@@ -89,23 +96,25 @@
     printf( "   FreeType driver: %s\n", module->clazz->module_name );
 
     /* Is it better to dump all sfnt tag names? */
-    printf( "   sfnt wrapped: %s\n",
+    printf( "   sfnt wrapped:    %s\n",
             FT_IS_SFNT( face ) ? (char *)"yes" : (char *)"no" );
 
     /* isScalable? */
     comma_flag = 0;
-    printf( "   type: " );
+    printf( "   type:            " );
     if ( FT_IS_SCALABLE( face ) )
+    {
       Print_Comma( "scalable" );
-    if ( FT_HAS_MULTIPLE_MASTERS( face ) )
-      Print_Comma( "Multiple Master" );
+      if ( FT_HAS_MULTIPLE_MASTERS( face ) )
+        Print_Comma( "multiple masters" );
+    }
     if ( FT_HAS_FIXED_SIZES( face ) )
       Print_Comma( "fixed size" );
     printf( "\n" );
 
     /* Direction */
     comma_flag = 0;
-    printf( "   direction: " );
+    printf( "   direction:       " );
     if ( FT_HAS_HORIZONTAL( face ) )
       Print_Comma( "horizontal" );
 
@@ -114,14 +123,16 @@
 
     printf( "\n" );
 
-    printf( "   fixed width: %s\n",
+    printf( "   fixed width:     %s\n",
             FT_IS_FIXED_WIDTH( face ) ? (char *)"yes" : (char *)"no" );
 
-    printf( "   fast glyphs: %s\n",
-            FT_HAS_FAST_GLYPHS( face ) ? (char *)"yes" : (char *)"no" );
-
-    printf( "   glyph names: %s\n",
+    printf( "   glyph names:     %s\n",
             FT_HAS_GLYPH_NAMES( face ) ? (char *)"yes" : (char *)"no" );
+    
+    printf( "   EM size:         %d\n", face->units_per_EM );
+    printf( "   global BBox:     (%d,%d):(%d,%d)\n",
+            face->bbox.xMin, face->bbox.yMin,
+            face->bbox.xMax, face->bbox.yMax );
   }
 
 
@@ -208,6 +219,27 @@
 
     if ( argc != 1 )
       usage( execname );
+
+#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0 && FREETYPE_PATCH <= 8
+    if ( debug )
+    {
+#  ifdef FT_DEBUG_LEVEL_TRACE
+      FT_SetTraceLevel( trace_any, (FT_Byte)trace_level );
+#  else
+      trace_level = 0;
+#  endif
+    }
+#elif 0
+       /* "setenv/putenv" is not ANSI and I don't want to mess */
+       /* with this portability issue right now..              */
+    if ( debug )
+    {
+      char  temp[32];
+      
+      sprintf( temp, "any=%d", trace_level );
+      setenv( "FT2_DEBUG", temp );
+    }
+#endif
 
     file = 0;
 

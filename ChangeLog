@@ -1,3 +1,12 @@
+2002-03-05  David Turner    <david@freetype.org>
+
+        * src/ftdump.c: added the display of a font's Postscript name,
+        EM size and global Bbox. now supports the debugging mode of
+        2.1.x
+        
+        * src/ftview.c: minor change to support debugging mode of 2.1.x
+
+
 2002-02-14  Detlef Würkner  <tetisoft@apg.lahn.de>
 
 	* src/fttimer.c (ConvertRaster): Handle embedded bitmaps properly.

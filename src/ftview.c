@@ -422,6 +422,27 @@
     if ( sscanf( argv[0], "%d", &orig_ptsize ) != 1 )
       orig_ptsize = 64;
 
+#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0 && FREETYPE_PATCH <= 8
+    if ( debug )
+    {
+#  ifdef FT_DEBUG_LEVEL_TRACE
+      FT_SetTraceLevel( trace_any, (FT_Byte)trace_level );
+#  else
+      trace_level = 0;
+#  endif
+    }
+#elif 0
+       /* "setenv/putenv" is not ANSI and I don't want to mess */
+       /* with this portability issue right now..              */
+    if ( debug )
+    {
+      char  temp[32];
+      
+      sprintf( temp, "any=%d", trace_level );
+      setenv( "FT2_DEBUG", temp );
+    }
+#endif
+
     /* Initialize engine */
     init_freetype();
 

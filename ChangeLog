@@ -1,3 +1,7 @@
+2003-05-27  Martin Zinser  <zinser@decus.de>
+
+	* vms_make.com: Handle ftbench.
+
 2003-05-21  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (install_font_file): Initialize new elements of

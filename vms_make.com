@@ -88,9 +88,11 @@ GRAPHOBJ = $(OBJDIR)grblit.obj,  \
 CFLAGS = $(CCOPT)$(INCLUDES)/obj=$(OBJDIR)
 
 ALL : ftlint.exe ftmemchk.exe ftdump.exe testnames.exe \
-      ftview.exe ftmulti.exe ftstring.exe fttimer.exe 
+      ftview.exe ftmulti.exe ftstring.exe fttimer.exe ftbench.exe
 
 
+ftbench.exe    : $(OBJDIR)ftbench.obj,$(OBJDIR)common.obj
+        link $(LOPTS) $(OBJDIR)ftbench.obj,$(OBJDIR)common.obj,[]ft2demos.opt/opt
 ftlint.exe    : $(OBJDIR)ftlint.obj
         link $(LOPTS) $(OBJDIR)ftlint.obj,[]ft2demos.opt/opt
 ftmemchk.exe  : $(OBJDIR)ftmemchk.obj
@@ -109,6 +111,7 @@ fttimer.exe   : $(OBJDIR)fttimer.obj
         link $(LOPTS) $(OBJDIR)fttimer.obj,[]ft2demos.opt/opt                    
                 
 $(OBJDIR)common.obj    : $(SRCDIR)common.c , $(SRCDIR)common.h
+$(OBJDIR)ftbench.obj   : $(SRCDIR)ftbench.c
 $(OBJDIR)ftlint.obj    : $(SRCDIR)ftlint.c
 $(OBJDIR)ftmemchk.obj  : $(SRCDIR)ftmemchk.c
 $(OBJDIR)ftdump.obj    : $(SRCDIR)ftdump.c

@@ -347,9 +347,6 @@ int main(int argc, char** argv)
   if (cache_man)
     FTC_Manager_Done(cache_man);
 
-  if (face)
-    FT_Done_Face(face); /* does the cache manager already own (and released) 'face' ? */
-
   FT_Done_FreeType(lib);
 
   return 0;

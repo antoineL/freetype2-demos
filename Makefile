@@ -195,10 +195,10 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testnames
+  EXES := ftlint ftmemchk ftdump testnames fttimer ftbench
 
   # Comment out the next line if you don't have a graphics subsystem.
-  EXES += ftview ftmulti ftstring fttimer
+  EXES += ftview ftmulti ftstring
 
   # Only uncomment the following lines if the truetype driver was
   # compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined.
@@ -230,6 +230,9 @@ else
 
   $(OBJ_)ftlint.$(SO): $(SRC_DIR_)ftlint.c
 	  $(COMPILE) $T$@ $<
+
+  $(OBJ_)ftbench.$(SO): $(SRC_DIR_)ftbench.c
+	  $(COMPILE) $T$@ $< $(EXTRAFLAGS)
 
   $(OBJ_)compos.$(SO): $(SRC_DIR_)compos.c
 	  $(COMPILE) $T$@ $<

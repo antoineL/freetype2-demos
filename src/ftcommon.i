@@ -336,6 +336,7 @@
       font = (PFont)malloc( sizeof ( *font ) );
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       font->face_index   = i;
+      font->cmap_index   = face->charmap ? FT_Get_Charmap_Index( face->charmap ) : 0;
 
       switch ( encoding )
       {
@@ -413,8 +414,6 @@
       goto Fail;
 
     error = FT_Select_Charmap( *aface, encoding );
-    if ( !error )
-      font->cmap_index = FT_Get_Charmap_Index( (*aface)->charmap );
 
   Fail:
     return error;
@@ -709,15 +708,17 @@
                    int        *left,
                    int        *top,
                    int        *x_advance,
-                   int        *y_advance )
+                   int        *y_advance,
+                   FT_Pointer *aref )
   {
     FT_BitmapGlyph  bitmap;
     FT_Bitmap*      source;
 
+    *aref = NULL;
 
     error = FT_Err_Ok;
 
-    if ( glyf->format == ft_glyph_format_outline )
+    if ( glyf->format == FT_GLYPH_FORMAT_OUTLINE )
     {
       /* render the glyph to a bitmap, don't destroy original */
       error = FT_Glyph_To_Bitmap( &glyf,
@@ -726,6 +727,8 @@
                                   NULL, 0 );
       if ( error )
         goto Exit;
+
+      *aref = glyf;
     }
 
     if ( glyf->format != FT_GLYPH_FORMAT_BITMAP )
@@ -864,12 +867,11 @@
                                      NULL );
 
       if ( !error )
-        error = glyph_to_bitmap( glyf, target, left, top, x_advance, y_advance );
+        error = glyph_to_bitmap( glyf, target, left, top, x_advance, y_advance, aglyf );
     }
 
   Exit:
     return error;
   }
 #endif /* !0 */
-
 /* End */

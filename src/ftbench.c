@@ -269,12 +269,44 @@ bench_open_close( const char*  filename,
   {
     FT_Face   bench_face;
     FT_Error  error;
-    
+
     error = FT_New_Face( lib, filename, 0, &bench_face );
     if ( !error )
     {
       FT_Done_Face( bench_face );
     }
+    done++;
+    n++;
+    delta = get_time() - t0;
+  }
+  while ((!max || n < max) && delta < bench_time);
+
+  printf("%5.3f us/op\n", delta * 1E6 / (double)done);
+}
+
+
+void
+bench_cmap_parse( const char* title,
+                  int         max )
+{
+  int     n, done;
+  double  t0, delta;
+
+  printf("%-30s : ", title);
+  fflush(stdout);
+
+  n = 0;
+  done = 0;
+  t0 = get_time();
+  do
+  {
+    FT_UInt   gindex;
+    FT_ULong  charcode;
+
+    charcode = FT_Get_First_Char( face, &gindex );
+    while ( gindex != 0 )
+      charcode = FT_Get_Next_Char( face, charcode, &gindex );
+
     done++;
     n++;
     delta = get_time() - t0;
@@ -311,7 +343,8 @@ void usage(void)
   "      f : Outline cache\n"
   "      g : Bitmap cache\n"
   "      h : SBit cache\n"
-  "      i : Open/Close\n" );
+  "      i : Open/Close\n"
+  "      j : Charmap iteration\n" );
 
   exit( 1 );
 }
@@ -480,7 +513,10 @@ main(int argc,
 
   if (TEST('i') )
     bench_open_close( argv[1], "Open/Close file", 0 );
-  
+
+  if (TEST('j'))
+    bench_cmap_parse( "Charmap iteration", 0 );
+
   if (cmap)
     free (cmap);
 

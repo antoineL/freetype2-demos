@@ -107,7 +107,7 @@
       goto Exit;
 
     FT_Stroker_Set( stroker,
-                    32,
+                    64,
                     FT_STROKER_LINECAP_ROUND,
                     FT_STROKER_LINEJOIN_ROUND,
                     0 );
@@ -119,28 +119,25 @@
     y = start_y;
 
     i = first_index;
-    p = Text;
-    while ( i > 0 && *p )
-    {
-      p++;
-      i--;
-    }
+    i = first_index;
 
-    while ( *p )
+    while ( i < face->num_glyphs )
     {
       int           left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt       gindex;
       FT_GlyphSlot  slot = size->face->glyph;
       FT_Glyph      glyphp;
 
-
+#if 0
       gindex = *(unsigned char*)p;
       if ( encoding == FT_ENCODING_NONE )
         gindex = get_glyph_index( gindex );
-
-      error = FT_Load_Glyph( size->face, gindex, FT_LOAD_NO_BITMAP );
+#endif
+      error = FT_Load_Glyph( size->face, i, FT_LOAD_NO_BITMAP );
       if ( !error && slot->format == FT_GLYPH_FORMAT_OUTLINE )
       {
+        FT_Glyph  glyphb;
+
         error = FT_Get_Glyph( slot, &glyphp );
         if ( error )
           goto Next;
@@ -153,13 +150,16 @@
         }
 
         error = glyph_to_bitmap( glyphp, &bit3, &left, &top,
-                                 &x_advance, &y_advance );
+                                 &x_advance, &y_advance, (FT_Pointer*)&glyphb );
         if ( !error )
         {
           /* now render the bitmap into the display surface */
           x_top = x + left;
           y_top = y - top;
           grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+          FT_Done_Glyph( glyphb );
+          FT_Done_Glyph( glyphp );
 
           x += x_advance + 1;
 
@@ -169,14 +169,11 @@
             y += step_y;
 
             if ( y >= bit.rows )
-            {
-              FT_Done_Glyph( glyphp );
               return FT_Err_Ok;
-            }
           }
         }
-
-        FT_Done_Glyph( glyphp );
+        else
+          FT_Done_Glyph( glyphp );
 
         if ( error )
           goto Next;
@@ -187,7 +184,7 @@
         Fail++;
       }
 
-      p++;
+      i++;
     }
 
   Exit:

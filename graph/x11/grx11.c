@@ -199,7 +199,8 @@
         else if ( format->depth == 8 )
           add_pixel_mode( gr_pixel_mode_pal8, format );
 
-        /* note, the 32-bit modes return a depth of 24, and 32 bits per pixel */
+        /* note, the 32-bit modes return a depth of 24, */
+        /* and 32 bits per pixel                        */
         else if ( format->depth == 24 )
         {
 #ifdef TEST
@@ -310,137 +311,44 @@
   }
 
 
-
-
-
-
-
   static
-  void  convert_gray_to_pal8( grXSurface*  surface,
-                              int          x,
-                              int          y,
-                              int          w,
-                              int          h )
+  void  convert_gray_to_any( grXSurface*  surface,
+                             int          x,
+                             int          y,
+                             int          w,
+                             int          h )
   {
+    /* This code is not particularly efficient but it is still */
+    /* considerably faster than XPutPixel for every pixel.     */
+
     grBitmap*  target  = &surface->image;
     grBitmap*  source  = &surface->root.bitmap;
-    byte*      write   = (byte*)target->buffer + y*target->pitch + x;
+    int        depth   = surface->xdepth->bits_per_pixel / 8;
+    byte*      write   = (byte*)target->buffer + y*target->pitch + depth*x;
     byte*      read    = (byte*)source->buffer + y*source->pitch + x;
     XColor*    palette = surface->color;
+    int        byteord = surface->ximage->byte_order;
 
     while (h > 0)
     {
-      byte*  _write = write;
-      byte*  _read  = read;
-      byte*  limit  = _write + w;
+      byte*  twrite = write;
+      byte*  tread  = read;
+      byte*  limit  = tread + w;
 
-      for ( ; _write < limit; _write++, _read++ )
-        *_write = (byte) palette[ *_read ].pixel;
-
-      write += target->pitch;
-      read  += source->pitch;
-      h--;
-    }
-  }
-
-
-  static
-  void  convert_gray_to_16( grXSurface*  surface,
-                            int          x,
-                            int          y,
-                            int          w,
-                            int          h )
-  {
-    grBitmap*  target  = &surface->image;
-    grBitmap*  source  = &surface->root.bitmap;
-    byte*      write   = (byte*)target->buffer + y*target->pitch + 2*x;
-    byte*      read    = (byte*)source->buffer + y*source->pitch + x;
-    XColor*    palette = surface->color;
-
-    while (h > 0)
-    {
-      byte*  _write = write;
-      byte*  _read  = read;
-      byte*  limit  = _write + 2*w;
-
-      for ( ; _write < limit; _write += 2, _read++ )
-        *(short*)_write = (short)palette[ *_read ].pixel;
-
-      write += target->pitch;
-      read  += source->pitch;
-      h--;
-    }
-  }
-
-
-  static
-  void  convert_gray_to_24( grXSurface*  surface,
-                            int          x,
-                            int          y,
-                            int          w,
-                            int          h )
-  {
-    grBitmap*  target  = &surface->image;
-    grBitmap*  source  = &surface->root.bitmap;
-    byte*      write   = (byte*)target->buffer + y*target->pitch + 3*x;
-    byte*      read    = (byte*)source->buffer + y*source->pitch + x;
-
-    while (h > 0)
-    {
-      byte*  _write = write;
-      byte*  _read  = read;
-      byte*  limit  = _write + 3*w;
-
-      for ( ; _write < limit; _write += 3, _read++ )
+      for ( ; tread < limit; twrite += depth, tread++ )
       {
-        XColor*   color = surface->color + *_read;
+        unsigned long pix = palette[ *tread ].pixel;
+        int           i;
 
-        _write[0] = color->red;
-        _write[1] = color->green;
-        _write[2] = color->blue;
-      }
-
-      write += target->pitch;
-      read  += source->pitch;
-      h--;
-    }
-  }
-
-
-  static
-  void  convert_gray_to_32( grXSurface*  surface,
-                            int          x,
-                            int          y,
-                            int          w,
-                            int          h )
-  {
-    grBitmap*  target  = &surface->image;
-    grBitmap*  source  = &surface->root.bitmap;
-    byte*      write   = (byte*)target->buffer + y*target->pitch + 4*x;
-    byte*      read    = (byte*)source->buffer + y*source->pitch + x;
-
-    while (h > 0)
-    {
-      byte*  _write = write;
-      byte*  _read  = read;
-      byte*  limit  = _write + 4*w;
-
-      if (sizeof(long) > 4)
-      {
-        for ( ; _write < limit; _write += 4, _read++ )
+        if ( byteord == LSBFirst )
         {
-          byte  color = *_read;
-  
-          *(unsigned int*)_write = surface->color[color].pixel;
+          for ( i = 0; i < depth; ++i, pix >>= 8 )
+            twrite[ i ] = (byte) ( pix & 0xFF );
         }
-      }
-      else
-      {
-        for ( ; _write < limit; _write += 4, _read++ )
+        else
         {
-          byte  color = *_read;
-  
-          *(unsigned long*)_write = surface->color[color].pixel;
+          for ( i = depth - 1; i >= 0; --i, pix >>= 8 )
+            twrite[ i ] = (byte) ( pix & 0xFF );
         }
       }
 
@@ -459,6 +367,10 @@
                            int          h )
   {
     int  z;
+
+    /* we do not know how to convert anything but gray surfaces */
+    if ( ! surface->gray )
+      return;
 
     /* first of all, clip to the surface's area */
     if ( x   >= surface->image.width ||
@@ -481,17 +393,7 @@
     if (z > 0)
       h -= z;
 
-    /* convert the rectangle to the target depth for gray surfaces */
-    if (surface->gray)
-    {
-      switch (surface->xdepth->bits_per_pixel)
-      {
-        case 8 : convert_gray_to_pal8( surface, x, y, w, h ); break;
-        case 16: convert_gray_to_16  ( surface, x, y, w, h ); break;
-        case 24: convert_gray_to_24  ( surface, x, y, w, h ); break;
-        case 32: convert_gray_to_32  ( surface, x, y, w, h ); break;
-      }
-    }
+    convert_gray_to_any( surface, x, y, w, h );
   }
 
 
@@ -502,8 +404,7 @@
                            int          w,
                            int          h )
   {
-    if (surface->gray)
-      convert_rectangle( surface, x, y, w, h );
+    convert_rectangle( surface, x, y, w, h );
 
     XPutImage( display,
                surface->win,
@@ -617,8 +518,8 @@
     XFlush       ( display );
 
     /* Now, translate the keypress to a grKey */
-    /* If this wasn't part of the simple translated keys, simply get the charcode */
-    /* from the character buffer                                                  */
+    /* If this wasn't part of the simple translated keys, */
+    /* simply get the charcode from the character buffer  */
     grkey = grKEY(key_buffer[key_cursor++]);
 
   Set_Key:
@@ -766,9 +667,23 @@
     if ( grays )
     {
       XColor*  color = surface->color;
-      int      i;
+      int      i, j;
+      int      step = 1;
 
-      for ( i = 0; i < bitmap->grays; i++, color++ )
+      /* do not consume more than 1/2 of colormap entries */
+      /* on PseudoColor visuals (8bpp are quite common)   */
+      if ( surface->visual->class == PseudoColor )
+      {
+        long half = 1L << (format->depth - 1);
+
+        while ( bitmap->grays / step > half )
+          step++;
+        if ( step > 1 )
+          printf( "grX11: warning: number of colors reduced from %d to %d\n",
+                   bitmap->grays, bitmap->grays / step );
+      }
+
+      for ( i = 0; i < bitmap->grays; i += step, color += step )
       {
         color->red   =
         color->green =
@@ -776,6 +691,14 @@
 
         if ( !XAllocColor( display, surface->colormap, color ) )
           Panic( "ERROR: cannot allocate Color\n" );
+
+        if ( step > 1 )
+        {
+          /* this is a gross cheat but we can assume the effect */
+          /* will not be noticeable on a display that needs it  */
+          for ( j = 0; j < step && i + j < bitmap->grays; j++ )
+            color[j] = color[0];
+        }
       }
     }
     else if ( image_depth == 1 )
@@ -811,7 +734,8 @@
 
         XMapWindow( display, surface->win );
 
-        surface->gc = XCreateGC( display, RootWindow( display, screen ), 0L, NULL );
+        surface->gc = XCreateGC( display, RootWindow( display, screen ),
+                                 0L, NULL );
         XSetForeground( display, surface->gc, xswa.border_pixel     );
         XSetBackground( display, surface->gc, xswa.background_pixel );
 
@@ -830,7 +754,8 @@
         xsh.flags  = (PPosition | PSize);
         xsh.flags  = 0;
 
-        XSetWMProperties( display, surface->win, &xtp, &xtp, NULL, 0, &xsh, NULL, NULL );
+        XSetWMProperties( display, surface->win, &xtp, &xtp,
+                          NULL, 0, &xsh, NULL, NULL );
     }
 
     surface->root.done         = (grDoneSurfaceFunc) done_surface;
@@ -968,7 +893,8 @@ int  main( void )
 
         grWriteCellString( surface, 30, 30, kname, color );
         grRefreshSurface(surface);
-        paint_rectangle( surface, 0, 0, surface->bitmap.width, surface->bitmap.rows );
+        paint_rectangle( surface, 0, 0,
+                         surface->bitmap.width, surface->bitmap.rows );
       }
     } while (1);
   }

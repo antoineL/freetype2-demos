@@ -1,3 +1,10 @@
+2002-03-06  David Turner    <david@freetype.org>
+
+        * src/ftdump.c: added display of ascender/descender/text height
+        * Jamfile: support the FT2_TOP environment variable to indicate
+        where the FreeType 2 sources are located. That's very useful for
+        switching between the STABLE and HEAD branches of the library :o)
+
 2002-03-05  David Turner    <david@freetype.org>
 
         * src/ftdump.c: added the display of a font's Postscript name,

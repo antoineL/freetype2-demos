@@ -133,6 +133,9 @@
     printf( "   global BBox:     (%d,%d):(%d,%d)\n",
             face->bbox.xMin, face->bbox.yMin,
             face->bbox.xMax, face->bbox.yMax );
+    printf( "   ascent:          %d\n", face->ascender );
+    printf( "   descent:         %d\n", face->descender );
+    printf( "   text height:     %d\n", face->height );            
   }
 
 

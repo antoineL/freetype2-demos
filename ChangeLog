@@ -1,3 +1,9 @@
+2005-04-24  YAMATO Masatake  <jet@gyve.org>
+
+	* src/ftvalid.c: New file.
+
+	* Makefile, src/Jamfile: Add ftvalid.
+
 2005-03-04  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftgamma.c (Render_GammaGrid), src/ftmulti.c

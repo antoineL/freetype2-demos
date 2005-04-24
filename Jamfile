@@ -6,7 +6,7 @@ if $(FT2DEMO_TOP) != $(DOT)
   SubDir  FT2DEMO_TOP ;
 }
 
-# compile FreeType library here !!
+# compile FreeType library here!
 #
 FT2_TOP ?= ../freetype2 ;
 

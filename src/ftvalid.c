@@ -67,7 +67,7 @@
     MAKE_TABLE_SPEC( GSUB ),
     MAKE_TABLE_SPEC( JSTF ),
   };
-#define N_OT_TABLE_SPEC  (sizeof ( ot_table_spec ) / sizeof ( TableSpecRec ) )
+#define N_OT_TABLE_SPEC  ( sizeof ( ot_table_spec ) / sizeof ( TableSpecRec ) )
 
 
   static void
@@ -498,7 +498,7 @@
 
 #if 0
     printf( "fontfile: %s\n",
-            fontfile);
+            fontfile );
     printf( "validator type: %s\n",
             ( validator == OT_VALIDATE ) ? OT_VALIDATOR_SYMBOL : "unknown" );
     printf( "tables: %s\n",

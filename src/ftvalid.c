@@ -465,7 +465,7 @@
         break;
 
       case 'v':
-        validation_level = atoi( optarg );
+        validation_level = (FT_ValidationLevel)atoi( optarg );
         if ( validation_level > FT_VALIDATE_PARANOID )
         {
           fprintf( stderr, "*** Validation level is out of range: %d\n",

@@ -1,3 +1,7 @@
+2005-05-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftvalid (main) <'v'>: Add cast to make it compile with C++.
+
 2005-04-24  YAMATO Masatake  <jet@gyve.org>
 
 	* src/ftvalid.c: New file.

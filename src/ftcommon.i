@@ -19,6 +19,7 @@
 
 #include FT_STROKER_H
 #include FT_BITMAP_H
+#include FT_SYNTHESIS_H
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -79,7 +80,15 @@
   int     graph_init  = 0;
   double  the_gamma   = 1.0;
 
-  int  render_mode = 0;
+  enum {
+    RENDER_MODE_ALL = 0,
+    RENDER_MODE_EMBOLDEN,
+    RENDER_MODE_STROKE,
+    RENDER_MODE_TEXT,
+    RENDER_MODE_WATERFALL,
+    RENDER_MODE_GAMMAGRID   /* this mode must be the last one */
+  } render_mode = 0;
+
   int  debug       = 0;
   int  trace_level = 0;
 

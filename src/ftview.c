@@ -191,6 +191,105 @@
     return error;
   }
 
+
+  /* most code is copied from Render_Stroke */
+  static FT_Error
+  Render_Embolden( int  first_index )
+  {
+    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
+    FTC_ScalerRec  scaler;
+    int            i;
+    grBitmap       bit3;
+
+
+    start_x = 4;
+    start_y = 16 + current_font.height;
+
+
+    scaler.face_id = current_font.face_id;
+    scaler.width   = current_font.width;
+    scaler.height  = current_font.height;
+    scaler.pixel   = 1;
+
+    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
+    if ( error )
+      goto Exit;
+
+    step_x = size->metrics.x_ppem + 4;
+    step_y = ( size->metrics.height >> 6 ) + 4;
+
+    x = start_x;
+    y = start_y;
+
+    i = first_index;
+    i = first_index;
+
+    while ( i < face->num_glyphs )
+    {
+      int           left, top, x_advance, y_advance, x_top, y_top;
+      FT_GlyphSlot  slot = size->face->glyph;
+      FT_Glyph      glyphp;
+
+#if 0
+      gindex = *(unsigned char*)p;
+      if ( encoding == FT_ENCODING_NONE )
+        gindex = get_glyph_index( gindex );
+#endif
+      error = FT_Load_Glyph( size->face, i, FT_LOAD_DEFAULT );
+      if ( !error )
+      {
+        FT_Glyph  glyphb;
+
+
+        FT_GlyphSlot_Embolden( slot );
+        error = FT_Get_Glyph( slot, &glyphp );
+        if ( error )
+          goto Next;
+
+        error = glyph_to_bitmap( glyphp, &bit3, &left, &top,
+                                 &x_advance, &y_advance,
+                                 (FT_Pointer*)&glyphb );
+        if ( !error )
+        {
+          /* now render the bitmap into the display surface */
+          x_top = x + left;
+          y_top = y - top;
+          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+
+          FT_Done_Glyph( glyphb );
+          FT_Done_Glyph( glyphp );
+
+          x += x_advance + 1;
+
+          if ( x + size->metrics.x_ppem > bit.width )
+          {
+            x  = start_x;
+            y += step_y;
+
+            if ( y >= bit.rows )
+              goto Exit;
+          }
+        }
+        else
+          FT_Done_Glyph( glyphp );
+
+        if ( error )
+          goto Next;
+      }
+      else
+      {
+      Next:
+        Fail++;
+      }
+
+      i++;
+    }
+
+  Exit:
+    return error;
+  }
+
+
   static FT_Error
   Render_All( int  first_index )
   {
@@ -649,26 +748,32 @@
       break;
 
     case grKEY( 'K' ):
-      render_mode = 4;
+      render_mode = RENDER_MODE_GAMMAGRID;
       new_header = (char*)"rendering gamma grid";
       break;
 
     case grKEY( ' ' ):
-      render_mode = ( render_mode + 1 ) % 4;
+      render_mode = ( render_mode + 1 ) % RENDER_MODE_GAMMAGRID;
       switch ( render_mode )
       {
-        case 0:
-          new_header = (char*)"rendering all glyphs in font";
-          break;
-        case 1:
-          new_header = (char*)"rendering test text string";
-          break;
-        case 2:
-          new_header = (char*)"rendering stroked text";
-          break;
-
-        default:
-          new_header = (char*)"rendering glyph waterfall";
+      case RENDER_MODE_ALL:
+        new_header = (char*)"rendering all glyphs in font";
+        break;
+      case RENDER_MODE_EMBOLDEN:
+        new_header = (char*)"rendering emboldened text";
+        break;
+      case RENDER_MODE_STROKE:
+        new_header = (char*)"rendering stroked text";
+        break;
+      case RENDER_MODE_TEXT:
+        new_header = (char*)"rendering test text string";
+        break;
+      case RENDER_MODE_WATERFALL:
+        new_header = (char*)"rendering glyph waterfall";
+        break;
+      case RENDER_MODE_GAMMAGRID: /* never happen */
+        new_header = (char*)"rendering gamma grid";
+        break;
       }
       break;
 
@@ -890,25 +995,29 @@
 
         switch ( render_mode )
         {
-        case 0:
+        case RENDER_MODE_ALL:
           error = Render_All( Num );
           break;
 
-        case 1:
-          error = Render_Text( Num );
+        case RENDER_MODE_EMBOLDEN:
+          error = Render_Embolden( Num );
           break;
 
-        case 2:
+        case RENDER_MODE_STROKE:
           error = Render_Stroke( Num );
           break;
 
-        case 4:
-          error = Render_GammaGrid();
-          render_mode = 0;
+        case RENDER_MODE_TEXT:
+          error = Render_Text( Num );
           break;
 
-        default:
+        case RENDER_MODE_WATERFALL:
           error = Render_Waterfall( ptsize );
+          break;
+
+        case RENDER_MODE_GAMMAGRID:
+          error = Render_GammaGrid();
+          render_mode = RENDER_MODE_ALL;
         }
 
         if ( !new_header )
@@ -991,7 +1100,7 @@
     done_freetype();
     exit( 0 );      /* for safety reasons */
     return 0;       /* never reached */
-}
+  }
 
 
 /* End */

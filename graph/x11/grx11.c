@@ -5,7 +5,7 @@
  *  This is the driver for displaying inside a window under X11,
  *  used by the graphics utility of the FreeType test suite.
  *
- *  Copyright 1999-2000, 2001, 2002 by Antoine Leca, David Turner
+ *  Copyright 1999-2000, 2001, 2002, 2005 by Antoine Leca, David Turner
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -1348,9 +1348,11 @@ typedef  unsigned long   uint32;
       XSetWindowAttributes  xswa;
       long                  xswa_mask = CWBackPixel | CWEventMask | CWCursor;
 
+      xswa.border_pixel = BlackPixel( display, screen);
+
       if (surface->visual == DefaultVisual( display, screen ) )
       {
-      xswa.background_pixel = WhitePixel( display, screen );
+        xswa.background_pixel = WhitePixel( display, screen );
         surface->colormap     = DefaultColormap( display, screen );
       }
       else

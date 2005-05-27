@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2001, 2002, 2003, 2004 by                          */
+/*  Copyright 1996-2000, 2001, 2002, 2003, 2004, 2005 by                    */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -604,7 +604,8 @@
     switch ( source->pixel_mode )
     {
     case FT_PIXEL_MODE_MONO:
-      target->mode = gr_pixel_mode_mono;
+      target->mode  = gr_pixel_mode_mono;
+      target->grays = 2;
       break;
 
     case FT_PIXEL_MODE_GRAY:
@@ -691,7 +692,8 @@
         switch ( sbit->format )
         {
         case FT_PIXEL_MODE_MONO:
-          target->mode = gr_pixel_mode_mono;
+          target->mode  = gr_pixel_mode_mono;
+          target->grays = 2;
           break;
 
         case FT_PIXEL_MODE_GRAY:

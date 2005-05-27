@@ -1,3 +1,12 @@
+2005-05-26  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.i (get_glyph_bitmap, glyph_to_bitmap): Initialize
+	`target->grays' even for FT_PIXEL_MODE_MONO since it is tested in
+	grBlitGlyphToBitmap.
+
+	* graph/x11/grx11.c (gr_x11_surface_init): Initialize
+	`xswa.border_pixel'.
+
 2005-05-25  Chia I Wu  <b90201047@ntu.edu.tw>
 
 	* src/ftcommon.i: Include FT_SYNTHESIS_H.

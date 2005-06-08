@@ -1,3 +1,10 @@
+2005-06-08  Werner Lemberg  <wl@gnu.org>
+
+
+	* Version 2.1.10 released.
+	==========================
+
+
 2005-05-26  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.i (get_glyph_bitmap, glyph_to_bitmap): Initialize

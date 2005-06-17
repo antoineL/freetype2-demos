@@ -16,169 +16,158 @@
 /****************************************************************************/
 
 
-#include "ftcommon.i"
+#include "ftcommon.h"
+#include "common.h"
 #include <math.h>
 
+  /* the following header shouldn't be used in normal programs */
+#include FT_INTERNAL_DEBUG_H
+#include FT_STROKER_H
+#include FT_SYNTHESIS_H
+
+#define MAXPTSIZE      500                 /* dtp */
+#define HEADER_HEIGHT  8
+
+#ifdef CEIL
+#undef CEIL
+#endif
+#define CEIL( x )   ( ( (x) + 63 ) >> 6 )
+
+#define INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y )        \
+          do {                                                           \
+            start_x = 4;                                                 \
+            start_y = CEIL( size->metrics.height ) + 2 * HEADER_HEIGHT;  \
+            step_x  = CEIL( size->metrics.max_advance );                 \
+            step_y  = CEIL( size->metrics.height ) + 4;                  \
+                                                                         \
+            x = start_x;                                                 \
+            y = start_y;                                                 \
+          } while ( 0 )
+
+#define X_TOO_LONG( x, size, display) \
+          ( ( x ) + ( ( size )->metrics.max_advance >> 6 ) > ( display )->bitmap->width )
+#define Y_TOO_LONG( y, size, display) \
+          ( ( y ) >= ( display )->bitmap->rows )
+          
+  enum {
+    RENDER_MODE_ALL = 0,
+    RENDER_MODE_EMBOLDEN,
+    RENDER_MODE_STROKE,
+    RENDER_MODE_TEXT,
+    RENDER_MODE_WATERFALL,
+    N_RENDER_MODES
+  };
+
+  static struct {
+    int          render_mode;
+    FT_Encoding  encoding;
+    int          res;
+    int          ptsize;            /* current point size */
+    double       gamma;
+
+    int          debug;
+    int          trace_level;
+    int          font_index;
+    int          dump_cache_stats;  /* do we need to dump cache statistics? */
+    int          Num;               /* current first index */
+    char*        header;
+    char         header_buffer[256];
+    int          Fail;
+
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, 1.0 };
+
+
+  static FTDemo_Display*  display;
+  static FTDemo_Handle*   handle;
+
+
+  static const unsigned char*  Text = (unsigned char*)
+    "The quick brown fox jumps over the lazy dog 0123456789 "
+    "\342\352\356\373\364\344\353\357\366\374\377\340\371\351\350\347 "
+    "&#~\"\'(-`_^@)=+\260 ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+    "$\243^\250*\265\371%!\247:/;.,?<>";
+
 
 
   static FT_Error
-  Render_GammaGrid( void )
+  Render_Stroke( int  num_indices,
+                 int  first_index )
   {
-    int   g;
-    int   yside  = 11;
-    int   xside  = 10;
-    int   levels = 17;
-    int   gammas = 30;
-    int   x_0    = (bit.width - levels*xside)/2;
-    int   y_0    = (bit.rows  - gammas*(yside+1))/2;
-    int   pitch  = bit.pitch;
-
-    if ( pitch < 0 )
-      pitch = -pitch;
-
-    memset( bit.buffer, 100, pitch*bit.rows );
-
-    grGotobitmap( &bit );
-
-    for ( g = 1; g <= gammas; g += 1 )
-    {
-      double ggamma = g/10.0;
-      char   temp[6];
-      int    y = y_0 + (yside+1)*(g-1);
-      int    nx, ny;
-
-      unsigned char*  line = bit.buffer + y*bit.pitch;
-
-      if ( bit.pitch < 0 )
-        line -= bit.pitch*(bit.rows-1);
-
-      line += x_0*3;
-
-      grSetPixelMargin( x_0-32, y + (yside-8)/2 );
-      grGotoxy( 0, 0 );
-
-      sprintf( temp, "%.1f", ggamma );
-      grWrite( temp );
-
-      for ( ny = 0; ny < yside; ny++, line += bit.pitch )
-      {
-        unsigned char*  dst = line;
-
-        for ( nx = 0; nx < levels; nx++, dst += 3 * xside )
-        {
-          double  p   = nx/(double)(levels - 1);
-          int     gm  = (int)( 255.0 * pow( p, ggamma ) );
-
-          memset( dst, gm, xside * 3 );
-        }
-      }
-    }
-    return 0;
-  }
+    int         start_x, start_y, step_x, step_y, x, y;
+    int         i;
+    FT_Size     size;
+    FT_Stroker  stroker = NULL;
 
 
-  static FT_Error
-  Render_Stroke( int  first_index )
-  {
-    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
-    FTC_ScalerRec  scaler;
-    FT_Stroker     stroker = NULL;
-    int            i;
-    grBitmap       bit3;
+    error = FTDemo_Get_Size( handle, &size );
 
-
-    start_x = 4;
-    start_y = 16 + current_font.height;
-
-
-    scaler.face_id = current_font.face_id;
-    scaler.width   = current_font.width;
-    scaler.height  = current_font.height;
-    scaler.pixel   = 1;
-
-    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
     if ( error )
-      goto Exit;
+    {
+      /* probably a non-existent bitmap font size */
+      return error;
+    }
+
+    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+
+    i = first_index;
 
     error = FT_Stroker_New( size->face->memory, &stroker );
     if ( error )
       goto Exit;
 
-    FT_Stroker_Set( stroker,
-                    64,
+    FT_Stroker_Set( stroker, 64,
                     FT_STROKER_LINECAP_ROUND,
                     FT_STROKER_LINEJOIN_ROUND,
                     0 );
 
-    step_x = size->metrics.x_ppem + 4;
-    step_y = ( size->metrics.height >> 6 ) + 4;
-
-    x = start_x;
-    y = start_y;
-
-    i = first_index;
-    i = first_index;
-
-    while ( i < face->num_glyphs )
+    while ( i < num_indices )
     {
-      int           left, top, x_advance, y_advance, x_top, y_top;
-      FT_GlyphSlot  slot = size->face->glyph;
-      FT_Glyph      glyphp;
+      int           gindex;
+      FT_GlyphSlot  slot;
 
-#if 0
-      gindex = *(unsigned char*)p;
-      if ( encoding == FT_ENCODING_NONE )
-        gindex = get_glyph_index( gindex );
-#endif
-      error = FT_Load_Glyph( size->face, i, FT_LOAD_NO_BITMAP );
+
+      if ( handle->encoding == FT_ENCODING_NONE )
+        gindex = i;
+      else
+        gindex = FTDemo_Get_Index( handle, i );
+
+      error = FT_Load_Glyph( size->face, gindex,
+                             handle->image_type.flags | FT_LOAD_NO_BITMAP );
+      slot = size->face->glyph;
+
       if ( !error && slot->format == FT_GLYPH_FORMAT_OUTLINE )
       {
-        FT_Glyph  glyphb;
+        FT_Glyph  glyph;
 
-        error = FT_Get_Glyph( slot, &glyphp );
+        error = FT_Get_Glyph( slot, &glyph );
         if ( error )
           goto Next;
 
-        error = FT_Glyph_Stroke( &glyphp, stroker, 1 );
+        error = FT_Glyph_Stroke( &glyph, stroker, 1 );
         if ( error )
         {
-          FT_Done_Glyph( glyphp );
+          FT_Done_Glyph( glyph );
           goto Next;
         }
 
-        error = glyph_to_bitmap( glyphp, &bit3, &left, &top,
-                                 &x_advance, &y_advance, (FT_Pointer*)&glyphb );
-        if ( !error )
-        {
-          /* now render the bitmap into the display surface */
-          x_top = x + left;
-          y_top = y - top;
-          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
-
-          FT_Done_Glyph( glyphb );
-          FT_Done_Glyph( glyphp );
-
-          x += x_advance + 1;
-
-          if ( x + size->metrics.x_ppem > bit.width )
-          {
-            x  = start_x;
-            y += step_y;
-
-            if ( y >= bit.rows )
-              goto Exit;
-          }
-        }
-        else
-          FT_Done_Glyph( glyphp );
+        error = FTDemo_Draw_Glyph( handle, display, glyph, &x, &y );
+        FT_Done_Glyph( glyph );
 
         if ( error )
-          goto Next;
+          status.Fail++;
+        else if ( X_TOO_LONG( x, size, display ) )
+        {
+          x  = start_x;
+          y += step_y;
+
+          if ( Y_TOO_LONG( y, size, display ) )
+            break;
+        }
       }
       else
       {
-      Next:
-        Fail++;
+Next:
+        status.Fail++;
       }
 
       i++;
@@ -192,171 +181,107 @@
   }
 
 
-  /* most code is copied from Render_Stroke */
   static FT_Error
-  Render_Embolden( int  first_index )
+  Render_Embolden( int  num_indices,
+                   int  first_index )
   {
-    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
-    FTC_ScalerRec  scaler;
-    int            i;
-    grBitmap       bit3;
+    int       start_x, start_y, step_x, step_y, x, y;
+    int       i;
+    FT_Size   size;
 
 
-    start_x = 4;
-    start_y = 16 + current_font.height;
+    error = FTDemo_Get_Size( handle, &size );
 
-
-    scaler.face_id = current_font.face_id;
-    scaler.width   = current_font.width;
-    scaler.height  = current_font.height;
-    scaler.pixel   = 1;
-
-    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
-    if ( error )
-      goto Exit;
-
-    step_x = size->metrics.x_ppem + 4;
-    step_y = ( size->metrics.height >> 6 ) + 4;
-
-    x = start_x;
-    y = start_y;
-
-    i = first_index;
-    i = first_index;
-
-    while ( i < face->num_glyphs )
-    {
-      int           left, top, x_advance, y_advance, x_top, y_top;
-      FT_GlyphSlot  slot = size->face->glyph;
-      FT_Glyph      glyphp;
-
-#if 0
-      gindex = *(unsigned char*)p;
-      if ( encoding == FT_ENCODING_NONE )
-        gindex = get_glyph_index( gindex );
-#endif
-      error = FT_Load_Glyph( size->face, i, FT_LOAD_DEFAULT );
-      if ( !error )
-      {
-        FT_Glyph  glyphb;
-
-
-        FT_GlyphSlot_Embolden( slot );
-        error = FT_Get_Glyph( slot, &glyphp );
-        if ( error )
-          goto Next;
-
-        error = glyph_to_bitmap( glyphp, &bit3, &left, &top,
-                                 &x_advance, &y_advance,
-                                 (FT_Pointer*)&glyphb );
-        if ( !error )
-        {
-          /* now render the bitmap into the display surface */
-          x_top = x + left;
-          y_top = y - top;
-          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
-
-          FT_Done_Glyph( glyphb );
-          FT_Done_Glyph( glyphp );
-
-          x += x_advance + 1;
-
-          if ( x + size->metrics.x_ppem > bit.width )
-          {
-            x  = start_x;
-            y += step_y;
-
-            if ( y >= bit.rows )
-              goto Exit;
-          }
-        }
-        else
-          FT_Done_Glyph( glyphp );
-
-        if ( error )
-          goto Next;
-      }
-      else
-      {
-      Next:
-        Fail++;
-      }
-
-      i++;
-    }
-
-  Exit:
-    return error;
-  }
-
-
-  static FT_Error
-  Render_All( int  first_index )
-  {
-    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
-    FTC_ScalerRec  scaler;
-    FT_Pointer     glyf;
-    int            i;
-    grBitmap       bit3;
-
-
-    start_x = 4;
-    start_y = 16 + current_font.height;
-
-    scaler.face_id = current_font.face_id;
-    scaler.width   = current_font.width;
-    scaler.height  = current_font.height;
-    scaler.pixel   = 1;
-
-    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
     if ( error )
     {
       /* probably a non-existent bitmap font size */
       return error;
     }
 
-    step_x = size->metrics.x_ppem + 4;
-    step_y = ( size->metrics.height >> 6 ) + 4;
-
-    x = start_x;
-    y = start_y;
+    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
 
     i = first_index;
 
-#if 0
-    while ( i < first_index + 1 )
-#else
     while ( i < num_indices )
-#endif
     {
-      int  x_top, y_top, left, top, x_advance, y_advance;
+      int           gindex;
+      FT_Face       face = size->face;
 
+      if ( handle->encoding == FT_ENCODING_NONE )
+        gindex = i;
+      else
+        gindex = FTDemo_Get_Index( handle, i );
 
-      error = get_glyph_bitmap( i, &bit3, &left, &top,
-                                &x_advance, &y_advance, &glyf );
+      error = FT_Load_Glyph( face, gindex, handle->image_type.flags );
       if ( !error )
       {
-        /* now render the bitmap into the display surface */
-        x_top = x + left;
-        y_top = y - top;
-        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+        FT_GlyphSlot_Embolden( face->glyph );
 
-        if ( glyf )
-          done_glyph_bitmap( glyf );
+        error = FTDemo_Draw_Slot( handle, display, face->glyph, &x, &y );
 
-        x += x_advance + 1;
-
-        if ( x + size->metrics.x_ppem > bit.width )
+        if ( error )
+          status.Fail++;
+        else if ( X_TOO_LONG( x, size, display ) )
         {
           x  = start_x;
           y += step_y;
 
-          if ( y >= bit.rows )
-            return FT_Err_Ok;
+          if ( Y_TOO_LONG( y, size, display ) )
+            break;
         }
       }
       else
-        Fail++;
+        status.Fail++;
+
+      i++;
+    }
+
+    return error;
+  }
+
+
+  static FT_Error
+  Render_All( int  num_indices,
+              int  first_index )
+  {
+    int         start_x, start_y, step_x, step_y, x, y;
+    int         i;
+    FT_Size     size;
+
+
+    error = FTDemo_Get_Size( handle, &size );
+
+    if ( error )
+    {
+      /* probably a non-existent bitmap font size */
+      return error;
+    }
+
+    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+
+    i = first_index;
+
+    while ( i < num_indices )
+    {
+      int  gindex;
+
+
+      if ( handle->encoding == FT_ENCODING_NONE )
+        gindex = i;
+      else
+        gindex = FTDemo_Get_Index( handle, i );
+
+      error = FTDemo_Draw_Index( handle, display, gindex, &x, &y );
+      if ( error )
+        status.Fail++;
+      else if ( X_TOO_LONG( x, size, display ) )
+      {
+        x  = start_x;
+        y += step_y;
+
+        if ( Y_TOO_LONG( y, size, display ) )
+          break;
+      }
 
       i++;
     }
@@ -366,40 +291,29 @@
 
 
   static FT_Error
-  Render_Text( int  first_index )
+  Render_Text( int  num_indices,
+               int  first_index )
   {
-    FT_F26Dot6     start_x, start_y, step_x, step_y, x, y;
-    FTC_ScalerRec  scaler;
-    FT_Pointer     glyf;
-    int            i;
-    grBitmap       bit3;
+    int      start_x, start_y, step_x, step_y, x, y;
+    int      i;
+    FT_Size  size;
 
     const unsigned char*  p;
 
 
-    start_x = 4;
-    start_y = 16 + current_font.height;
-
-    scaler.face_id = current_font.face_id;
-    scaler.width   = current_font.width;
-    scaler.height  = current_font.height;
-    scaler.pixel   = 1;
-
-    error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
+    error = FTDemo_Get_Size( handle, &size );
     if ( error )
     {
       /* probably a non-existent bitmap font size */
       return error;
     }
 
-    step_x = size->metrics.x_ppem + 4;
-    step_y = ( size->metrics.height >> 6 ) + 4;
-
-    x = start_x;
-    y = start_y;
+    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
 
     i = first_index;
+
     p = Text;
+
     while ( i > 0 && *p )
     {
       p++;
@@ -408,41 +322,22 @@
 
     while ( *p )
     {
-      int      left, top, x_advance, y_advance, x_top, y_top;
       FT_UInt  gindex;
 
 
-      gindex = *(unsigned char*)p;
-      if ( encoding == FT_ENCODING_NONE )
-        gindex = get_glyph_index( gindex );
+      gindex = FTDemo_Get_Index( handle, *p );
 
-      /* if a cmap is active, `get_glyph_bitmap' will convert the */
-      /* char code in `gindex' to a real glyph index              */
-      error = get_glyph_bitmap( gindex, &bit3, &left, &top,
-                                &x_advance, &y_advance, &glyf );
-      if ( !error )
+      error = FTDemo_Draw_Index( handle, display, gindex, &x, &y );
+      if ( error )
+        status.Fail++;
+      else if ( X_TOO_LONG( x, size, display ) )
       {
-        /* now render the bitmap into the display surface */
-        x_top = x + left;
-        y_top = y - top;
-        grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
+        x  = start_x;
+        y += step_y;
 
-        if ( glyf )
-          done_glyph_bitmap( glyf );
-
-        x += x_advance + 1;
-
-        if ( x + size->metrics.x_ppem > bit.width )
-        {
-          x  = start_x;
-          y += step_y;
-
-          if ( y >= bit.rows )
-            return FT_Err_Ok;
-        }
+        if ( Y_TOO_LONG( y, size, display ) )
+          break;
       }
-      else
-        Fail++;
 
       p++;
     }
@@ -454,26 +349,21 @@
   static FT_Error
   Render_Waterfall( int  first_size )
   {
-    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
-    FT_Pointer  glyf;
+    int         start_x, start_y, step_x, step_y, x, y;
     int         pt_size, max_size = 100000;
-    grBitmap    bit3;
+    FT_Size     size;
+    FT_Face     face;
 
     unsigned char         text[256];
     const unsigned char*  p;
 
 
-    start_x = 4;
-    start_y = 16;
-
-    pt_size = first_size;
-
     {
-      error = FTC_Manager_LookupFace( cache_manager, current_font.face_id, &face );
+      error = FTC_Manager_LookupFace( handle->cache_manager, handle->image_type.face_id, &face );
       if ( error )
       {
         /* can't access the font file. do not render anything */
-        fprintf( stderr, "can't access font file %p\n", current_font.face_id );
+        fprintf( stderr, "can't access font file %p\n", handle->image_type.face_id );
         return 0;
       }
 
@@ -489,36 +379,27 @@
       }
     }
 
-    for (;;)
+    start_x = 4;
+    start_y = 2 * HEADER_HEIGHT;
+
+    for ( pt_size = first_size; pt_size < max_size; pt_size++ )
     {
-      FTC_ScalerRec  scaler;
-
-
       sprintf( (char*)text,
                 "%d: the quick brown fox jumps over the lazy dog "
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size );
 
       p = text;
 
-      set_current_pointsize( pt_size );
+      FTDemo_Set_Current_Pointsize( handle, pt_size, status.res );
 
-      if ( pt_size > max_size )
-        break;
-      pt_size++;
-
-      scaler.face_id = current_font.face_id;
-      scaler.width   = current_font.width;
-      scaler.height  = current_font.height;
-      scaler.pixel   = 1;
-
-      error = FTC_Manager_LookupSize( cache_manager, &scaler, &size );
+      error = FTDemo_Get_Size( handle, &size );
       if ( error )
       {
         /* probably a non-existent bitmap font size */
         continue;
       }
 
-      step_x = size->metrics.x_ppem + 4;
+      step_x = ( size->metrics.max_advance >> 6 ) + 4;
       step_y = ( size->metrics.height >> 6 ) + 1;
 
       x = start_x;
@@ -526,46 +407,27 @@
 
       start_y += step_y;
 
-      if ( y >= bit.rows )
+      if ( y >= display->bitmap->rows )
         break;
 
       while ( *p )
       {
-        int      left, top, x_advance, y_advance, x_top, y_top;
         FT_UInt  gindex;
 
 
-        gindex = *(unsigned char*)p;
-        if ( encoding == FT_ENCODING_NONE )
-          gindex = get_glyph_index( gindex );
+        gindex = FTDemo_Get_Index( handle, *p );
 
-        /* if a cmap is active, `get_glyph_bitmap' will convert the */
-        /* char code in `gindex' to a real glyph index              */
-        error = get_glyph_bitmap( gindex, &bit3, &left, &top,
-                                  &x_advance, &y_advance, &glyf );
-        if ( !error )
-        {
-          /* now render the bitmap into the display surface */
-          x_top = x + left;
-          y_top = y - top;
-          grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
-
-          if ( glyf )
-            done_glyph_bitmap( glyf );
-
-          x += x_advance + 1;
-
-          if ( x + size->metrics.x_ppem > bit.width )
-            break;
-        }
-        else
-          Fail++;
+        error = FTDemo_Draw_Index( handle, display, gindex, &x, &y );
+        if ( error )
+          status.Fail++;
+        else if ( X_TOO_LONG( x, size, display ) )
+          break;
 
         p++;
       }
     }
 
-    set_current_pointsize( first_size );
+    FTDemo_Set_Current_Pointsize( handle, first_size, status.res );
 
     return FT_Err_Ok;
   }
@@ -580,15 +442,15 @@
   /*************************************************************************/
 
   static void
-  Help( void )
+  event_help( void )
   {
     grEvent  dummy_event;
 
 
-    Clear_Display();
+    FTDemo_Display_Clear( display );
     grGotoxy( 0, 0 );
     grSetMargin( 2, 1 );
-    grGotobitmap( &bit );
+    grGotobitmap( display->bitmap );
 
     grWriteln( "FreeType Glyph Viewer - part of the FreeType test suite" );
     grLn();
@@ -597,224 +459,401 @@
     grLn();
     grWriteln( "Use the following keys:" );
     grLn();
-    grWriteln( "  F1 or ?   : display this help screen" );
-    grWriteln( "  a         : toggle anti-aliasing" );
-    grWriteln( "  L         : cycle through rendering modes" );
-    grWriteln( "  h         : toggle outline hinting" );
-    grWriteln( "  b         : toggle embedded bitmaps" );
-    grWriteln( "  l         : toggle low precision rendering" );
-    grWriteln( "  f         : toggle forced auto-hinting" );
-    grWriteln( "  space     : toggle rendering mode" );
+    grWriteln( "  F1 or ?    : display this help screen" );
     grLn();
-    grWriteln( "  c         : toggle between cache modes" );
+    grWriteln( "  a          : toggle anti-aliasing" );
+    grWriteln( "  b          : toggle embedded bitmaps" );
+    grWriteln( "  c          : toggle between cache modes" );
+    grWriteln( "  f          : toggle forced auto-hinting" );
+    grWriteln( "  h          : toggle outline hinting" );
+    grWriteln( "  l          : toggle low precision rendering" );
     grLn();
-    grWriteln( "  n         : next font" );
-    grWriteln( "  p         : previous font" );
+    grWriteln( "  L          : cycle through LCD modes" );
+    grWriteln( "  space      : toggle rendering mode" );
+    grWriteln( "  1-5        : select rendering mode" );
     grLn();
-    grWriteln( "  g         : increase gamma by 0.1" );
-    grWriteln( "  v         : decrease gamma by 0.1" );
+    grWriteln( "  G          : show gamma ramp" );
+    grWriteln( "  g          : increase gamma by 0.1" );
+    grWriteln( "  v          : decrease gamma by 0.1" );
     grLn();
-    grWriteln( "  K         : show gamma ramp" );
+    grWriteln( "  n          : next font" );
+    grWriteln( "  p          : previous font" );
     grLn();
-    grWriteln( "  Up        : increase pointsize by 1 unit" );
-    grWriteln( "  Down      : decrease pointsize by 1 unit" );
-    grWriteln( "  Page Up   : increase pointsize by 10 units" );
-    grWriteln( "  Page Down : decrease pointsize by 10 units" );
+    grWriteln( "  Up         : increase pointsize by 1 unit" );
+    grWriteln( "  Down       : decrease pointsize by 1 unit" );
+    grWriteln( "  Page Up    : increase pointsize by 10 units" );
+    grWriteln( "  Page Down  : decrease pointsize by 10 units" );
     grLn();
-    grWriteln( "  Right     : increment index" );
-    grWriteln( "  Left      : decrement index" );
+    grWriteln( "  Right      : increment index" );
+    grWriteln( "  Left       : decrement index" );
     grLn();
-    grWriteln( "  F7        : decrement index by 10" );
-    grWriteln( "  F8        : increment index by 10" );
-    grWriteln( "  F9        : decrement index by 100" );
-    grWriteln( "  F10       : increment index by 100" );
-    grWriteln( "  F11       : decrement index by 1000" );
-    grWriteln( "  F12       : increment index by 1000" );
+    grWriteln( "  F7         : decrement index by 10" );
+    grWriteln( "  F8         : increment index by 10" );
+    grWriteln( "  F9         : decrement index by 100" );
+    grWriteln( "  F10        : increment index by 100" );
+    grWriteln( "  F11        : decrement index by 1000" );
+    grWriteln( "  F12        : increment index by 1000" );
     grLn();
     grWriteln( "press any key to exit this help screen" );
 
-    grRefreshSurface( surface );
-    grListenSurface( surface, gr_event_key, &dummy_event );
+    grRefreshSurface( display->surface );
+    grListenSurface( display->surface, gr_event_key, &dummy_event );
+  }
+
+
+  static void
+  event_gamma_grid( void )
+  {
+    grEvent  dummy_event;
+    int      g;
+    int      yside  = 11;
+    int      xside  = 10;
+    int      levels = 17;
+    int      gammas = 30;
+    int      x_0    = (display->bitmap->width - levels*xside)/2;
+    int      y_0    = (display->bitmap->rows  - gammas*(yside+1))/2;
+    int      pitch  = display->bitmap->pitch;
+
+
+    FTDemo_Display_Clear( display );
+    grGotobitmap( display->bitmap );
+
+    if ( pitch < 0 )
+      pitch = -pitch;
+
+    memset( display->bitmap->buffer, 100, pitch*display->bitmap->rows );
+
+    grWriteCellString( display->bitmap, 0, 0, "Gamma grid", display->fore_color );
+
+    for ( g = 1; g <= gammas; g += 1 )
+    {
+      double ggamma = g / 10.0;
+      char   temp[6];
+      int    y = y_0 + ( yside + 1 ) * ( g - 1 );
+      int    nx, ny;
+
+      unsigned char*  line = display->bitmap->buffer + y * display->bitmap->pitch;
+
+      if ( display->bitmap->pitch < 0 )
+        line -= display->bitmap->pitch * ( display->bitmap->rows - 1 );
+
+      line += x_0 * 3;
+
+      grSetPixelMargin( x_0 - 32, y + ( yside - 8 ) / 2 );
+      grGotoxy( 0, 0 );
+
+      sprintf( temp, "%.1f", ggamma );
+      grWrite( temp );
+
+      for ( ny = 0; ny < yside; ny++, line += display->bitmap->pitch )
+      {
+        unsigned char*  dst = line;
+
+        for ( nx = 0; nx < levels; nx++, dst += 3 * xside )
+        {
+          double  p   = nx/(double)(levels - 1);
+          int     gm  = (int)( 255.0 * pow( p, ggamma ) );
+
+          memset( dst, gm, xside * 3 );
+        }
+      }
+    }
+
+
+    grRefreshSurface( display->surface );
+    grListenSurface( display->surface, gr_event_key, &dummy_event );
+  }
+
+
+  static void
+  event_gamma_change( double delta )
+  {
+    status.gamma += delta;
+
+    if ( status.gamma > 3.0 )
+      status.gamma = 3.0;
+    else if ( status.gamma < 0.0 )
+      status.gamma = 0.0;
+
+    grSetGlyphGamma( status.gamma );
+
+    sprintf( status.header_buffer, "gamma changed to %.1f%s",
+             status.gamma, status.gamma == 0.0 ? " (sRGB mode)" : "" );
+
+    status.header = status.header_buffer;
+  }
+
+
+  static void
+  event_size_change( int delta )
+  {
+    status.ptsize += delta;
+
+    if ( status.ptsize < 1 )
+      status.ptsize = 1;
+    else if ( status.ptsize > MAXPTSIZE )
+      status.ptsize = MAXPTSIZE;
+
+    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+  }
+
+
+  static void
+  event_index_change( int delta )
+  {
+    int num_indices = handle->current_font->num_indices;
+
+
+    status.Num += delta;
+
+    if ( status.Num < 0 )
+      status.Num = 0;
+    else if ( status.Num >= num_indices )
+      status.Num = num_indices - 1;
+  }
+
+
+  static void
+  event_render_mode_change( int delta )
+  {
+
+    if ( delta )
+    {
+      status.render_mode = ( status.render_mode + delta ) % N_RENDER_MODES;
+
+      if ( status.render_mode < 0 )
+        status.render_mode += N_RENDER_MODES;
+    }
+
+    switch ( status.render_mode )
+    {
+    case RENDER_MODE_ALL:
+      status.header = (char *)"rendering all glyphs in font";
+      break;
+    case RENDER_MODE_EMBOLDEN:
+      status.header = (char *)"rendering emboldened text";
+      break;
+    case RENDER_MODE_STROKE:
+      status.header = (char *)"rendering stroked text";
+      break;
+    case RENDER_MODE_TEXT:
+      status.header = (char *)"rendering test text string";
+      break;
+    case RENDER_MODE_WATERFALL:
+      status.header = (char *)"rendering glyph waterfall";
+      break;
+    }
+  }
+
+
+  static void
+  event_font_change( int  delta )
+  {
+    int      num_indices;
+
+
+    if ( status.font_index + delta >= handle->num_fonts ||
+         status.font_index + delta < 0 )
+      return;
+
+    status.font_index += delta;
+
+    FTDemo_Set_Current_Font( handle, handle->fonts[status.font_index] );
+    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Update_Current_Flags( handle );
+
+    num_indices = handle->current_font->num_indices;
+
+    if ( status.Num >= num_indices )
+      status.Num = num_indices - 1;
   }
 
 
   static int
   Process_Event( grEvent*  event )
   {
-    int  i;
+    int  ret = 0;
 
+    if ( event->key >= '1' && event->key < '1' + N_RENDER_MODES )
+    {
+      status.render_mode = event->key - '1';
+      event_render_mode_change( 0 );
+
+      return ret;
+    }
 
     switch ( event->key )
     {
-    case grKeyEsc:            /* ESC or q */
+    case grKeyEsc:
     case grKEY( 'q' ):
-      return 0;
-
-    case grKEY( 'a' ):
-      antialias  = !antialias;
-      new_header = antialias ? (char *)"anti-aliasing is now on"
-                             : (char *)"anti-aliasing is now off";
-      set_current_image_type();
-      return 1;
-
-    case grKEY( 'g' ):
-      if ( the_gamma >= 3.0 )
-        the_gamma = 3.0;
-      else
-        the_gamma += 0.1;
-
-      goto SetGamma;
-
-    case grKEY( 'v' ):
-      if ( the_gamma <= 0 )
-        the_gamma = 0;
-      else
-        the_gamma -= 0.1;
-
-      goto SetGamma;
-
-    SetGamma:
-      grSetGlyphGamma( the_gamma );
-      sprintf( Header, "gamma changed to %.1f %s", the_gamma, the_gamma == 0.0 ? "(sRGB mode)" : "" );
-      new_header = Header;
-      break;
-
-    case grKEY( 'L' ):
-      lcd_mode = ( lcd_mode + 1 ) % 6;
-
-      switch ( lcd_mode )
-      {
-      case 0:
-        new_header = (char *)"normal anti-aliased rendering on";
-        break;
-      case 1:
-        new_header = (char *)"light anti-aliased rendering on";
-        break;
-      case 2:
-        new_header = (char *)"horizontal LCD-optimized rendering on (RGB)";
-        break;
-      case 3:
-        new_header = (char *)"horizontal LCD-optimized rendering on (BGR)";
-        break;
-      case 4:
-        new_header = (char *)"vertical LCD-optimized rendering on (RGB)";
-        break;
-      case 5:
-        new_header = (char *)"vertical LCD-optimized rendering on (BGR)";
-        break;
-      default:
-        ;
-      }
-      set_current_image_type();
-      return 1;
-
-    case grKEY( 'c' ):
-      use_sbits_cache = !use_sbits_cache;
-      new_header = use_sbits_cache ? (char *)"now using sbits cache"
-                                   : (char *)"now using normal cache";
-      return 1;
-
-    case grKEY( 'f' ):
-      autohint = !autohint;
-      new_header = autohint ? (char *)"forced auto-hinting is now on"
-                            : (char *)"forced auto-hinting is now off";
-      set_current_image_type();
-      return 1;
-
-    case grKEY( 'b' ):
-      use_sbits  = !use_sbits;
-      new_header = use_sbits
-                     ? (char *)"embedded bitmaps are now used when available"
-                     : (char *)"embedded bitmaps are now ignored";
-      set_current_image_type();
-      return 1;
-
-    case grKEY( 'n' ):
-    case grKEY( 'p' ):
-      return (int)event->key;
-
-    case grKEY( 'l' ):
-      low_prec   = !low_prec;
-      new_header = low_prec
-                     ? (char *)"rendering precision is now forced to low"
-                     : (char *)"rendering precision is now normal";
-      break;
-
-    case grKEY( 'h' ):
-      hinted     = !hinted;
-      new_header = hinted ? (char *)"glyph hinting is now active"
-                          : (char *)"glyph hinting is now ignored";
-      set_current_image_type();
-      break;
-
-    case grKEY( 'K' ):
-      render_mode = RENDER_MODE_GAMMAGRID;
-      new_header = (char*)"rendering gamma grid";
-      break;
-
-    case grKEY( ' ' ):
-      render_mode = ( render_mode + 1 ) % RENDER_MODE_GAMMAGRID;
-      switch ( render_mode )
-      {
-      case RENDER_MODE_ALL:
-        new_header = (char*)"rendering all glyphs in font";
-        break;
-      case RENDER_MODE_EMBOLDEN:
-        new_header = (char*)"rendering emboldened text";
-        break;
-      case RENDER_MODE_STROKE:
-        new_header = (char*)"rendering stroked text";
-        break;
-      case RENDER_MODE_TEXT:
-        new_header = (char*)"rendering test text string";
-        break;
-      case RENDER_MODE_WATERFALL:
-        new_header = (char*)"rendering glyph waterfall";
-        break;
-      case RENDER_MODE_GAMMAGRID: /* never happen */
-        new_header = (char*)"rendering gamma grid";
-        break;
-      }
+      ret = 1;
       break;
 
     case grKeyF1:
     case grKEY( '?' ):
-      Help();
-      return 1;
+      event_help();
+      break;
 
-    case grKeyPageUp:   i =    10; goto Do_Scale;
-    case grKeyPageDown: i =   -10; goto Do_Scale;
-    case grKeyUp:       i =     1; goto Do_Scale;
-    case grKeyDown:     i =    -1; goto Do_Scale;
+    case grKEY( 'a' ):
+      handle->antialias = !handle->antialias;
+      status.header     = handle->antialias
+                           ? (char *)"anti-aliasing is now on"
+                           : (char *)"anti-aliasing is now off";
 
-    case grKeyLeft:     i =    -1; goto Do_Glyph;
-    case grKeyRight:    i =     1; goto Do_Glyph;
-    case grKeyF7:       i =   -10; goto Do_Glyph;
-    case grKeyF8:       i =    10; goto Do_Glyph;
-    case grKeyF9:       i =  -100; goto Do_Glyph;
-    case grKeyF10:      i =   100; goto Do_Glyph;
-    case grKeyF11:      i = -1000; goto Do_Glyph;
-    case grKeyF12:      i =  1000; goto Do_Glyph;
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'b' ):
+      handle->use_sbits = !handle->use_sbits;
+      status.header     = handle->use_sbits
+                           ? (char *)"embedded bitmaps are now used when available"
+                           : (char *)"embedded bitmaps are now ignored";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'c' ):
+      handle->use_sbits_cache = !handle->use_sbits_cache;
+      status.header           = handle->use_sbits_cache
+                                 ? (char *)"now using sbits cache"
+                                 : (char *)"now using normal cache";
+      break;
+
+    case grKEY( 'f' ):
+      handle->autohint = !handle->autohint;
+      status.header    = handle->autohint
+                          ? (char *)"forced auto-hinting is now on"
+                          : (char *)"forced auto-hinting is now off";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'h' ):
+      handle->hinted = !handle->hinted;
+      status.header  = handle->hinted
+                        ? (char *)"glyph hinting is now active"
+                        : (char *)"glyph hinting is now ignored";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'l' ):
+      handle->low_prec = !handle->low_prec;
+      status.header    = handle->low_prec
+                          ? (char *)"rendering precision is now forced to low"
+                          : (char *)"rendering precision is now normal";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'L' ):
+      handle->lcd_mode = ( handle->lcd_mode + 1 ) % N_LCD_MODES;
+
+      switch ( handle->lcd_mode )
+      {
+      case LCD_MODE_AA:
+        status.header = (char *)"normal anti-aliased rendering on";
+        break;
+      case LCD_MODE_LIGHT:
+        status.header = (char *)"light anti-aliased rendering on";
+        break;
+      case LCD_MODE_RGB:
+        status.header = (char *)"horizontal LCD-optimized rendering on (RGB)";
+        break;
+      case LCD_MODE_BGR:
+        status.header = (char *)"horizontal LCD-optimized rendering on (BGR)";
+        break;
+      case LCD_MODE_VRGB:
+        status.header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        break;
+      case LCD_MODE_VBGR:
+        status.header = (char *)"vertical LCD-optimized rendering on (BGR)";
+        break;
+      }
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( ' ' ):
+      event_render_mode_change( 1 );
+      break;
+
+    case grKEY( 'G' ):
+      event_gamma_grid();
+      break;
+
+    case grKEY( 'g' ):
+      event_gamma_change( 0.1 );
+      break;
+
+    case grKEY( 'v' ):
+      event_gamma_change( -0.1 );
+      break;
+
+    case grKEY( 'n' ):
+      event_font_change( 1 );
+      break;
+
+    case grKEY( 'p' ):
+      event_font_change( -1 );
+      break;
+
+    case grKeyUp:       event_size_change(   1 ); break;
+    case grKeyDown:     event_size_change(  -1 ); break;
+    case grKeyPageUp:   event_size_change(  10 ); break;
+    case grKeyPageDown: event_size_change( -10 ); break;
+
+    case grKeyLeft:  event_index_change(    -1 ); break;
+    case grKeyRight: event_index_change(     1 ); break;
+    case grKeyF7:    event_index_change(   -10 ); break;
+    case grKeyF8:    event_index_change(    10 ); break;
+    case grKeyF9:    event_index_change(  -100 ); break;
+    case grKeyF10:   event_index_change(   100 ); break;
+    case grKeyF11:   event_index_change( -1000 ); break;
+    case grKeyF12:   event_index_change(  1000 ); break;
 
     default:
       ;
     }
-    return 1;
 
-  Do_Scale:
-    ptsize += i;
-    if ( ptsize < 1 )         ptsize = 1;
-    if ( ptsize > MAXPTSIZE ) ptsize = MAXPTSIZE;
-    return 1;
-
-  Do_Glyph:
-    Num += i;
-    if ( Num < 0 )            Num = 0;
-    if ( Num >= num_indices ) Num = num_indices - 1;
-
-    return 1;
+    return ret;
   }
 
+
+  static char*
+  error_message( FT_Error error_code )
+  {
+    FT_Face      face;
+    const char*  basename;
+
+
+    error = FTC_Manager_LookupFace( handle->cache_manager,
+                                    handle->image_type.face_id, &face );
+    if ( error )
+      PanicZ( "can't access font file" );
+      
+    basename = ft_basename( handle->current_font->filepathname );
+
+    switch ( error_code )
+    {
+      case FT_Err_Ok:
+        sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
+            face->style_name, basename );
+        break;
+      case FT_Err_Invalid_Pixel_Size:
+        sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
+        break;
+      case FT_Err_Invalid_PPem:
+        sprintf( status.header_buffer, "Invalid ppem value (file `%s')", basename );
+        break;
+      default:
+        sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
+            (FT_UShort)error_code );
+        break;
+    }
+
+    return status.header_buffer;
+  }
 
   static void
   usage( char*  execname )
@@ -823,7 +862,7 @@
     fprintf( stderr,  "ftview: simple glyph viewer -- part of the FreeType project\n" );
     fprintf( stderr,  "-----------------------------------------------------------\n" );
     fprintf( stderr,  "\n" );
-    fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
+    fprintf( stderr,  "Usage: %s [status below] ppem fontname[.ttf|.ttc] ...\n",
              execname );
     fprintf( stderr,  "\n" );
     fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
@@ -836,25 +875,19 @@
   }
 
 
-  int
-  main( int    argc,
-        char*  argv[] )
+  static void
+  parse_cmdline( int*    argc,
+                 char**  argv[] )
   {
-    int          old_ptsize, orig_ptsize, font_index;
-    int          first_index = 0;
-    int          XisSetup = 0;
-    char*        execname;
-    int          option;
-    const char*  Header_format;
-
-    grEvent      event;
+    char*  execname;
+    int    option;
 
 
-    execname = ft_basename( argv[0] );
+    execname = ft_basename( (*argv)[0] );
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "Dde:f:l:r:" );
+      option = getopt( *argc, *argv, "Dde:f:l:r:" );
 
       if ( option == -1 )
         break;
@@ -862,30 +895,30 @@
       switch ( option )
       {
       case 'd':
-        debug = 1;
+        status.debug = 1;
         break;
 
       case 'D':
-        dump_cache_stats = 1;
+        status.dump_cache_stats = 1;
         break;
 
       case 'e':
-        encoding = (FT_Encoding)make_tag( optarg );
+        status.encoding = FTDemo_Make_Encoding_Tag( optarg );
         break;
 
       case 'f':
-        first_index = atoi( optarg );
+        status.Num  = atoi( optarg );
         break;
 
       case 'l':
-        trace_level = atoi( optarg );
-        if ( trace_level < 1 || trace_level > 7 )
+        status.trace_level = atoi( optarg );
+        if ( status.trace_level < 1 || status.trace_level > 7 )
           usage( execname );
         break;
 
       case 'r':
-        res = atoi( optarg );
-        if ( res < 1 )
+        status.res = atoi( optarg );
+        if ( status.res < 1 )
           usage( execname );
         break;
 
@@ -895,210 +928,141 @@
       }
     }
 
-    argc -= optind;
-    argv += optind;
+    *argc -= optind;
+    *argv += optind;
 
-    Header_format = encoding != FT_ENCODING_NONE
-                      ? "at %d points, first char code = 0x%x"
-                      : "at %d points, first glyph index = %d";
-
-    if ( argc <= 1 )
+    if ( *argc <= 1 )
       usage( execname );
 
-    if ( sscanf( argv[0], "%d", &orig_ptsize ) != 1 )
-      orig_ptsize = 64;
+    status.ptsize = atoi( *argv[0] );
+    if ( status.ptsize == 0 )
+      status.ptsize = 64;
+
+    (*argc)--;
+    (*argv)++;
+  }
+
+
+  int
+  main( int    argc,
+        char*  argv[] )
+  {
+    grEvent      event;
+    const char*  header_format;
+    
+
+    parse_cmdline( &argc, &argv );
 
 #if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0 && FREETYPE_PATCH <= 8
-    if ( debug )
+    if ( status.debug )
     {
 #  ifdef FT_DEBUG_LEVEL_TRACE
-      FT_SetTraceLevel( trace_any, (FT_Byte)trace_level );
+      FT_SetTraceLevel( trace_any, (FT_Byte)status.trace_level );
 #  else
-      trace_level = 0;
+      status.trace_level = 0;
 #  endif
     }
 #elif 0
        /* "setenv/putenv" is not ANSI and I don't want to mess */
        /* with this portability issue right now..              */
-    if ( debug )
+    if ( status.debug )
     {
       char  temp[32];
 
-      sprintf( temp, "any=%d", trace_level );
+      sprintf( temp, "any=%d", status.trace_level );
       setenv( "FT2_DEBUG", temp );
     }
 #endif
 
+    header_format = status.encoding != FT_ENCODING_NONE
+                    ? "at %d points, first char code = 0x%x"
+                    : "at %d points, first glyph index = %d";
+
     /* Initialize engine */
-    init_freetype();
+    handle = FTDemo_New( status.encoding );
 
-    argc--;
-    argv++;
     for ( ; argc > 0; argc--, argv++ )
-      install_font_file( argv[0] );
+      FTDemo_Install_Font( handle, argv[0] );
 
-    if ( num_fonts == 0 )
+    if ( handle->num_fonts == 0 )
       PanicZ( "could not find/open any font file" );
 
-    font_index = 0;
-    ptsize     = orig_ptsize;
+    display = FTDemo_Display_New( gr_pixel_mode_rgb24 );
+    if ( !display )
+      PanicZ( "could not allocate display surface" );
 
-  NewFile:
-    set_current_face( fonts[font_index] );
-    set_current_pointsize( ptsize );
-    set_current_image_type();
-    num_indices = fonts[font_index]->num_indices;
+    memset( display->fore_color.chroma, 0, 4 );
+    memset( display->back_color.chroma, 0xff, 4 );
+    grSetTitle( display->surface, "FreeType Glyph Viewer - press F1 for help" );
 
-    error = FTC_Manager_LookupFace( cache_manager,
-                                    current_font.face_id, &face );
-    if ( error )
-    {
-      /* can't access the font file; do not render anything */
-      fprintf( stderr, "can't access font file %p\n",
-               current_font.face_id );
-      exit( 1 );
-    }
+    status.Fail = 0;
 
-    /* initialize graphics if needed */
-    if ( !XisSetup )
-    {
-      XisSetup = 1;
-      Init_Display();
-    }
-
-    grSetTitle( surface, "FreeType Glyph Viewer - press F1 for help" );
-    old_ptsize = ptsize;
-
-    if ( num_fonts >= 1 )
-    {
-      Fail = 0;
-      Num  = first_index;
-
-      if ( Num >= num_indices )
-        Num = num_indices - 1;
-
-      if ( Num < 0 )
-        Num = 0;
-    }
+    event_font_change( 0 );
 
     for ( ;; )
     {
-      int  key;
+      FTDemo_Display_Clear( display );
 
-
-      Clear_Display();
-
-      if ( num_fonts >= 1 )
+      switch ( status.render_mode )
       {
-        error = FT_Err_Ok;
+      case RENDER_MODE_ALL:
+        error = Render_All( handle->current_font->num_indices, status.Num );
+        break;
 
+      case RENDER_MODE_EMBOLDEN:
+        error = Render_Embolden( handle->current_font->num_indices, status.Num );
+        break;
 
-        switch ( render_mode )
-        {
-        case RENDER_MODE_ALL:
-          error = Render_All( Num );
-          break;
+      case RENDER_MODE_STROKE:
+        error = Render_Stroke( handle->current_font->num_indices, status.Num );
+        break;
 
-        case RENDER_MODE_EMBOLDEN:
-          error = Render_Embolden( Num );
-          break;
+      case RENDER_MODE_TEXT:
+        error = Render_Text( handle->current_font->num_indices, status.Num );
+        break;
 
-        case RENDER_MODE_STROKE:
-          error = Render_Stroke( Num );
-          break;
-
-        case RENDER_MODE_TEXT:
-          error = Render_Text( Num );
-          break;
-
-        case RENDER_MODE_WATERFALL:
-          error = Render_Waterfall( ptsize );
-          break;
-
-        case RENDER_MODE_GAMMAGRID:
-          error = Render_GammaGrid();
-          render_mode = RENDER_MODE_ALL;
-        }
-
-        if ( !new_header )
-        {
-          if ( size )
-            sprintf( Header, "%s %s (file `%s')",
-              face->family_name,
-              face->style_name,
-              ft_basename( ((PFont)current_font.face_id)->filepathname ) );
-          else
-          {
-            if ( error == FT_Err_Invalid_Pixel_Size )
-              sprintf( Header, "Invalid pixel size (file `%s')",
-                ft_basename( ((PFont)current_font.face_id)->filepathname ) );
-            else if ( error == FT_Err_Invalid_PPem )
-              sprintf( Header, "Invalid ppem value (file `%s')",
-                ft_basename( ((PFont)current_font.face_id)->filepathname ) );
-            else
-              sprintf( Header, "File `%s': error 0x%04x",
-                ft_basename( ((PFont)current_font.face_id)->filepathname ),
-                (FT_UShort)error );
-          }
-
-          new_header = Header;
-        }
-
-        grWriteCellString( &bit, 0, 0, new_header, fore_color );
-        new_header = 0;
-
-        sprintf( Header, Header_format, ptsize, Num );
+      case RENDER_MODE_WATERFALL:
+        error = Render_Waterfall( status.ptsize );
+        break;
       }
 
-      grWriteCellString( &bit, 0, 8, Header, fore_color );
-      grRefreshSurface( surface );
+      if ( !status.header )
+        status.header = error_message( error );
 
-      if ( dump_cache_stats )
+      /* write header */
+      grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+      sprintf( status.header_buffer, header_format, status.ptsize, status.Num );
+      grWriteCellString( display->bitmap, 0, HEADER_HEIGHT, status.header_buffer,
+                         display->fore_color );
+
+      grRefreshSurface( display->surface );
+
+      if ( status.dump_cache_stats )
       {
         /* dump simple cache manager statistics */
         fprintf( stderr, "cache manager [ nodes, bytes, average ] = "
                          " [ %d, %ld, %f ]\n",
-                         cache_manager->num_nodes,
-                         cache_manager->cur_weight,
-                         cache_manager->num_nodes > 0
-                           ? cache_manager->cur_weight * 1.0 /
-                               cache_manager->num_nodes
+                         handle->cache_manager->num_nodes,
+                         handle->cache_manager->cur_weight,
+                         handle->cache_manager->num_nodes > 0
+                           ? handle->cache_manager->cur_weight * 1.0 /
+                               handle->cache_manager->num_nodes
                            : 0.0 );
       }
 
-      grListenSurface( surface, 0, &event );
-      if ( !( key = Process_Event( &event ) ) )
-        goto End;
-
-      if ( key == 'n' )
-      {
-        if ( font_index + 1 < num_fonts )
-          font_index++;
-
-        goto NewFile;
-      }
-
-      if ( key == 'p' )
-      {
-        if ( font_index > 0 )
-          font_index--;
-
-        goto NewFile;
-      }
-
-      if ( ptsize != old_ptsize )
-      {
-        set_current_pointsize( ptsize );
-        old_ptsize = ptsize;
-      }
+      status.header = 0;
+      grListenSurface( display->surface, 0, &event );
+      if ( Process_Event( &event ) )
+        break;
     }
 
-  End:
     printf( "Execution completed successfully.\n" );
-    printf( "Fails = %d\n", Fail );
+    printf( "Fails = %d\n", status.Fail );
 
-    done_freetype();
+    FTDemo_Display_Done( display );
+    FTDemo_Done( handle );
     exit( 0 );      /* for safety reasons */
+
     return 0;       /* never reached */
   }
 

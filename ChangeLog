@@ -1,3 +1,29 @@
+2005-06-17  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile: Update rules for ftview and ftstring which no longer
+	depend on ftcommon.i but on ftcommon.c.
+
+	(LINK_ITEMS, LINK_CMD, LINK_LIBS): New variables.
+	(GRAPH_LINK2): Removed.
+	(COMMON_LINK, GRAPH_LINK): Replace with...
+	(LINK_COMMON, LINK_GRAPH): This.  Use LINK_ITEMS, LINK_CMD, and
+	LINK_LIBS.
+	Update all affected targets.
+	(LINK_NEW): Temporary new link command to handle executables which
+	use ftcommon.c.
+	(FTCOMMON_OBJ): New variable to handle ftcommon.c.
+
+2005-06-17  Chia I Wu  <b90201047@ntu.edu.tw>
+
+	* src/ftcommon.c, src/ftcommon.h: New files.
+
+	* src/ftstring.c: Rewritten.
+	Make the function keys more compatible with ftview.c.
+	New key 'V' for vertical rendering.
+
+	* src/ftview.c: Rewritten.
+	Now we can use number keys (i.e. 1, 2, ...) to select rendering mode.
+
 2005-06-08  Werner Lemberg  <wl@gnu.org>
 
 

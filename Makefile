@@ -115,26 +115,38 @@ else
     MATH := -lm
   endif
 
-  # The default commands used to link the executables.  These can
+  # The default variables used to link the executables.  These can
   # be redefined for platform-specific stuff.
   #
+  # The first token of LINK_ITEMS must be the executable.
+  #
+  LINK_ITEMS = $T$(subst /,$(COMPILER_SEP),$@ $<)
+
   ifeq ($(PLATFORM),unix)
-    CC   = $(CCraw)
-    LINK = $(subst /,$(SEP),$(OBJ_BUILD)/libtool) --mode=link $(CC) \
-           $T$(subst /,$(COMPILER_SEP),$@ $< $(LDFLAGS) $(FTLIB) $(EFENCE))
+    CC        = $(CCraw)
+    LINK_CMD  = $(subst /,$(SEP),$(OBJ_BUILD)/libtool) \
+                --mode=link $(CC) \
+                $(subst /,$(COMPILER_SEP),$(LDFLAGS))
+    LINK_LIBS = $(subst /,$(COMPILER_SEP),$(FTLIB) $(EFENCE))
   else
+    LINK_CMD = $(CC) $(subst /,$(COMPILER_SEP),$(LDFLAGS))
     ifeq ($(PLATFORM),unixdev)
-      LINK = $(CC) $T$(subst /,$(COMPILER_SEP),$@ $< $(FTLIB) \
-                               $(EFENCE) -lm $(LDFLAGS))
+      LINK_LIBS = $(subst /,$(COMPILER_SEP),$(FTLIB) $(EFENCE)) -lm
     else
-      LINK = $(CC) $T$(subst /,$(COMPILER_SEP),$@ $< $(FTLIB) \
-                               $(EFENCE) $(LDFLAGS))
+      LINK_LIBS = $(subst /,$(COMPILER_SEP),$(FTLIB) $(EFENCE))
     endif
   endif
-  
-  COMMON_LINK = $(LINK) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ))
-  GRAPH_LINK  = $(COMMON_LINK) $(subst /,$(COMPILER_SEP),$(GRAPH_LIB)) $(MATH)
-  GRAPH_LINK2 = $(GRAPH_LINK) $(subst /,$(COMPILER_SEP),$(EXTRA_GRAPH_OBJS))
+
+  LINK_COMMON = $(LINK_CMD) \
+                $(LINK_ITEMS) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ)) \
+                $(LINK_LIBS)
+  LINK_GRAPH  = $(LINK_COMMON) $(subst /,$(COMPILER_SEP),$(GRAPH_LIB)) \
+                $(GRAPH_LINK) $(MATH)
+  LINK_NEW    = $(LINK_CMD) \
+                $(LINK_ITEMS) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ) \
+                                        $(FTCOMMON_OBJ)) \
+                $(LINK_LIBS) $(subst /,$(COMPILER_SEP),$(GRAPH_LIB)) \
+                $(GRAPH_LINK) $(MATH)
 
   .PHONY: exes clean distclean
 
@@ -240,6 +252,11 @@ else
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
   endif
 
+  FTCOMMON_OBJ := $(OBJ_DIR)/ftcommon.$(SO)
+  $(FTCOMMON_OBJ): $(SRC_DIR)/ftcommon.c $(SRC_DIR)/ftcommon.h
+	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
+
 
   $(OBJ_DIR)/%.$(SO): $(SRC_DIR)/%.c $(FTLIB)
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
@@ -272,13 +289,16 @@ else
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
+  # We simplify the dependencies on the graphics library by using
+  # $(GRAPH_LIB) directly.
+
   $(OBJ_DIR)/ftview.$(SO): $(SRC_DIR)/ftview.c \
-                           $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+                           $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
   $(OBJ_DIR)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
-                           $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+                            $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
@@ -288,7 +308,7 @@ else
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
   $(OBJ_DIR)/ftstring.$(SO): $(SRC_DIR)/ftstring.c \
-                             $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
@@ -336,25 +356,25 @@ else
   # overridden by system-specific things.
   #
   $(BIN_DIR)/ftlint$E: $(OBJ_DIR)/ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/ftbench$E: $(OBJ_DIR)/ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/ftchkwd$E: $(OBJ_DIR)/ftchkwd.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/ftmemchk$E: $(OBJ_DIR)/ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/compos$E: $(OBJ_DIR)/compos.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/ftvalid$E: $(OBJ_DIR)/ftvalid.$(SO) $(FTLIB) $(COMMON_OBJ)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/ftdump$E: $(OBJ_DIR)/ftdump.$(SO) $(FTLIB)
-	  $(COMMON_LINK)
+	  $(LINK_COMMON)
 
   $(BIN_DIR)/fttry$E: $(OBJ_DIR)/fttry.$(SO) $(FTLIB)
 	  $(LINK)
@@ -373,24 +393,24 @@ else
 
 
   $(BIN_DIR)/ftview$E: $(OBJ_DIR)/ftview.$(SO) $(FTLIB) \
-                       $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+                       $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
 
   $(BIN_DIR)/ftgamma$E: $(OBJ_DIR)/ftgamma.$(SO) $(FTLIB) \
                        $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+	  $(LINK_GRAPH)
 
   $(BIN_DIR)/ftmulti$E: $(OBJ_DIR)/ftmulti.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+	  $(LINK_GRAPH)
 
   $(BIN_DIR)/ftstring$E: $(OBJ_DIR)/ftstring.$(SO) $(FTLIB) \
-                         $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+                         $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
 
   $(BIN_DIR)/fttimer$E: $(OBJ_DIR)/fttimer.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(GRAPH_LINK)
+	  $(LINK_GRAPH)
 
 
 endif

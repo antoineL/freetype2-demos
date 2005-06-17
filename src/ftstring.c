@@ -12,8 +12,9 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_GLYPH_H
+
 #include "common.h"
+#include "ftcommon.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,565 +22,29 @@
 #include <stdarg.h>
 #include <math.h>
 
-#include "graph.h"
-#include "grfont.h"
-
-#define DIM_X  500
-#define DIM_Y  400
-
-#define CENTER_X  ( bit.width / 2 )
-#define CENTER_Y  ( bit.rows  / 2 )
-
 #define MAXPTSIZE  500                 /* dtp */
 
-  static char   Header[128];
-  static char*  new_header = 0;
 
   static char*  Text = (char *)"The quick brown fox jumps over the lazy dog";
 
-  static FT_Library   library;      /* the FreeType library            */
-  static FT_Face      face;         /* the font face                   */
-  static FT_Error     error;        /* error returned by FreeType?     */
-
-  static FT_Encoding  encoding = FT_ENCODING_UNICODE;
-
-  static grSurface*   surface;      /* current display surface         */
-  static grBitmap     bit;          /* current display bitmap          */
-
-  static int  ptsize;               /* current point size */
-  static int  Num;
-  static int  Rotation = 0;
-  static int  Fail;
-
-  static int  hinted    = 1;        /* is glyph hinting active?        */
-  static int  antialias = 1;        /* is anti-aliasing active?        */
-  static int  use_sbits = 0;        /* do we use embedded bitmaps?     */
-  static int  kerning   = 2;        /* 0: no kerning;                  */
-                                    /* 1: `kern' values                */
-                                    /* 2: `kern' + side bearing errors */
-  static int  autohint  = 0;        /* is forced hinting active?       */
-  static int  use_gamma = 0;
-
-  static int  res = 72;             /* default resolution in dpi */
-
-  static grColor  fore_color = { 255 };
-
-  static int  graph_init  = 0;
-
-  static FT_Matrix  trans_matrix;
-  static int        transform = 0;
-
-  static FT_Vector  string_center;
-
-  typedef struct  TGlyph_
-  {
-    FT_UInt    glyph_index;         /* glyph index in face      */
-    FT_Vector  pos;                 /* position of glyph origin */
-    FT_Glyph   image;               /* glyph image              */
-
-  } TGlyph, *PGlyph;
-
-
-#define FLOOR( x )  ( (x) & -64 )
-#define CEIL( x )   ( ( (x) + 63 ) & -64 )
-#define TRUNC ( x)  ( (x) >> 6 )
-
-
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-/****                                                                    ****/
-/****                 U T I L I T Y   F U N C T I O N S                  ****/
-/****                                                                    ****/
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-
-#define DEBUGxxx
-
-#ifdef DEBUG
-#define LOG( x )  LogMessage##x
-#else
-#define LOG( x )  /* empty */
-#endif
-
-#ifdef DEBUG
-  static void
-  LogMessage( const char*  fmt, ... )
-  {
-    va_list  ap;
-
-
-    va_start( ap, fmt );
-    vfprintf( stderr, fmt, ap );
-    va_end( ap );
-  }
-#endif
-
-  /* PanicZ */
-  static void
-  PanicZ( const char* message )
-  {
-    fprintf( stderr, "%s\n  error = 0x%04x\n", message, error );
-    exit( 1 );
-  }
-
-
-  static unsigned long
-  make_tag( char  *s )
-  {
-    int            i;
-    unsigned long  l = 0;
-
-
-    for ( i = 0; i < 4; i++ )
-    {
-      if ( !s[i] )
-        break;
-      l <<= 8;
-      l  += (unsigned long)s[i];
-    }
-
-    return l;
-  }
-
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-/****                                                                    ****/
-/****                D I S P L A Y   M A N A G E M E N T                 ****/
-/****                                                                    ****/
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-
-#define MAX_GLYPHS 512
-
-  /*************************************************************************/
-  /*                                                                       */
-  /*  The following arrays are used to store the glyph set that makes      */
-  /*  up a string of text.                                                 */
-  /*                                                                       */
-  /*                                                                       */
-  static TGlyph  glyphs[MAX_GLYPHS];
-  static int     num_glyphs;
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Gamma correction.                                                     */
-  /*                                                                       */
-  /*                                                                       */
-  static double  gamma_value = 2.0f;
-  static FT_Byte gamma_ramp[256];
-
-  static void
-  init_gamma( void )
-  {
-    int i;
-    double gamma_inv = 1.0f / gamma_value;
-
-    for (i = 0; i < 256; i++)
-      gamma_ramp[i] = (FT_Byte)( pow((double)i / 255.0f, gamma_inv) * 255.0f );
-  }
-
-  static void
-  apply_gamma( grBitmap* bmp )
-  {
-    int       i, j;
-    FT_Byte*  buffer = (FT_Byte*) bmp->buffer;
-
-    for (i = 0; i < bmp->rows; i++)
-    {
-      for (j = 0; j < bmp->width; j++)
-        buffer[j] = (FT_Byte) gamma_ramp[buffer[j]];
-
-      buffer += bmp->pitch;
-    }
-  }
-
-  static void
-  draw_gamma_ramp( void )
-  {
-    int   i, x, y;
-    long  pitch = bit.pitch;
-    long  start = 0;
-
-    if ( pitch < 0 )
-      start = -pitch*(bit.rows-1);
-
-    x = (bit.width - 256) / 2;
-    y = (bit.rows + 256) / 2;
-    for (i = 0; i < 256; i++, x++)
-    {
-      bit.buffer[start + pitch*(y - gamma_ramp[i]) + x ] = 80;
-    }
-  }
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Initialize the display surface.                                       */
-  /*                                                                       */
-  /*                                                                       */
-  static int
-  init_display( void )
-  {
-    grInitDevices();
-
-    bit.mode  = gr_pixel_mode_gray;
-    bit.width = DIM_X;
-    bit.rows  = DIM_Y;
-    bit.grays = 256;
-
-    surface = grNewSurface( 0, &bit );
-    if ( !surface )
-      PanicZ( "could not allocate display surface\n" );
-
-    graph_init = 1;
-    return 0;
-  }
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /*  Clear the display surface.                                           */
-  /*                                                                       */
-  /*                                                                       */
-  static void
-  clear_display( void )
-  {
-    long  size = (long)bit.pitch * bit.rows;
-
-
-    if ( size < 0 )
-      size = -size;
-    memset( bit.buffer, 0, size );
-  }
-
-
-  static void
-  reset_scale( int  pointSize )
-  {
-    (void)FT_Set_Char_Size( face,
-                            pointSize << 6,
-                            pointSize << 6,
-                            res,
-                            res );
-  }
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /*  Layout a string of glyphs.  The glyphs are untransformed.            */
-  /*                                                                       */
-  /*                                                                       */
-  static void
-  layout_glyphs( void )
-  {
-    PGlyph     glyph = glyphs;
-    int        n;
-    FT_Vector  origin;
-    FT_Pos     origin_x       = 0;
-    FT_UInt    load_flags;
-    FT_UInt    prev_index     = 0;
-    FT_Pos     prev_rsb_delta = 0;
-
-
-    load_flags = FT_LOAD_DEFAULT | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
-    if ( !hinted )
-      load_flags |= FT_LOAD_NO_HINTING;
-    if ( !use_sbits )
-      load_flags |= FT_LOAD_NO_BITMAP;
-    if ( autohint )
-      load_flags |= FT_LOAD_FORCE_AUTOHINT;
-
-    for ( n = 0; n < num_glyphs; n++, glyph++ )
-    {
-      /* compute glyph origin */
-      if ( kerning )
-      {
-        if ( prev_index )
-        {
-          FT_Vector  kern;
-
-
-          FT_Get_Kerning( face, prev_index, glyph->glyph_index,
-                          hinted ? FT_KERNING_DEFAULT : FT_KERNING_UNFITTED,
-                          &kern );
-
-          origin_x += kern.x;
-        }
-        prev_index = glyph->glyph_index;
-      }
-
-      /* clear existing image if there is one */
-      if ( glyph->image )
-        FT_Done_Glyph( glyph->image );
-
-      /* load the glyph image (in its native format) */
-      error = FT_Load_Glyph( face, glyph->glyph_index, load_flags );
-      if ( error )
-        continue;
-
-      if ( n && kerning > 1 )
-      {
-        if ( prev_rsb_delta - face->glyph->lsb_delta >= 32 )
-          origin_x -= 64;
-
-        else if ( prev_rsb_delta - face->glyph->lsb_delta < -32 )
-          origin_x += 64;
-      }
-
-      origin.x = origin_x;
-      origin.y = 0;
-
-      prev_rsb_delta = face->glyph->rsb_delta;
-
-      error = FT_Get_Glyph( face->glyph, &glyph->image );
-      if ( error )
-        continue;
-
-      glyph->pos = origin;
-
-      origin_x += face->glyph->advance.x;
-    }
-
-    string_center.x = ( origin_x / 2 ) & -64;
-    string_center.y = 0;
-
-    if ( transform && FT_IS_SCALABLE( face ) )
-      FT_Vector_Transform( &string_center, &trans_matrix );
-  }
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Render a given glyph vector set.                                      */
-  /*                                                                       */
-  /*                                                                       */
-  static void
-  render_string( FT_Pos  x, FT_Pos  y )
-  {
-    PGlyph     glyph = glyphs;
-    grBitmap   bit3;
-    int        n;
-    FT_Vector  delta;
-
-
-    /* first of all, we must compute the general delta for the glyph set */
-    delta.x = ( x << 6 ) - string_center.x;
-    delta.y = ( ( bit.rows - y ) << 6 ) - string_center.y;
-
-    for ( n = 0; n < num_glyphs; n++, glyph++ )
-    {
-      FT_Glyph   image;
-      FT_Vector  vec;
-
-
-      if ( !glyph->image )
-        continue;
-
-      /* copy image */
-      error = FT_Glyph_Copy( glyph->image, &image );
-      if ( error )
-        continue;
-
-      /* transform it */
-      vec = glyph->pos;
-      if ( FT_IS_SCALABLE( face ) )
-        FT_Vector_Transform( &vec, &trans_matrix );
-      vec.x += delta.x;
-      vec.y += delta.y;
-      if ( FT_IS_SCALABLE( face ) )
-        error = FT_Glyph_Transform( image, &trans_matrix, &vec );
-      if ( !error )
-      {
-        FT_BBox  bbox;
-
-
-        /* check bounding box; if it is not within the display surface, */
-        /* we don't need to render it                                   */
-
-        FT_Glyph_Get_CBox( image, FT_GLYPH_BBOX_PIXELS, &bbox );
-        if ( !FT_IS_SCALABLE( face ) )
-        {
-          vec.x = vec.x >> 6;
-          vec.y = vec.y >> 6;
-
-          bbox.xMin += vec.x;
-          bbox.xMax += vec.x;
-          bbox.yMin += vec.y;
-          bbox.yMax += vec.y;
-        }
-
-#if 0
-        if ( n == 0 )
-        {
-          fprintf( stderr, "bbox = [%ld %ld %ld %ld]\n",
-                    bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax );
-        }
-#endif
-
-        if ( bbox.xMax > 0         && bbox.yMax > 0        &&
-             bbox.xMin < bit.width && bbox.yMin < bit.rows )
-        {
-          /* convert to a bitmap -- destroy native image */
-          error = FT_Glyph_To_Bitmap( &image,
-                                      antialias ? FT_RENDER_MODE_NORMAL
-                                                : FT_RENDER_MODE_MONO,
-                                      0, 1 );
-          if ( !error )
-          {
-            FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)image;
-            FT_Bitmap*      source = &bitmap->bitmap;
-            FT_Pos          x_top, y_top;
-
-#if 0
-            if ( n == 0 )
-            {
-              fprintf( stderr, "bearing = [%d %d] dims = [%d %d]\n",
-                       bitmap->left, bitmap->top, source->width, source->rows );
-            }
-#endif
-
-            bit3.rows   = source->rows;
-            bit3.width  = source->width;
-            bit3.pitch  = source->pitch;
-            bit3.buffer = source->buffer;
-
-            switch ( source->pixel_mode )
-            {
-            case FT_PIXEL_MODE_MONO:
-              bit3.mode = gr_pixel_mode_mono;
-              break;
-
-            case FT_PIXEL_MODE_GRAY:
-              bit3.mode  = gr_pixel_mode_gray;
-              bit3.grays = source->num_grays;
-              if (use_gamma)
-                apply_gamma(&bit3);
-              break;
-
-            default:
-              continue;
-            }
-
-            /* now render the bitmap into the display surface */
-            if ( FT_IS_SCALABLE( face ) )
-            {
-              x_top = bitmap->left;
-              y_top = bit.rows - bitmap->top;
-            }
-            else
-            {
-              x_top = vec.x - bitmap->left;
-              y_top = vec.y - bitmap->top;
-            }
-            grBlitGlyphToBitmap( &bit, &bit3, x_top, y_top, fore_color );
-          }
-        }
-      }
-      FT_Done_Glyph( image );
-    }
-  }
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /*  Convert a string of text into a glyph vector.                        */
-  /*                                                                       */
-  /*  XXX: For now, we perform a trivial conversion.                       */
-  /*                                                                       */
-  /*                                                                       */
-  static void
-  prepare_text( const unsigned char*  string )
-  {
-    const unsigned char*  p     = (const unsigned char*)string;
-    PGlyph                glyph = glyphs;
-    FT_UInt               glyph_index;
-    unsigned char         in_code;
-    unsigned long         codepoint = 0;
-    int                   expect;
-
-
-    if ( encoding )
-    {
-      error = FT_Select_Charmap( face, encoding );
-      if ( error )
-        PanicZ( "invalid charmap\n" );
-    }
-
-    num_glyphs = expect = 0;
-    while ( *p )
-    {
-      in_code = *p++ ;
-
-      if ( in_code >= 0xC0 )
-      {
-        if ( in_code < 0xE0 )           /*  U+0080 - U+07FF   */
-        {
-          expect = 1;
-          codepoint = in_code & 0x1F;
-        }
-        else if ( in_code < 0xF0 )      /*  U+0800 - U+FFFF   */
-        {
-          expect = 2;
-          codepoint = in_code & 0x0F;
-        }
-        else if ( in_code < 0xF8 )      /* U+10000 - U+10FFFF */
-        {
-          expect = 3;
-          codepoint = in_code & 0x07;
-        }
-        continue;
-      }
-      else if ( in_code >= 0x80 )
-      {
-        --expect;
-
-        if ( expect >= 0 )
-        {
-          codepoint <<= 6;
-          codepoint  += in_code & 0x3F;
-        }
-        if ( expect >  0 )
-          continue;
-
-        expect = 0;
-      }
-      else                              /* ASCII, U+0000 - U+007F */
-        codepoint = in_code;
-
-      if ( encoding )
-        glyph_index = FT_Get_Char_Index( face, codepoint );
-      else
-        glyph_index = codepoint;
-
-      glyph->glyph_index = glyph_index;
-      glyph++;
-      num_glyphs++;
-      if ( num_glyphs >= MAX_GLYPHS )
-        break;
-    }
-  }
-
-
-  static void
-  reset_transform( void )
-  {
-    double    angle   = Rotation * 3.14159 / 64.0;
-    FT_Fixed  cosinus = (FT_Fixed)( cos( angle ) * 65536.0 );
-    FT_Fixed  sinus   = (FT_Fixed)( sin( angle ) * 65536.0 );
-
-
-    transform       = ( angle != 0 );
-    trans_matrix.xx = cosinus;
-    trans_matrix.yx = sinus;
-    trans_matrix.xy = -sinus;
-    trans_matrix.yy = cosinus;
-  }
+  static struct {
+    FT_Encoding  encoding;
+    int          res;
+    int          ptsize;            /* current point size */
+    double       gamma;
+
+    int          use_gamma;
+    FT_Byte      gamma_ramp[256];
+    int          angle;
+    FT_Matrix    trans_matrix;
+    int          font_index;
+    char*        header;
+    char         header_buffer[256];
+
+  } status = { FT_ENCODING_UNICODE, 72, 48, 2.0 };
+
+  static FTDemo_Display*  display;
+  static FTDemo_Handle*   handle;
 
 
 /****************************************************************************/
@@ -592,180 +57,315 @@
 /****************************************************************************/
 /****************************************************************************/
 
-
   static void
-  Help( void )
+  event_help( void )
   {
     grEvent  dummy_event;
 
 
-    clear_display();
+    FTDemo_Display_Clear( display );
     grGotoxy( 0, 0 );
     grSetMargin( 2, 1 );
-    grGotobitmap( &bit );
+    grGotobitmap( display->bitmap );
 
-    grWriteln("FreeType String Viewer - part of the FreeType test suite" );
+    grWriteln( "FreeType String Viewer - part of the FreeType test suite" );
     grLn();
-    grWriteln("This program is used to display a string of text using" );
-    grWriteln("the new convenience API of the FreeType 2 library.");
+    grWriteln( "This program is used to display a string of text using" );
+    grWriteln( "the new convenience API of the FreeType 2 library." );
     grLn();
-    grWriteln("Use the following keys :");
+    grWriteln( "Use the following keys :" );
     grLn();
-    grWriteln("  F1 or ?   : display this help screen" );
-    grWriteln("  a         : toggle anti-aliasing" );
-    grWriteln("  f         : toggle forced auto-hinting" );
-    grWriteln("  h         : toggle outline hinting" );
-    grWriteln("  k         : toggle kerning" );
-    grWriteln("  g         : toggle gamma correction" );
+    grWriteln( "  F1 or ?   : display this help screen" );
     grLn();
-    grWriteln("  Up        : increase pointsize by 1 unit" );
-    grWriteln("  Down      : decrease pointsize by 1 unit" );
-    grWriteln("  Page Up   : increase pointsize by 10 units" );
-    grWriteln("  Page Down : decrease pointsize by 10 units" );
+    grWriteln( "  a         : toggle anti-aliasing" );
+    grWriteln( "  b         : toggle embedded bitmaps (and disable rotation)" );
+    grWriteln( "  f         : toggle forced auto-hinting" );
+    grWriteln( "  h         : toggle outline hinting" );
+    grWriteln( "  l         : toggle low precision rendering" );
     grLn();
-    grWriteln("  Right     : rotate counter-clockwise" );
-    grWriteln("  Left      : rotate clockwise" );
-    grWriteln("  F7        : big rotate counter-clockwise");
-    grWriteln("  F8        : big rotate clockwise");
+    grWriteln( "  k         : cycle through kerning modes" );
+    grWriteln( "  V         : toggle vertical rendering" );
     grLn();
-    grWriteln("  F9        : decrease gamma by 0.1" );
-    grWriteln("  F10       : increase gamma by 0.1" );
+    grWriteln( "  G         : toggle gamma correction" );
+    grWriteln( "  g         : increase gamma by 0.1" );
+    grWriteln( "  v         : decrease gamma by 0.1" );
     grLn();
-    grWriteln("press any key to exit this help screen");
+    grWriteln( "  n         : next font" );
+    grWriteln( "  p         : previous font" );
+    grLn();
+    grWriteln( "  Up        : increase pointsize by 1 unit" );
+    grWriteln( "  Down      : decrease pointsize by 1 unit" );
+    grWriteln( "  Page Up   : increase pointsize by 10 units" );
+    grWriteln( "  Page Down : decrease pointsize by 10 units" );
+    grLn();
+    grWriteln( "  Right     : rotate counter-clockwise" );
+    grWriteln( "  Left      : rotate clockwise" );
+    grWriteln( "  F7        : big rotate counter-clockwise" );
+    grWriteln( "  F8        : big rotate clockwise" );
+    grLn();
+    grLn();
+    grWriteln( "press any key to exit this help screen" );
 
-    grRefreshSurface( surface );
-    grListenSurface( surface, gr_event_key, &dummy_event );
+    grRefreshSurface( display->surface );
+    grListenSurface( display->surface, gr_event_key, &dummy_event );
+  }
+
+
+  static void
+  event_font_change( int  delta )
+  {
+    if ( status.font_index + delta >= handle->num_fonts ||
+         status.font_index + delta < 0 )
+      return;
+
+    status.font_index += delta;
+
+    FTDemo_Set_Current_Font( handle, handle->fonts[status.font_index] );
+    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Update_Current_Flags( handle );
+
+    FTDemo_String_Set( handle, (unsigned char*)Text );
+  }
+
+
+  static void
+  event_angle_change( int  delta )
+  {
+    double    radian;
+    FT_Fixed  cosinus;
+    FT_Fixed  sinus;
+
+
+    status.angle = ( status.angle + delta ) % 360;
+
+    if ( status.angle == 0 )
+      return;
+
+    if ( status.angle < 0 )
+      status.angle += 360;
+
+    radian  = status.angle * 3.14159 / 180.0;
+    cosinus = (FT_Fixed)( cos( radian ) * 65536.0 );
+    sinus   = (FT_Fixed)( sin( radian ) * 65536.0 );
+
+    status.trans_matrix.xx = cosinus;
+    status.trans_matrix.yx = sinus;
+    status.trans_matrix.xy = -sinus;
+    status.trans_matrix.yy = cosinus;
+  }
+
+
+  static void
+  event_gamma_change( double delta )
+  {
+    int i;
+    double gamma_inv;
+
+    status.gamma += delta;
+
+    if ( status.gamma > 3.0 )
+      status.gamma = 3.0;
+    else if ( status.gamma < 0.1 )
+      status.gamma = 0.1;
+
+    sprintf( status.header_buffer, "gamma changed to %.1f", status.gamma );
+    status.header = status.header_buffer;
+
+    gamma_inv = 1.0f / status.gamma;
+
+    for ( i = 0; i < 256; i++ )
+      status.gamma_ramp[i] = (FT_Byte)( pow( (double)i / 255.0f, gamma_inv )
+                                        * 255.0f );
+  }
+
+
+  static void
+  event_size_change( int delta )
+  {
+    status.ptsize += delta;
+
+    if ( status.ptsize < 1 )
+      status.ptsize = 1;
+    else if ( status.ptsize > MAXPTSIZE )
+      status.ptsize = MAXPTSIZE;
+
+    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
   }
 
 
   static int
   Process_Event( grEvent*  event )
   {
-    int  i;
+    int  ret = 0;
 
 
     switch ( event->key )
     {
-    case grKeyEsc:            /* ESC or q */
+    case grKeyEsc:
     case grKEY( 'q' ):
-      return 0;
-
-    case grKEY( 'f' ):
-      autohint = !autohint;
-      new_header = autohint ? (char *)"forced auto-hinting is now on"
-                            : (char *)"forced auto-hinting is now off";
-      return 1;
-
-    case grKEY( 'k' ):
-      kerning = ( kerning + 1 ) % 3;
-      new_header =
-        kerning == 2
-          ? (char *)"kerning and side bearing correction is now active"
-          : kerning == 1 ? (char *)"kerning is now active"
-                         : (char *)"kerning is now ignored";
-      return 1;
-
-    case grKEY( 'a' ):
-      antialias  = !antialias;
-      new_header = antialias ? (char *)"anti-aliasing is now on"
-                             : (char *)"anti-aliasing is now off";
-      return 1;
-
-    case grKEY( 'b' ):
-#if 0
-      use_sbits  = !use_sbits;
-      new_header = use_sbits
-                     ? (char *)"embedded bitmaps are now used when available"
-                     : (char *)"embedded bitmaps are now ignored";
-#else
-      new_header = (char *)"embedded bitmaps can't be rotated/transformed";
-#endif
-      return 1;
-
-    case grKEY( 'n' ):
-    case grKEY( 'p' ):
-      return (int)event->key;
-
-    case grKEY( 'h' ):
-      hinted     = !hinted;
-      new_header = hinted ? (char *)"glyph hinting is now active"
-                          : (char *)"glyph hinting is now ignored";
+      ret = 1;
       break;
-
-    case grKEY( 'g' ):
-      use_gamma = !use_gamma;
-      new_header = use_gamma ? (char *)"gamma correction is now on"
-                             : (char *)"gamma correction is now off";
-      return 1;
 
     case grKeyF1:
     case grKEY( '?' ):
-      Help();
-      return 1;
+      event_help();
+      break;
 
-#if 0
-    case grKeyF3: i =  16; goto Do_Rotate;
-    case grKeyF4: i = -16; goto Do_Rotate;
-    case grKeyF5: i =   1; goto Do_Rotate;
-    case grKeyF6: i =  -1; goto Do_Rotate;
-#endif
+    case grKEY( 'a' ):
+      handle->antialias = !handle->antialias;
+      status.header     = handle->antialias
+                          ? (char *)"anti-aliasing is now on"
+                          : (char *)"anti-aliasing is now off";
 
-    case grKeyPageUp:   i =  10; goto Do_Scale;
-    case grKeyPageDown: i = -10; goto Do_Scale;
-    case grKeyUp:       i =   1; goto Do_Scale;
-    case grKeyDown:     i =  -1; goto Do_Scale;
+      FTDemo_Update_Current_Flags( handle );
+      break;
 
-    case grKeyLeft:  i =  -1; goto Do_Rotate;
-    case grKeyRight: i =   1; goto Do_Rotate;
-    case grKeyF7:    i = -10; goto Do_Rotate;
-    case grKeyF8:    i =  10; goto Do_Rotate;
+    case grKEY( 'b' ):
+      handle->use_sbits = !handle->use_sbits;
+      status.header     = handle->use_sbits
+                          ? (char *)"embedded bitmaps are now used when available"
+                          : (char *)"embedded bitmaps are now ignored";
 
-    case grKeyF9 : if (gamma_value > 0.1f) gamma_value -= 0.1f; goto Do_Gamma_Set;
-    case grKeyF10:                         gamma_value += 0.1f; goto Do_Gamma_Set;
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'f' ):
+      handle->autohint = !handle->autohint;
+      status.header     = handle->autohint
+                          ? (char *)"forced auto-hinting is now on"
+                          : (char *)"forced auto-hinting is now off";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'h' ):
+      handle->hinted = !handle->hinted;
+      status.header   = handle->hinted
+                        ? (char *)"glyph hinting is now active"
+                        : (char *)"glyph hinting is now ignored";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'l' ):
+      handle->low_prec = !handle->low_prec;
+      status.header    = handle->low_prec
+                          ? (char *)"rendering precision is now forced to low"
+                          : (char *)"rendering precision is now normal";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+    case grKEY( 'k' ):
+        FTDemo_String_Set_Kerning( handle, ( handle->kerning_mode + 1 ) % 
+                                   N_KERNING_MODES );
+        status.header  = handle->kerning_mode == KERNING_MODE_SMART
+                         ? (char *)"kerning and side bearing correction is now active"
+                         : handle->kerning_mode == KERNING_MODE_NORMAL
+                           ? (char *)"kerning is now active"
+                           : (char *)"kerning is now ignored";
+      break;
+
+    case grKEY( 'V' ):
+        FTDemo_String_Set_Vertical( handle, !handle->vertical );
+        status.header = handle->vertical
+                        ? (char *)"using vertical layout"
+                        : (char *)"using horizontal layout";
+      break;
+
+    case grKEY( 'G' ):
+      status.use_gamma = !status.use_gamma;
+      status.header    = status.use_gamma
+                         ? (char *)"gamma correction is now on"
+                         : (char *)"gamma correction is now off";
+      break;
+
+    case grKEY( 'g' ):
+      event_gamma_change( 0.1 );
+      break;
+
+    case grKEY( 'v' ):
+      event_gamma_change( -0.1 );
+      break;
+
+    case grKEY( 'n' ):
+      event_font_change( 1 );
+      break;
+
+    case grKEY( 'p' ):
+      event_font_change( -1 );
+      break;
+
+    case grKeyUp:       event_size_change(   1 ); break;
+    case grKeyDown:     event_size_change(  -1 ); break;
+    case grKeyPageUp:   event_size_change(  10 ); break;
+    case grKeyPageDown: event_size_change( -10 ); break;
+
+    case grKeyLeft:  event_angle_change(    -3 ); break;
+    case grKeyRight: event_angle_change(     3 ); break;
+    case grKeyF7:    event_angle_change(   -30 ); break;
+    case grKeyF8:    event_angle_change(    30 ); break;
+
     default:
-      ;
+      break;
     }
-    return 1;
 
-  Do_Rotate:
-    Rotation = ( Rotation + i ) & 127;
-    return 1;
+    return ret;
+  }
 
-  Do_Gamma_Set:
+
+  static void
+  gamma_ramp_draw( FT_Byte    gamma_ramp[256],
+                   grBitmap*  bitmap )
   {
-    static char header_buffer[64];
+    int       i, x, y;
+    FT_Byte*  p = (FT_Byte*)bitmap->buffer;
 
-    sprintf(header_buffer, "gamma is %.1f", gamma_value);
-    new_header = header_buffer;
-    init_gamma();
-    return 1;
-  }
+    if ( bitmap->pitch < 0 )
+      p += -bitmap->pitch * ( bitmap->rows - 1 );
 
-  Do_Scale:
-    ptsize += i;
-    if ( ptsize < 1 )         ptsize = 1;
-    if ( ptsize > MAXPTSIZE ) ptsize = MAXPTSIZE;
-    return 1;
+    x = ( bitmap->width - 256 ) / 2;
+    y = ( bitmap->rows + 256 ) / 2;
 
-#if 0
-  Do_Glyph:
-    Num += i;
-    if ( Num < 0 )           Num = 0;
-    if ( Num >= num_glyphs ) Num = num_glyphs - 1;
-    return 1;
-#endif
+    for (i = 0; i < 256; i++)
+      p[bitmap->pitch * ( y - gamma_ramp[i] ) + ( x + i )] = 80;
   }
 
 
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-/****                                                                    ****/
-/****                       M A I N   P R O G R A M                      ****/
-/****                                                                    ****/
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
+  static char*
+  error_message( FT_Error error_code )
+  {
+    FT_Face      face;
+    const char*  basename;
+
+
+    error = FTC_Manager_LookupFace( handle->cache_manager,
+                                    handle->image_type.face_id, &face );
+    if ( error )
+      PanicZ( "can't access font file" );
+      
+    basename = ft_basename( handle->current_font->filepathname );
+
+    switch ( error_code )
+    {
+      case FT_Err_Ok:
+        sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
+            face->style_name, basename );
+        break;
+      case FT_Err_Invalid_Pixel_Size:
+        sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
+        break;
+      case FT_Err_Invalid_PPem:
+        sprintf( status.header_buffer, "Invalid ppem value (file `%s')", basename );
+        break;
+      default:
+        sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
+            (FT_UShort)error_code );
+        break;
+    }
+
+    return status.header_buffer;
+  }
 
 
   static void
@@ -787,28 +387,19 @@
   }
 
 
-  int
-  main( int     argc,
-        char**  argv )
+  static void
+  parse_cmdline( int*     argc,
+                 char***  argv )
   {
-    int     i, old_ptsize, orig_ptsize, file;
-    int     first_glyph = 0;
-    int     XisSetup = 0;
-    char    filename[128 + 4];
-    char    alt_filename[128 + 4];
-    char*   execname;
-    int     option;
-    int     file_loaded;
-    PGlyph  glyph;
-
-    grEvent   event;
+    char*  execname;
+    int    option;
 
 
-    execname = ft_basename( argv[0] );
+    execname = ft_basename( (*argv)[0] );
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "e:m:r:" );
+      option = getopt( *argc, *argv, "e:m:r:" );
 
       if ( option == -1 )
         break;
@@ -816,17 +407,17 @@
       switch ( option )
       {
       case 'e':
-        encoding = (FT_Encoding)make_tag( optarg );
+        status.encoding = FTDemo_Make_Encoding_Tag( optarg );
         break;
 
       case 'r':
-        res = atoi( optarg );
-        if ( res < 1 )
+        status.res = atoi( optarg );
+        if ( status.res < 1 )
           usage( execname );
         break;
 
       case 'm':
-        if ( argc < 3 )
+        if ( *argc < 3 )
           usage( execname );
         Text = optarg;
         break;
@@ -837,186 +428,107 @@
       }
     }
 
-    argc -= optind;
-    argv += optind;
+    *argc -= optind;
+    *argv += optind;
 
-    if ( argc <= 1 )
+    if ( *argc <= 1 )
       usage( execname );
 
-    if ( sscanf( argv[0], "%d", &orig_ptsize ) != 1 )
-      orig_ptsize = 64;
+    status.ptsize = atoi( *argv[0] );
+    if ( status.ptsize == 0 )
+      status.ptsize = 64;
 
-    file = 1;
+    (*argc)--;
+    (*argv)++;
+  }
+
+
+  int
+  main( int     argc,
+        char**  argv )
+  {
+    grEvent   event;
+
+
+    parse_cmdline( &argc, &argv );
 
     /* Initialize engine */
-    error = FT_Init_FreeType( &library );
-    if ( error )
-      PanicZ( "Could not initialize FreeType library" );
+    handle = FTDemo_New( status.encoding );
 
-  NewFile:
-    ptsize      = orig_ptsize;
-    hinted      = 1;
-    file_loaded = 0;
+    handle->use_sbits = 0;
+    FTDemo_Update_Current_Flags( handle );
 
-#ifndef macintosh
-    i = strlen( argv[file] );
-    while ( i > 0 && argv[file][i] != '\\' && argv[file][i] != '/' )
+    for ( ; argc > 0; argc--, argv++ )
     {
-      if ( argv[file][i] == '.' )
-        i = 0;
-      i--;
-    }
-#endif
+      error = FTDemo_Install_Font( handle, argv[0] );
 
-    filename[128] = '\0';
-    alt_filename[128] = '\0';
-
-    strncpy( filename, argv[file], 128 );
-    strncpy( alt_filename, argv[file], 128 );
-
-    /* first, try to load the glyph name as-is */
-    error = FT_New_Face( library, filename, 0, &face );
-    if ( !error )
-      goto Success;
-
-#ifndef macintosh
-    if ( i >= 0 )
-    {
-      strncpy( filename + strlen( filename ), ".ttf", 4 );
-      strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
-    }
-#endif
-
-    /* if it didn't work, try to add ".ttf" at the end */
-    error = FT_New_Face( library, filename, 0, &face );
-    if ( error )
-      goto Display_Font;
-
-  Success:
-    init_gamma();
-
-    /* prepare the text to be rendered */
-    prepare_text( (unsigned char*)Text );
-
-    file_loaded++;
-
-    reset_scale( ptsize );
-
-  Display_Font:
-    /* initialise graphics if needed */
-    if ( !XisSetup )
-    {
-      XisSetup = 1;
-      init_display();
+      if ( error )
+      {
+        fprintf( stderr, "failed to install %s", argv[0] );
+        if ( error == FT_Err_Invalid_CharMap_Handle )
+          fprintf( stderr, ": missing valid charmap\n" );
+        else
+          fprintf( stderr, "\n" );
+      }
     }
 
-    grSetTitle( surface, "FreeType String Viewer - press F1 for help" );
-    old_ptsize = ptsize;
+    if ( handle->num_fonts == 0 )
+      PanicZ( "could not open any font file" );
 
-    if ( file_loaded >= 1 )
-    {
-      Fail = 0;
-      Num  = first_glyph;
+    display = FTDemo_Display_New( gr_pixel_mode_gray );
+    display->back_color.value = 0;
+    display->fore_color.value = 0xff;
 
-      if ( Num >= num_glyphs )
-        Num = num_glyphs - 1;
+    if ( !display )
+      PanicZ( "could not allocate display surface" );
 
-      if ( Num < 0 )
-        Num = 0;
-    }
+    grSetTitle( display->surface, "FreeType String Viewer - press F1 for help" );
+
+    event_gamma_change( 0 );
+    event_font_change( 0 );
+    status.header = 0;
 
     for ( ;; )
     {
-      int  key;
+      FTDemo_Display_Clear( display );
 
-      clear_display();
+      error = FT_Err_Ok;
 
-      if ( file_loaded >= 1 )
+      if ( !error )
       {
-        /* layout & render string */
-        {
-          reset_transform();
-          layout_glyphs();
-          if (use_gamma)
-            draw_gamma_ramp();
-          render_string( bit.width/2, bit.rows/2 );
-        }
-
-        sprintf( Header, "%s %s (file %s)",
-                         face->family_name,
-                         face->style_name,
-                         ft_basename( filename ) );
-
-        if (!new_header)
-          new_header = Header;
-
-        grWriteCellString( &bit, 0, 0, new_header, fore_color );
-        new_header = 0;
-
-        sprintf( Header, "at %d points, rotation = %d",
-                         ptsize,
-                         Rotation );
-      }
-      else
-      {
-        sprintf( Header, "`%s' is not a font file or could not be opened",
-                         ft_basename(filename) );
+        error = FTDemo_String_Draw( handle, display,
+                                    display->bitmap->width / 2,
+                                    display->bitmap->rows / 2,
+                                    !handle->use_sbits && status.angle
+                                      ? &status.trans_matrix : NULL,
+                                    status.use_gamma ? status.gamma_ramp
+                                                     : NULL );
+        if ( !error && status.use_gamma )
+          gamma_ramp_draw( status.gamma_ramp, display->bitmap );
       }
 
-      grWriteCellString( &bit, 0, 8, Header, fore_color );
-      grRefreshSurface( surface );
+      if ( !status.header )
+        status.header = error_message( error );
 
-      grListenSurface( surface, 0, &event );
-      if ( !( key = Process_Event( &event ) ) )
-        goto Fin;
+      /* write header */
+      grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+      sprintf( status.header_buffer, "at %d points, angle = %d", status.ptsize, status.angle );
+      grWriteCellString( display->bitmap, 0, 8, status.header_buffer, display->fore_color );
 
-      if ( key == 'n' )
-      {
-        if ( file_loaded >= 1 )
-          FT_Done_Face( face );
+      grRefreshSurface( display->surface );
 
-        if ( file < argc - 1 )
-          file++;
-
-        goto NewFile;
-      }
-
-      if ( key == 'p' )
-      {
-        if ( file_loaded >= 1 )
-          FT_Done_Face( face );
-
-        if ( file > 1 )
-          file--;
-
-        goto NewFile;
-      }
-
-      if ( ptsize != old_ptsize )
-      {
-        reset_scale( ptsize );
-
-        old_ptsize = ptsize;
-      }
+      status.header = 0;
+      grListenSurface( display->surface, 0, &event );
+      if ( Process_Event( &event ) )
+        break;
     }
 
-  Fin:
-    glyph = glyphs;
-    for ( i = 0; i < MAX_GLYPHS; i++, glyph++ )
-      if ( glyph->image )
-        FT_Done_Glyph( glyph->image );
-
-    FT_Done_Face    ( face    );
-    FT_Done_FreeType( library );
-
-#if 0
-    grDoneSurface( surface );
-    grDone();
-#endif
     printf( "Execution completed successfully.\n" );
-    printf( "Fails = %d\n", Fail );
 
+    FTDemo_Display_Done( display );
+    FTDemo_Done( handle );
     exit( 0 );      /* for safety reasons */
+
     return 0;       /* never reached */
   }
 

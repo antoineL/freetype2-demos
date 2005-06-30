@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2002, 2003, 2004 by                                      */
+/*  Copyright 1996-2002, 2003, 2004, 2005 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -259,11 +259,12 @@
     case grKEY( 'k' ):
         FTDemo_String_Set_Kerning( handle, ( handle->kerning_mode + 1 ) % 
                                    N_KERNING_MODES );
-        status.header  = handle->kerning_mode == KERNING_MODE_SMART
-                         ? (char *)"kerning and side bearing correction is now active"
-                         : handle->kerning_mode == KERNING_MODE_NORMAL
-                           ? (char *)"kerning is now active"
-                           : (char *)"kerning is now ignored";
+        status.header =
+          handle->kerning_mode == KERNING_MODE_SMART
+            ? (char *)"kerning and side bearing correction is now active"
+            : handle->kerning_mode == KERNING_MODE_NORMAL
+                ? (char *)"kerning is now active"
+                : (char *)"kerning is now ignored";
       break;
 
     case grKEY( 'V' ):

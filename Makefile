@@ -298,12 +298,12 @@ else
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
   $(OBJ_DIR)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
-                            $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+                            $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
   $(OBJ_DIR)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
-                            $(GRAPH_LIB) $(SRC_DIR)/ftcommon.i
+                            $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) \
 
@@ -397,8 +397,8 @@ else
 	  $(LINK_NEW)
 
   $(BIN_DIR)/ftgamma$E: $(OBJ_DIR)/ftgamma.$(SO) $(FTLIB) \
-                       $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(LINK_GRAPH)
+                        $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
 
   $(BIN_DIR)/ftmulti$E: $(OBJ_DIR)/ftmulti.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)

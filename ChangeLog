@@ -1,3 +1,30 @@
+2005-08-23  Masatake YAMATO  <jet@gyve.org>
+
+	* src/ftvalid.c: Add gxvalid support.
+	(GX_VALIDATOR_SYMBOL): New definition.
+	(CKERN_VALIDATOR_SYMBOL): New definition.
+	(ValidatorType::GX_VALIDATE): New enum member.
+	(ValidatorType::CKERN_VALIDATE): New enum member.
+	(validator_symbols): Added GX_VALIDATOR_SYMBOL and
+	CKERN_VALIDATOR_SYMBOL.
+	(gx_table_spec): New const.
+	(N_GX_TABLE_SPEC): New definition.
+	(print_usage): Write about gxvalid and ckern valid.
+	(run_gx_validator): New funtion.
+	(list_gx_tables): Ditto.
+	(run_ckern_validator): Ditto.
+	(list_ckern_tables): Ditto.
+	(main): Call new validators.
+
+	* src/ftvalid.c: Following are misc modifications.
+	(report_result): Use printf instead fprintf. Fix incorrect message.
+	(main): Use switch/case instead of if/else
+	when calling per validator funtions.
+	Call FT_Done_Face. Use a loop to set validator.
+	(print_usage): Insert empty line in usage strings.
+	(validator_symbols): Added NULL as the last
+	array element.
+
 2005-07-04  Chia I Wu  <b90201047@ntu.edu.tw>
 
 	* src/ftcommon.i: Removed.

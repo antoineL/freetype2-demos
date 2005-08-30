@@ -1,3 +1,8 @@
+2005-08-30  Werner Lemberg  <wl@gnu.org>
+
+	* graph/graph.h (grFillRectangle): Comment out -- we don't have an
+	implementation.
+
 2005-08-23  Masatake YAMATO  <jet@gyve.org>
 
 	* src/ftvalid.c: Add gxvalid support.

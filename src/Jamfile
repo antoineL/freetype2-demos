@@ -9,7 +9,7 @@ SubDirHdrs  [ FT2DEMO_SubDir  graph ] ;
 
 COMMON_LIB = $(LIBPREFIX)ft2common$(SUFLIB) ;
 
-Library  $(COMMON_LIB) : common.c ;
+Library  $(COMMON_LIB) : common.c ftcommon.c ;
 
 
 if $(UNIX)
@@ -26,7 +26,7 @@ GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ;
   for t in $(PROGRAMS) $(GRAPHIC_PROGRAMS)
   {
     Main           $(t) : $(t).c ;
-    LinkLibraries  $(t) : $(FT2_LIB) $(COMMON_LIB) ;
+    LinkLibraries  $(t) : $(COMMON_LIB) $(FT2_LIB) ;
   }
 
   for t in $(GRAPHIC_PROGRAMS)

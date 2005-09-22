@@ -48,7 +48,7 @@
           ( ( x ) + ( ( size )->metrics.max_advance >> 6 ) > ( display )->bitmap->width )
 #define Y_TOO_LONG( y, size, display) \
           ( ( y ) >= ( display )->bitmap->rows )
-          
+
   enum {
     RENDER_MODE_ALL = 0,
     RENDER_MODE_EMBOLDEN,
@@ -359,7 +359,8 @@ Next:
 
 
     {
-      error = FTC_Manager_LookupFace( handle->cache_manager, handle->image_type.face_id, &face );
+      error = FTC_Manager_LookupFace( handle->cache_manager,
+                                      handle->image_type.face_id, &face );
       if ( error )
       {
         /* can't access the font file. do not render anything */
@@ -831,7 +832,7 @@ Next:
                                     handle->image_type.face_id, &face );
     if ( error )
       PanicZ( "can't access font file" );
-      
+
     basename = ft_basename( handle->current_font->filepathname );
 
     switch ( error_code )
@@ -949,7 +950,7 @@ Next:
   {
     grEvent      event;
     const char*  header_format;
-    
+
 
     parse_cmdline( &argc, &argv );
 

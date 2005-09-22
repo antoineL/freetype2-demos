@@ -480,30 +480,54 @@
   void
   FTDemo_Update_Current_Flags( FTDemo_Handle*  handle )
   {
-    handle->image_type.flags = handle->antialias ? FT_LOAD_DEFAULT : FT_LOAD_TARGET_MONO;
+    FT_UInt32   flags, target;
 
-    handle->image_type.flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
+    flags = FT_LOAD_DEFAULT;  /* really 0 */
 
-    if ( !handle->hinted )
-      handle->image_type.flags |= FT_LOAD_NO_HINTING;
+    flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if ( handle->autohint )
-      handle->image_type.flags |= FT_LOAD_FORCE_AUTOHINT;
+      flags |= FT_LOAD_FORCE_AUTOHINT;
 
     if ( !handle->use_sbits )
-      handle->image_type.flags |= FT_LOAD_NO_BITMAP;
+      flags |= FT_LOAD_NO_BITMAP;
 
-    if ( handle->antialias && handle->lcd_mode > 0 )
+    if ( handle->hinted )
     {
-      if ( handle->lcd_mode <= 1 )
-        handle->image_type.flags |= FT_LOAD_TARGET_LIGHT;
-      else if ( handle->lcd_mode <= 3 )
-        handle->image_type.flags |= FT_LOAD_TARGET_LCD;
-      else
-        handle->image_type.flags |= FT_LOAD_TARGET_LCD_V;
-    }
+      FT_UInt32  target = 0;
 
-    handle->string_reload = 1;
+      if ( handle->antialias )
+      {
+        switch ( handle->lcd_mode )
+        {
+          case LCD_MODE_LIGHT:
+            target = FT_LOAD_TARGET_LIGHT;
+            break;
+
+          case LCD_MODE_RGB:
+          case LCD_MODE_BGR:
+            target = FT_LOAD_TARGET_LCD;
+            break;
+
+          case LCD_MODE_VRGB:
+          case LCD_MODE_VBGR:
+            target = FT_LOAD_TARGET_LCD_V;
+            break;
+
+          default:
+            target = FT_LOAD_TARGET_NORMAL;
+        }
+      }
+      else
+        target = FT_LOAD_TARGET_MONO;
+
+      flags |= target;
+    }
+    else
+      flags |= FT_LOAD_NO_HINTING;
+
+    handle->image_type.flags = flags;
+    handle->string_reload    = 1;
   }
 
 

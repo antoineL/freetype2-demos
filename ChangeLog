@@ -1,3 +1,8 @@
+2004-09-22  David Turner  <david@freetype.org>
+
+        * src/ftcommon.c: fixed load flags computation to mimic libXft's
+        behaviour
+
 2005-08-30  Werner Lemberg  <wl@gnu.org>
 
 	* graph/graph.h (grFillRectangle): Comment out -- we don't have an

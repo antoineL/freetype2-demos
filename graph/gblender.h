@@ -19,8 +19,8 @@
 
 #define  GBLENDER_SHADE_BITS      4   /* must be <= 7 !! */
 #define  GBLENDER_SHADE_COUNT     ( 1 << GBLENDER_SHADE_BITS )
-#define  GBLENDER_SHADE_INDEX(n)  ((n + (GBLENDER_SHADE_COUNT/2)) >> GBLENDER_SHADE_BITS)
-#define  GBLENDER_KEY_COUNT       256
+#define  GBLENDER_SHADE_INDEX(n)  ((n) >> (8-GBLENDER_SHADE_BITS))
+#define  GBLENDER_KEY_COUNT       256  /* must be a power of 2 */
 #define  GBLENDER_GAMMA_SHIFT     2
 
 #define  xGBLENDER_STORE_BYTES  /* define this to store (R,G,B) values on 3
@@ -30,7 +30,7 @@
                                 * Go figure what's really happenning though :-)
                                 */
 
-#define  GBLENDER_STATS        /* define this to collect statistics in the
+#define  xGBLENDER_STATS        /* define this to collect statistics in the
                                 * blender
                                 */
 
@@ -114,8 +114,12 @@
 
  /* clear blender, and reset stats */
   GBLENDER_API( void )
-  gblender_reset( GBlender  reset );
+  gblender_reset( GBlender  blender );
 
+
+  GBLENDER_API( void )
+  gblender_use_channels( GBlender  blender,
+                         int       channels );
 
  /* lookup a cell range for a given (background,foreground) pair
   */

@@ -15,9 +15,9 @@
 
 /* */
 
-#define  GRGB_TO_RGB565(r,g,b)   ((unsigned short)( ((r << 8) & 0xF800) |    \
-                                                    ((g << 3) & 0x07E0) |    \
-                                                    ((b >> 3) & 0x001F) ) )
+#define  GRGB_TO_RGB565(r,g,b)   ((unsigned short)( (((r) << 8) & 0xF800) |  \
+                                                    (((g) << 3) & 0x07E0) |  \
+                                                    (((b) >> 3) & 0x001F) ) )
 
 #define  GRGB565_TO_RGB24(p)   ( ( ((p) << 8) & 0xF80000 ) |             \
                                  ( ((p) << 3) & 0x0700F8 ) |             \

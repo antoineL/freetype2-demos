@@ -5,6 +5,8 @@
   const unsigned char*  src_line = blit->src_line;
   unsigned char*        dst_line = blit->dst_line;
 
+  gblender_use_channels( blender, 0 );
+
   /* make compiler happy */
   (r)=(r);
   (g)=(g);

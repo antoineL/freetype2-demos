@@ -67,11 +67,27 @@ gblender_clear( GBlender  blender )
 
     for ( nn = 0; nn < GBLENDER_KEY_COUNT; nn++ )
       chan_keys[nn].index = -1;
+
+    blender->cache_r_back  = -1;
+    blender->cache_r_fore  = -1;
+    blender->cache_r_cells = NULL;
+
+    blender->cache_g_back  = -1;
+    blender->cache_g_fore  = -1;
+    blender->cache_g_cells = NULL;
+
+    blender->cache_b_back  = -1;
+    blender->cache_b_fore  = -1;
+    blender->cache_g_cells = NULL;
   }
   else
   {
     for ( nn = 0; nn < GBLENDER_KEY_COUNT; nn++ )
       keys[nn].cells = NULL;
+
+    blender->cache_back  = -1;
+    blender->cache_fore  = -1;
+    blender->cache_cells = NULL;
   }
 }
 
@@ -80,19 +96,32 @@ gblender_reset( GBlender  blender )
 {
   gblender_clear( blender );
 
-  blender->cache_r_back  = -1;
-  blender->cache_r_fore  = -1;
-  blender->cache_r_cells = 0;
-
-  blender->cache_r_back  = -1;
-  blender->cache_r_fore  = -1;
-  blender->cache_r_cells = 0;
-
-  blender->cache_back  = 0;
-  blender->cache_fore  = 0xFFFFFF;
-  blender->cache_cells = gblender_lookup( blender,
-                                          blender->cache_back,
-                                          blender->cache_fore );
+  if ( blender->channels )
+  {
+    blender->cache_r_back  = 0;
+    blender->cache_r_fore  = 0xFFFFFF;
+    blender->cache_r_cells = gblender_lookup_channel( blender,
+                                                      blender->cache_r_back,
+                                                      blender->cache_r_fore );
+    blender->cache_g_back  = 0;
+    blender->cache_g_fore  = 0xFFFFFF;
+    blender->cache_g_cells = gblender_lookup_channel( blender,
+                                                      blender->cache_g_back,
+                                                      blender->cache_g_fore );
+    blender->cache_b_back  = 0;
+    blender->cache_b_fore  = 0xFFFFFF;
+    blender->cache_b_cells = gblender_lookup_channel( blender,
+                                                      blender->cache_b_back,
+                                                      blender->cache_b_fore );
+  }
+  else
+  {
+    blender->cache_back  = 0;
+    blender->cache_fore  = 0xFFFFFF;
+    blender->cache_cells = gblender_lookup( blender,
+                                            blender->cache_back,
+                                            blender->cache_fore );
+  }
 
 #ifdef GBLENDER_STATS
   blender->stat_hits    = 0;
@@ -115,6 +144,22 @@ gblender_init( GBlender   blender,
   gblender_reset( blender );
 }
 
+
+GBLENDER_API( void )
+gblender_use_channels( GBlender  blender,
+                       int       channels )
+{
+  channels = (channels != 0);
+
+  if ( blender->channels != channels )
+  {
+    blender->channels = channels;
+    gblender_reset( blender );
+  }
+}
+
+
+
 /* recompute the grade levels of a given key
  */
 static void
@@ -123,7 +168,7 @@ gblender_reset_key( GBlender     blender,
 {
   GBlenderPixel  back = key->background;
   GBlenderPixel  fore = key->foreground;
-  GBlenderCell*  gr  = key->cells;
+  GBlenderCell*  gr   = key->cells;
   int            nn;
   int            gmax = (256 << GBLENDER_GAMMA_SHIFT)-1;
 
@@ -144,7 +189,7 @@ gblender_reset_key( GBlender     blender,
   gr[0] = (unsigned char)r1;
   gr[1] = (unsigned char)g1;
   gr[2] = (unsigned char)b1;
-  gr += 3;
+  gr   += 3;
 #else
   gr[0] = back;
   gr   += 1;
@@ -160,10 +205,24 @@ gblender_reset_key( GBlender     blender,
 
   for ( nn = 1; nn < GBLENDER_SHADE_COUNT; nn++ )
   {
-    int  a = (nn << GBLENDER_SHADE_BITS);
-    int  r = ((r2-r1)*a + 128);
-    int  g = ((g2-g1)*a + 128);
-    int  b = ((g2-g1)*a + 128);
+    int  bits = 8;
+    int  a    = 0;
+    int  r, g, b;
+
+    while ( bits >= GBLENDER_SHADE_BITS )
+    {
+      bits -= GBLENDER_SHADE_BITS;
+      a    += (nn << bits);
+    }
+    if ( bits > 0 )
+    {
+      bits = GBLENDER_SHADE_BITS - bits;
+      a   += (nn >> bits);
+    }
+
+    r = ((r2-r1)*a + 128);
+    g = ((g2-g1)*a + 128);
+    b = ((g2-g1)*a + 128);
 
     r = (r + (r >> 8)) >> 8;
     g = (g + (g >> 8)) >> 8;
@@ -216,12 +275,14 @@ gblender_lookup( GBlender       blender,
   blender->stat_lookups++;
 #endif
 
+#if 0
   if ( blender->channels )
   {
     /* set to normal mode */
     blender->channels = 0;
     gblender_reset( blender );
   }
+#endif
 
   idx0 = ( background + foreground*63 ) % GBLENDER_KEY_COUNT;
   idx  = idx0;
@@ -236,7 +297,7 @@ gblender_lookup( GBlender       blender,
          key->foreground == foreground )
       goto Exit;
 
-    idx = (idx+1) % GBLENDER_KEY_COUNT;
+    idx = (idx+1) & (GBLENDER_KEY_COUNT-1);
   }
   while ( idx != idx0 );
 
@@ -291,9 +352,19 @@ gblender_reset_channel_key( GBlender         blender,
 
   for ( nn = 1; nn < GBLENDER_SHADE_COUNT; nn++ )
   {
-    int  a = (nn << GBLENDER_SHADE_BITS);
-    int  r = ((r2-r1)*a + 128);
+    int  bits = 8;
+    int  a    = 0;
+    int  r;
 
+    while ( bits >= GBLENDER_SHADE_BITS )
+    {
+      a    += (nn << (bits - GBLENDER_SHADE_BITS));
+      bits -= GBLENDER_SHADE_BITS;
+    }
+    if ( bits > 0 )
+      a += (nn >> (GBLENDER_SHADE_BITS-bits));
+
+    r = ((r2-r1)*a + 128);
     r = (r + (r >> 8)) >> 8;
     r += r1;
     if ( r < 0 ) r = 0; else if ( r > gmax ) r = gmax;
@@ -319,14 +390,16 @@ gblender_lookup_channel( GBlender       blender,
   blender->stat_lookups++;
 #endif
 
+#if 0
   if ( !blender->channels )
   {
     /* set to normal mode */
     blender->channels = 1;
     gblender_reset( blender );
   }
+#endif
 
-  idx0 = ( background + foreground*63 ) % (2*GBLENDER_KEY_COUNT);
+  idx0 = ( background + foreground*17 ) % (GBLENDER_KEY_COUNT);
   idx  = idx0;
   do
   {
@@ -338,7 +411,7 @@ gblender_lookup_channel( GBlender       blender,
     if ( key->backfore == backfore )
       goto Exit;
 
-    idx = (idx+1) % (2*GBLENDER_KEY_COUNT);
+    idx = (idx+1) & (GBLENDER_KEY_COUNT-1);
   }
   while ( idx != idx0 );
 

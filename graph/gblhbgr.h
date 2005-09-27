@@ -4,6 +4,8 @@
   const unsigned char*  src_line = blit->src_line;
   unsigned char*        dst_line = blit->dst_line;
 
+  gblender_use_channels( blender, 1 );
+
   do
   {
     const unsigned char*  src = src_line + blit->src_x*3;
@@ -36,25 +38,25 @@
 
         {
           int  back_r = (back >> 16) & 255;
-          
+
           GBLENDER_LOOKUP_R( blender, back_r );
-          
+
           pix_r = _grcells[ar];
         }
-        
+
         {
           int  back_g = (back >> 8) & 255;
-          
+
           GBLENDER_LOOKUP_G( blender, back_g );
-          
+
           pix_g = _ggcells[ag];
         }
 
         {
           int  back_b = (back) & 255;
-          
+
           GBLENDER_LOOKUP_B( blender, back_b );
-          
+
           pix_b = _gbcells[ab];
         }
 
@@ -70,5 +72,5 @@
     dst_line += blit->dst_pitch;
   }
   while (--h > 0);
-  
+
   GBLENDER_CHANNEL_CLOSE(blender);

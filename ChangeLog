@@ -1,7 +1,31 @@
+2004-09-27  David Turner <david@freetype.org>
+
+	Fix gamma handling, mainly for LCD modes.
+
+	* graph/gblgblit.c (GRGB_TO_RGB565): Protect arguments correctly.
+
+	* graph/gblcolor.h, graph/gblhbgr.h, graph/gblhrgb.h,
+	graph/gblvbgr.h, graph/gblvrgb.h: Call gblender_use_channels.
+
+	* graph/gblender.c (gblender_clear, gblender_reset): Handle blender
+	cache.
+	(gblender_use_channels): New function.
+	(gblender_reset_key): Improve.
+	(gblender_lookup, gblender_lookup_channel): Comment possible call to
+	gblender_reset.
+	Fix computation of `idx'.
+	(gblender_reset_channel_key): Fix computation of `a' and `r'.
+
+	* graph/gblender.h (GBLENDER_SHADE_INDEX): Corrected definition.
+	(gblender_use_channels): New declaration.
+
+	* src/Jamfile: Include ftcommon.c.
+	Fix oder of link libraries.
+
 2004-09-22  David Turner  <david@freetype.org>
 
-        * src/ftcommon.c: fixed load flags computation to mimic libXft's
-        behaviour
+	* src/ftcommon.c (FTDemo_Update_Current_Flags): Fix load flags
+	computation to mimic libXft's behaviour.
 
 2005-08-30  Werner Lemberg  <wl@gnu.org>
 

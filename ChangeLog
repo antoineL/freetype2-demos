@@ -1,3 +1,8 @@
+2004-09-29  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.c (FT_Demo_Update_Current_Flags): Fix variable
+	shadowing.
+
 2004-09-27  David Turner <david@freetype.org>
 
 	Fix gamma handling, mainly for LCD modes.

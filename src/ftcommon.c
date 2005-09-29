@@ -494,7 +494,7 @@
 
     if ( handle->hinted )
     {
-      FT_UInt32  target = 0;
+      target = 0;
 
       if ( handle->antialias )
       {

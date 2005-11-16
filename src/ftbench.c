@@ -348,6 +348,7 @@ void usage(void)
     "Usage: ftbench [options] fontname\n\n"
     "options:\n" );
   fprintf( stderr,
+  "   -c : max iteration count for each test (0 means time limited)\n"
   "   -m : max cache size in KByte (default is %d)\n", CACHE_SIZE );
   fprintf( stderr,
   "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME );
@@ -379,18 +380,46 @@ main(int argc,
   long max_bytes = CACHE_SIZE * 1024;
   char* tests = NULL;
   int size;
+  int  iteration_max = 0;
 
   while (argc > 1 && argv[1][0] == '-')
   {
-    switch (argv[1][1])
+    const char*  arg = argv[1];
+
+    switch ( arg[1] )
     {
     case 'm':
-      argc--;
-      argv++;
-      if (argc < 2 ||
-          sscanf(argv[1], "%ld", &max_bytes) != 1)
+      if ( arg[2] == 0 )
+      {
+        argc--;
+        argv++;
+        if ( argc < 2 )
+          usage();
+        arg = argv[1];
+      }
+      else
+        arg += 2;
+
+      if ( sscanf( arg, "%ld", &max_bytes) != 1 )
         usage();
+
       max_bytes *= 1024;
+      break;
+
+    case 'c':
+      if ( arg[2] == 0 )
+      {
+        argc--;
+        argv++;
+        if ( argc < 2 )
+          usage();
+        arg = argv[1];
+      }
+      else
+        arg += 2;
+
+      if ( sscanf( arg, "%ld", &iteration_max ) != 1 )
+        usage();
       break;
 
     case 'p':
@@ -398,19 +427,34 @@ main(int argc,
       break;
 
     case 't':
-      argc--;
-      argv++;
-      if (argc < 2 ||
-          sscanf(argv[1], "%lf", &bench_time) != 1)
+      if ( arg[2] == 0 )
+      {
+        argc--;
+        argv++;
+        if ( argc < 2 )
+          usage();
+        arg = argv[1];
+      }
+      else
+        arg += 2;
+
+      if ( sscanf( arg, "%lf", &bench_time) != 1 )
         usage();
       break;
 
     case 'b':
-      argc--;
-      argv++;
-      if (argc < 2)
-        usage();
-      tests = argv[1];
+      if ( arg[2] == 0 )
+      {
+        argc--;
+        argv++;
+        if ( argc < 2 )
+          usage();
+        arg = argv[1];
+      }
+      else
+        arg += 2;
+
+      tests = (char*)arg;
       break;
 
     default:
@@ -473,9 +517,9 @@ main(int argc,
   else
     size = face->available_sizes[0].width;
 
-  if (TEST('a')) bench( load_test,  "Load", 0);
-  if (TEST('b')) bench( fetch_test, "Load + Get_Glyph", 0);
-  if (TEST('c')) bench( cbox_test,  "Load + Get_Glyph + Get_CBox", 0);
+  if (TEST('a')) bench( load_test,  "Load", iteration_max );
+  if (TEST('b')) bench( fetch_test, "Load + Get_Glyph", iteration_max );
+  if (TEST('c')) bench( cbox_test,  "Load + Get_Glyph + Get_CBox", iteration_max );
 
 #if 0
   cmap_desc.face_id    = (void*)1;
@@ -485,7 +529,7 @@ main(int argc,
   if (TEST('d') &&
       face->charmap) /* some fonts (eg. windings) don't have a charmap */
   {
-    bench( cmap_test,  "Get_Char_Index", 0);
+    bench( cmap_test,  "Get_Char_Index", iteration_max );
   }
 
   if (!FTC_Manager_New(lib, 0, 0, max_bytes, face_requester, NULL, &cache_man))
@@ -494,7 +538,7 @@ main(int argc,
         face->charmap && !FTC_CMapCache_New(cache_man, &cmap_cache))
     {
       bench( cmap_cache_test,  "CMap cache (1st run)", 1);
-      bench( cmap_cache_test,  "CMap cache", 0);
+      bench( cmap_cache_test,  "CMap cache", iteration_max );
     }
 
     font_type.face_id = (FTC_FaceID)1;
@@ -507,14 +551,14 @@ main(int argc,
       {
         font_type.flags = FT_LOAD_NO_BITMAP;
         bench( image_cache_test,  "Outline cache (1st run)", 1);
-        bench( image_cache_test,  "Outline cache", 0);
+        bench( image_cache_test,  "Outline cache", iteration_max );
       }
 
       if (TEST('g'))
       {
         font_type.flags = FT_LOAD_RENDER;
         bench( image_cache_test,  "Bitmap cache (1st run)", 1);
-        bench( image_cache_test,  "Bitmap cache", 0);
+        bench( image_cache_test,  "Bitmap cache", iteration_max );
       }
     }
 
@@ -523,15 +567,15 @@ main(int argc,
     {
       font_type.flags = FT_LOAD_DEFAULT;
       bench( sbit_cache_test,  "SBit cache (1st run)", 1);
-      bench( sbit_cache_test,  "SBit cache", 0);
+      bench( sbit_cache_test,  "SBit cache", iteration_max );
     }
   }
 
   if (TEST('i') )
-    bench_open_close( argv[1], "Open/Close file", 0 );
+    bench_open_close( argv[1], "Open/Close file", iteration_max );
 
   if (TEST('j'))
-    bench_cmap_parse( "Charmap iteration", 0 );
+    bench_cmap_parse( "Charmap iteration", iteration_max );
 
   if (cmap)
     free (cmap);

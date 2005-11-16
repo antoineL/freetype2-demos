@@ -23,7 +23,7 @@
 #include <grobjs.h>
 #include <grdevice.h>
 
-#define TEST
+#define xxTEST
 
 #ifdef TEST
 #include "grfont.h"
@@ -885,6 +885,9 @@ typedef  unsigned long   uint32;
   {
     if ( x11dev.display )
     {
+      XFreeCursor( x11dev.display, x11dev.busy );
+      XFreeCursor( x11dev.display, x11dev.idle );
+
       XCloseDisplay( x11dev.display );
       x11dev.display = NULL;
     }
@@ -897,7 +900,6 @@ typedef  unsigned long   uint32;
     memset( &x11dev, 0, sizeof ( x11dev ) );
 
     XrmInitialize();
-
 
     x11dev.display = XOpenDisplay( "" );
     if ( !x11dev.display )
@@ -941,12 +943,11 @@ typedef  unsigned long   uint32;
         case 32:
           {
             int           count2;
-            XVisualInfo*  visuals;
             XVisualInfo*  visual;
-
+            XVisualInfo*  visuals;
 
             templ.screen = DefaultScreen( x11dev.display );
-            templ.depth = format->depth;
+            templ.depth  = format->depth;
             visuals      = XGetVisualInfo( x11dev.display,
                                            VisualScreenMask | VisualDepthMask,
                                           &templ,
@@ -1010,7 +1011,7 @@ typedef  unsigned long   uint32;
                     x11dev.format       = cur_format;
                     x11dev.scanline_pad = format->scanline_pad;
                     x11dev.visual       = visual->visual;
-                    
+
                     XFree( visuals );
                     XFree( formats );
                     return 0;
@@ -1018,7 +1019,7 @@ typedef  unsigned long   uint32;
                 }
               }
             } /* for visuals */
-            
+
             XFree( visuals );
           }
           break;
@@ -1030,7 +1031,6 @@ typedef  unsigned long   uint32;
       XFree( formats );
     }
 
-    
     fprintf( stderr, "unsupported X11 display depth!\n" );
 
     return -1;
@@ -1080,6 +1080,8 @@ typedef  unsigned long   uint32;
 
     if ( display )
     {
+      XFreeGC( display, surface->gc );
+
       if ( surface->ximage )
       {
         XDestroyImage( surface->ximage );
@@ -1358,9 +1360,9 @@ typedef  unsigned long   uint32;
       else
       {
         xswa_mask             |= CWColormap | CWBorderPixel;
-        xswa.colormap         = XCreateColormap( display, 
-                                                 RootWindow( display, screen ), 
-                                                 surface->visual, 
+        xswa.colormap         = XCreateColormap( display,
+                                                 RootWindow( display, screen ),
+                                                 surface->visual,
                                                  AllocNone );
         XAllocNamedColor( display, xswa.colormap, "white", &color, &dummy );
         xswa.background_pixel = color.pixel;

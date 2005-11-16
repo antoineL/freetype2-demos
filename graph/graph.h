@@ -479,7 +479,7 @@
   extern grSurface*  grNewSurface( const char*  device,
                                    grBitmap*    bitmap );
 
-
+  extern void  grDoneSurface( grSurface*  surface );
 
  /**********************************************************************
   *
@@ -641,10 +641,10 @@
   *
   * <Description>
   *    set the gamma-correction coefficient. This is only used to
-  *    blit glyphs  
+  *    blit glyphs
   *
   * <Input>
-  *    gamma      :: gamma value. <= 0 to select sRGB transfer function  
+  *    gamma      :: gamma value. <= 0 to select sRGB transfer function
   *
   **********************************************************************/
 
@@ -652,5 +652,5 @@
   void  grSetGlyphGamma( double  gamma_value );
 
 /* */
-  
+
 #endif /* GRAPH_H */

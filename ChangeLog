@@ -1,3 +1,12 @@
+2005-11-16  David Turner  <david@freetype.org>
+
+	* graph/graph.h, graph/grdevice.c, graph/x11/grx11.c, src/ftcommon.c:
+	implemented grSurfaceDone to free surface correctly. get rid of some
+	memory leaks in the graphics library too.
+
+	* src/ftbench.c: added the '-c' flag to specify maximum iteration
+	count. useful for repeat profiling
+
 2004-09-29  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.c (FT_Demo_Update_Current_Flags): Fix variable

@@ -98,7 +98,6 @@
     if ( !surface )
     {
       free( display );
-
       return NULL;
     }
 
@@ -118,7 +117,7 @@
   FTDemo_Display_Done( FTDemo_Display*  display )
   {
     grDoneBitmap( display->bitmap );
-    free( display->surface );
+    grDoneSurface( display->surface );
     free( display );
   }
 
@@ -677,6 +676,8 @@
                           int*            y_advance,
                           FT_Glyph*       aglyf )
   {
+    int   cached_bitmap = 1;
+
     *aglyf = NULL;
 
     /* use the SBits cache to store small glyph bitmaps; this is a lot */
@@ -724,29 +725,34 @@
           source.pitch      = sbit->pitch;
           source.buffer     = sbit->buffer;
           source.pixel_mode = sbit->format;
-          (void)FT_Bitmap_Convert( handle->library, &source, &handle->bitmap, 1 );
+
+          (void)FT_Bitmap_Convert( handle->library, &source,
+                                   &handle->bitmap, 1 );
 
           target->pitch  = handle->bitmap.pitch;
           target->buffer = handle->bitmap.buffer;
           target->mode   = gr_pixel_mode_gray;
           target->grays  = handle->bitmap.num_grays;
+
+          cached_bitmap = 0;
           break;
 
         case FT_PIXEL_MODE_LCD:
           target->mode  = handle->lcd_mode == 2 ? gr_pixel_mode_lcd
-                                                 : gr_pixel_mode_lcd2;
+                                                : gr_pixel_mode_lcd2;
           target->grays = sbit->max_grays + 1;
           break;
 
         case FT_PIXEL_MODE_LCD_V:
           target->mode  = handle->lcd_mode == 4 ? gr_pixel_mode_lcdv
-                                                 : gr_pixel_mode_lcdv2;
+                                                : gr_pixel_mode_lcdv2;
           target->grays = sbit->max_grays + 1;
           break;
 
         default:
           return FT_Err_Invalid_Glyph_Format;
         }
+
 
         *left      = sbit->left;
         *top       = sbit->top;
@@ -769,10 +775,32 @@
                                      NULL );
 
       if ( !error )
-        error = FTDemo_Glyph_To_Bitmap( handle, glyf, target, left, top, x_advance, y_advance, aglyf );
+        error = FTDemo_Glyph_To_Bitmap( handle, glyf, target, left, top,
+                                        x_advance, y_advance, aglyf );
     }
 
   Exit:
+
+#ifdef FT_RGB_FILTER_H
+   /* note that we apply the RGB filter to each cached glyph, which is
+    * a performance killer, but that's better than modifying the cache
+    * at the moment
+    */
+    if ( !error )
+    {
+      if ( target->mode == gr_pixel_mode_lcd  ||
+           target->mode == gr_pixel_mode_lcdv )
+      {
+       /* copy the bitmap before filtering it, we don't want to touch
+        * the content of cache nodes at all
+        */
+        {
+        }
+      }
+    }
+
+#endif /* FT_RGB_FILTER_H */
+
     /* don't accept a `missing' character with zero or negative width */
     if ( Index == 0 && *x_advance <= 0 )
       *x_advance = 1;

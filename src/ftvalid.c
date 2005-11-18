@@ -444,7 +444,7 @@
     report_result( data, validation_flags, ot_table_spec, N_OT_TABLE_SPEC );
 
     for ( i = 0; i < N_OT_TABLE_SPEC; i++ )
-      FT_FREE( data[i] );
+      FT_OpenType_Free( face, data[i] );
 
     return (int)error;
   }
@@ -495,7 +495,7 @@
     report_result( data, validation_flags, gx_table_spec, N_GX_TABLE_SPEC );
 
     for ( i = 0; i < N_GX_TABLE_SPEC; i++ )
-      FT_FREE( data[i] );
+      FT_TrueTypeGX_Free( face, data[i] );
 
     return (int)error;
   }
@@ -563,7 +563,7 @@
     else
       printf( "no kern\n" );
     
-    FT_FREE( data );
+    FT_ClassicKern_Free( face, data );
 	      
     return (int)error;
   }

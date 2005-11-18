@@ -1,3 +1,9 @@
+2005-11-18  suzuki toshiya <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/ftvalid.c: use FT_TrueTypeGX_Validate, FT_ClassicKern_Validate
+	and FT_OpenType_Validate instead of FT_FREE (it calls FT_Free_Debug
+	of libfreetype, which is not public function).
+
 2005-11-16  David Turner  <david@freetype.org>
 
 	* graph/graph.h, graph/grdevice.c, graph/x11/grx11.c, src/ftcommon.c:

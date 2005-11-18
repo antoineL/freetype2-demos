@@ -424,7 +424,6 @@
     FT_Error      error;
     FT_Bytes      data[N_OT_TABLE_SPEC];
     unsigned int  i;
-    FT_Memory     memory = FT_FACE_MEMORY( face );
     
 
     validation_flags  = validation_level;
@@ -475,7 +474,6 @@
     FT_Error      error;
     FT_Bytes      data[N_GX_TABLE_SPEC];
     unsigned int  i;
-    FT_Memory     memory = FT_FACE_MEMORY( face );
     
     validation_flags  = validation_level;
     validation_flags |= make_table_specs( face, tables, gx_table_spec,
@@ -524,7 +522,6 @@
     FT_UInt    validation_flags;
     FT_Error   error;
     FT_Bytes   data;  
-    FT_Memory  memory = FT_FACE_MEMORY( face );
 
     
     if ( dialect_request == NULL )

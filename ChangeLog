@@ -1,3 +1,8 @@
+2005-11-18  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftvalid.c (run_ot_validator, run_gx_validator,
+	run_ckern_validator): Remove unused variable `memory'.
+
 2005-11-18  suzuki toshiya <mpsuzuki@hiroshima-u.ac.jp>
 
 	* src/ftvalid.c: Use FT_TrueTypeGX_Validate, FT_ClassicKern_Validate

@@ -1,17 +1,25 @@
 2005-11-18  suzuki toshiya <mpsuzuki@hiroshima-u.ac.jp>
 
-	* src/ftvalid.c: use FT_TrueTypeGX_Validate, FT_ClassicKern_Validate
+	* src/ftvalid.c: Use FT_TrueTypeGX_Validate, FT_ClassicKern_Validate
 	and FT_OpenType_Validate instead of FT_FREE (it calls FT_Free_Debug
-	of libfreetype, which is not public function).
+	of libfreetype, which is not a public function).
 
 2005-11-16  David Turner  <david@freetype.org>
 
-	* graph/graph.h, graph/grdevice.c, graph/x11/grx11.c, src/ftcommon.c:
-	implemented grSurfaceDone to free surface correctly. get rid of some
-	memory leaks in the graphics library too.
+	* graph/graph.h: Updated.
 
-	* src/ftbench.c: added the '-c' flag to specify maximum iteration
-	count. useful for repeat profiling
+	* graph/grdevice.c (grSurfaceDone): New function to free surface
+	correctly.  This was commented out previously.
+
+	* graph/x11/grx11.c (gr_x11_device_done): Call XFreeCursor.
+	(gr_x11_surface_done): Call XFreeGC to fix memory leak.
+
+	* src/ftcommon.c (FTDemo_Display_Done): Call `grDoneSurface' instead
+	of `free' to fix memory leak.
+
+	* src/ftbench.c (main): Add the `-c' flag to specify maximum
+	iteration count.  Useful for repeat profiling.
+	(usage): Updated.
 
 2004-09-29  Werner Lemberg  <wl@gnu.org>
 

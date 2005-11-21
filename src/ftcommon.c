@@ -118,6 +118,9 @@
   {
     grDoneBitmap( display->bitmap );
     grDoneSurface( display->surface );
+
+    grDoneDevices();
+
     free( display );
   }
 
@@ -298,6 +301,8 @@
     FT_Bitmap_Done( handle->library, &handle->bitmap );
     FTC_Manager_Done( handle->cache_manager );
     FT_Done_FreeType( handle->library );
+
+    free( handle );
   }
 
 

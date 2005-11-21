@@ -54,7 +54,7 @@
   *    the device chain returned by this function. For example, if an
   *    X11 device was compiled in the library, it will be part of
   *    the returned device chain only if a connection to the display
-  *    could be establisged
+  *    could be established
   *
   *    If no driver could be initialised, this function returns NULL.
   *
@@ -65,6 +65,7 @@
   {
     grDeviceChain*  chain = GR_INIT_DEVICE_CHAIN;
     grDeviceChain*  cur   = gr_device_chain;
+
 
     while (chain)
     {
@@ -94,4 +95,23 @@
   }
 
 
+  extern
+  void  grDoneDevices( void )
+  {
+    int             i;
+    grDeviceChain*  chain = gr_device_chain;
 
+
+    for ( i = 0; i < gr_num_devices; i++ )
+    {
+      chain->device->done();
+
+      chain->next   = 0;
+      chain->device = 0;
+      chain->name   = 0;
+
+      chain++;
+    }
+
+    gr_num_devices = 0;
+  }

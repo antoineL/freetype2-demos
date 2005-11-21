@@ -872,10 +872,8 @@
     }
 
   End:
-#if 0
     grDoneSurface( surface );
-    grDone();
-#endif
+    grDoneDevices();
 
     free            ( multimaster );
     FT_Done_Face    ( face        );

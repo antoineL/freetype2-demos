@@ -29,12 +29,6 @@
   /* define the global error variable */
   extern int  grError;
 
-  /* initialisation */
-  extern int  grInit( void );
-
-  /* finalisation */
-  extern void grDone( void );
-
 
   /* pixel mode constants */
   typedef enum grPixelMode
@@ -382,6 +376,19 @@
   extern
   grDeviceChain*  grInitDevices( void );
 
+
+ /**********************************************************************
+  *
+  * <Function>
+  *    grDoneDevices
+  *
+  * <Description>
+  *    Finalize all devices activated with grInitDevices.
+  *
+  **********************************************************************/
+
+  extern
+  void  grDoneDevices( void );
 
 
  /**********************************************************************

@@ -1,3 +1,15 @@
+2005-11-21  Werner Lemberg  <wl@gnu.org>
+
+	* graph/grinit.c (grDoneDevices): New function.
+
+	* graph/graph.h (grInit, grDone): Remove unused declarations.
+	(grDoneDevices): New declaration.
+
+	* src/ftcommon.c (FTDemo_Display_Done): Call grDoneDevices.
+	(FTDemo_Done): Free `handle'.
+
+	* src/ftmulti.c (main): Call grDoneSurface and grDoneDevices.
+
 2005-11-18  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftvalid.c (run_ot_validator, run_gx_validator,

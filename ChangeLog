@@ -1,3 +1,17 @@
+2005-11-30  Werner Lemberg  <wl@gnu.org>
+
+	Replace flag `-c' with `-v' to indicate verbosity.
+
+	* src/ftdump.c (verbose): New global variable.
+	(usage): Updated.
+	(Print_Charmaps): Only take a single argument.  Update caller.
+	Always show some charmap info.
+	Use `verbose'.
+	(main): Remove verbose_cmap.
+	Handle `-v' instead of `-c'.
+
+	* src/common.c (getopt): s/illegal/invalid/.
+
 2005-11-30  Chia-I Wu  <b90201047@ntu.edu.tw>
 
 	* src/ftdump.c (Print_Charmaps): face->charmap might be NULL.
@@ -7,6 +21,7 @@
 	* src/ftdump.c (main): New command line option `c' to show the
 	contents of charmaps.
 	(Print_Charmaps): Take one more argument: `verbose'.
+	(usage): Updated.
 
 2005-11-21  Werner Lemberg  <wl@gnu.org>
 

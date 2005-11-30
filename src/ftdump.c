@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004 by                                      */
+/*  Copyright 1996-2000, 2003, 2004, 2005 by                                */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /****************************************************************************/
@@ -31,6 +31,7 @@
   FT_Error  error;
 
   int  comma_flag  = 0;
+  int  verbose     = 0;
   int  debug       = 0;
   int  trace_level = 0;
   int  name_tables = 0;
@@ -72,7 +73,7 @@
 #  endif
 #endif
     fprintf( stderr, "  -n        print SFNT name tables\n" );
-    fprintf( stderr, "  -c        show the contents of charmaps\n" );
+    fprintf( stderr, "  -v        be verbose\n" );
     fprintf( stderr, "\n" );
 
     exit( 1 );
@@ -494,31 +495,28 @@
 
 
   void
-  Print_Charmaps( FT_Face  face,
-                  int      verbose )
+  Print_Charmaps( FT_Face  face )
   {
-    int  i, active;
+    int  i, active = -1;
 
 
-    if ( verbose )
-    {
-      if ( face->charmap )
-        active = FT_Get_Charmap_Index( face->charmap );
-      else
-        active = -1;
-    }
+    if ( face->charmap )
+      active = FT_Get_Charmap_Index( face->charmap );
 
     /* CharMaps */
     printf( "charmaps\n" );
 
     for( i = 0; i < face->num_charmaps; i++ )
     {
-      printf( "   %d: platform: %d, encoding: %d\n",
+      printf( "   %d: platform %d, encoding %d",
               i,
               face->charmaps[i]->platform_id,
               face->charmaps[i]->encoding_id );
+      if ( i == active )
+        printf( " (active)" );
+      printf ( "\n" );
 
-      if ( ( verbose && i == active ) || verbose > 1 )
+      if ( verbose )
       {
         FT_ULong  charcode;
         FT_UInt   gindex;
@@ -548,7 +546,6 @@
     char*  execname;
     int    num_faces;
     int    option;
-    int    verbose_cmap = 0;
 
     FT_Library  library;      /* the FreeType library */
     FT_Face     face;         /* the font face        */
@@ -558,7 +555,7 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "dl:nc" );
+      option = getopt( argc, argv, "dl:nv" );
 
       if ( option == -1 )
         break;
@@ -575,12 +572,12 @@
           usage( execname );
         break;
 
-      case 'c':
-        verbose_cmap++;
-        break;
-
       case 'n':
         name_tables = 1;
+        break;
+
+      case 'v':
+        verbose = 1;
         break;
 
       default:
@@ -691,7 +688,7 @@
       if ( face->num_charmaps )
       {
         printf( "\n" );
-        Print_Charmaps( face, verbose_cmap );
+        Print_Charmaps( face );
       }
 
       FT_Done_Face( face );

@@ -1,5 +1,9 @@
 2005-11-30  Chia-I Wu  <b90201047@ntu.edu.tw>
 
+	* src/ftdump.c (Print_Charmaps): face->charmap might be NULL.
+
+2005-11-30  Chia-I Wu  <b90201047@ntu.edu.tw>
+
 	* src/ftdump.c (main): New command line option `c' to show the
 	contents of charmaps.
 	(Print_Charmaps): Take one more argument: `verbose'.

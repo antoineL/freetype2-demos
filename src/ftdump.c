@@ -501,7 +501,12 @@
 
 
     if ( verbose )
-      active = FT_Get_Charmap_Index( face->charmap );
+    {
+      if ( face->charmap )
+        active = FT_Get_Charmap_Index( face->charmap );
+      else
+        active = -1;
+    }
 
     /* CharMaps */
     printf( "charmaps\n" );

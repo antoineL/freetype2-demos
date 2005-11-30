@@ -72,6 +72,7 @@
 #  endif
 #endif
     fprintf( stderr, "  -n        print SFNT name tables\n" );
+    fprintf( stderr, "  -c        show the contents of charmaps\n" );
     fprintf( stderr, "\n" );
 
     exit( 1 );
@@ -493,10 +494,14 @@
 
 
   void
-  Print_Charmaps( FT_Face  face )
+  Print_Charmaps( FT_Face  face,
+                  int      verbose )
   {
-    int  i;
+    int  i, active;
 
+
+    if ( verbose )
+      active = FT_Get_Charmap_Index( face->charmap );
 
     /* CharMaps */
     printf( "charmaps\n" );
@@ -507,6 +512,23 @@
               i,
               face->charmaps[i]->platform_id,
               face->charmaps[i]->encoding_id );
+
+      if ( ( verbose && i == active ) || verbose > 1 )
+      {
+        FT_ULong  charcode;
+        FT_UInt   gindex;
+
+
+        FT_Set_Charmap( face, face->charmaps[i] );
+
+        charcode = FT_Get_First_Char( face, &gindex );
+        while ( gindex )
+        {
+          printf( "      0x%04lx => %d\n", charcode, gindex );
+          charcode = FT_Get_Next_Char( face, charcode, &gindex );
+        }
+        printf( "\n" );
+      }
     }
   }
 
@@ -521,6 +543,7 @@
     char*  execname;
     int    num_faces;
     int    option;
+    int    verbose_cmap = 0;
 
     FT_Library  library;      /* the FreeType library */
     FT_Face     face;         /* the font face        */
@@ -530,7 +553,7 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "dl:n" );
+      option = getopt( argc, argv, "dl:nc" );
 
       if ( option == -1 )
         break;
@@ -545,6 +568,10 @@
         trace_level = atoi( optarg );
         if ( trace_level < 1 || trace_level > 7 )
           usage( execname );
+        break;
+
+      case 'c':
+        verbose_cmap++;
         break;
 
       case 'n':
@@ -659,7 +686,7 @@
       if ( face->num_charmaps )
       {
         printf( "\n" );
-        Print_Charmaps( face );
+        Print_Charmaps( face, verbose_cmap );
       }
 
       FT_Done_Face( face );

@@ -26,16 +26,34 @@
 #include <sys/time.h>
 #endif
 
+#include <unistd.h>
+
+
+typedef struct {
+  double  t0;
+  double  total;
+} btimer_t;
+
 typedef int
-(*bench_t)(FT_UInt idx,
-           FT_UInt charcode);
+(*bcall_t)( btimer_t*  timer,
+            FT_Face    face,
+            void*      user_data );
 
-typedef struct charmap_t_
+typedef struct {
+  char*    title;
+  bcall_t  bench;
+  int      cache_first;
+  void*    user_data;
+} btest_t;
+
+typedef struct
 {
-  FT_UInt charcode;
-  FT_UInt index;
-} charmap_t;
+  FT_UInt    size;
+  FT_ULong*  code;
+} bcharset_t;
 
+FT_Error
+get_face( FT_Face*     face );
 
 
 /*
@@ -44,6 +62,7 @@ typedef struct charmap_t_
 
 #define CACHE_SIZE 1024
 #define BENCH_TIME 2.0f
+#define FACE_SIZE  10
 
 FT_Library        lib;
 FT_Face           face;
@@ -52,11 +71,36 @@ FTC_CMapCache     cmap_cache;
 FTC_ImageCache    image_cache;
 FTC_SBitCache     sbit_cache;
 FTC_ImageTypeRec  font_type;
-charmap_t*        cmap = NULL;
-double            bench_time = BENCH_TIME;
-int               preload = 0;
-FT_Byte*          memory_file = NULL;
-long              memory_size;
+
+enum {
+  FT_BENCH_LOAD_GLYPH,
+  FT_BENCH_RENDER,
+  FT_BENCH_GET_GLYPH,
+  FT_BENCH_GET_CBOX,
+  FT_BENCH_CMAP,
+  FT_BENCH_CMAP_ITER,
+  FT_BENCH_NEW_FACE,
+  N_FT_BENCH
+};
+
+const char* bench_desc[] = {
+  "Load a glyph",
+  "Render a glyph",
+  "Get FT_Glyph",
+  "Get glyph cbox",
+  "Get glyph index",
+  "Iterate CMap",
+  "Open a new face",
+  NULL
+};
+
+bcharset_t      charset;
+
+int             preload;
+char*           filename;
+
+FT_Render_Mode  render_mode = FT_RENDER_MODE_NORMAL;
+FT_Int32        load_flags  = FT_LOAD_DEFAULT;
 
 
 /*
@@ -79,7 +123,7 @@ face_requester (FTC_FaceID face_id,
 
 
 /*
- * Bench code
+ * timer
  */
 
 double
@@ -96,20 +140,353 @@ get_time(void)
 #endif
 }
 
+#define TIMER_START( timer )   ( timer )->t0 = get_time()
+#define TIMER_STOP( timer )    ( timer )->total += get_time() - ( timer )->t0
+#define TIMER_GET( timer )     ( timer )->total
+#define TIMER_RESET( timer )   ( timer )->total = 0
+
+
+/*
+ * Bench code
+ */
 
 void
-get_cmap(void)
+benchmark( btest_t*  test,
+           int       max_iter,
+           double    max_time )
 {
-  FT_ULong charcode;
-  FT_UInt  gindex;
+  int       n, done;
+  btimer_t  timer, elapsed;
+
+
+  if ( test->cache_first )
+  {
+    if ( !cache_man )
+    {
+      printf( "%-25s : no cache manager\n", test->title );
+
+      return;
+    }
+
+    TIMER_RESET( &timer );
+    test->bench( &timer, face, test->user_data );
+  }
+
+  printf( "%-25s : ", test->title );
+  fflush( stdout );
+
+  n = done = 0;
+  TIMER_RESET( &timer );
+  TIMER_RESET( &elapsed );
+
+  for ( n = 0; !max_iter || n < max_iter; n++ )
+  {
+    TIMER_START( &elapsed );
+
+    done += test->bench( &timer, face, test->user_data );
+
+    TIMER_STOP( &elapsed );
+
+    if ( TIMER_GET( &elapsed ) > max_time )
+      break;
+  }
+
+  printf("%5.3f us/op\n", TIMER_GET( &timer ) * 1E6 / (double)done);
+}
+
+
+/*
+ * Various tests
+ */
+
+int
+test_load( btimer_t*  timer,
+           FT_Face    face,
+           void*      user_data )
+{
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  TIMER_START( timer );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( !FT_Load_Glyph( face, i, load_flags ) )
+      done++;
+  }
+
+  TIMER_STOP( timer );
+
+  return done;
+}
+
+
+int
+test_render( btimer_t*  timer,
+             FT_Face    face,
+             void*      user_data )
+{
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( FT_Load_Glyph( face, i, load_flags ) )
+      continue;
+
+    TIMER_START( timer );
+    if ( !FT_Render_Glyph( face->glyph, render_mode ) )
+      done++;
+    TIMER_STOP( timer );
+  }
+
+  return done;
+}
+
+
+int
+test_get_glyph( btimer_t*  timer,
+                FT_Face    face,
+                void*      user_data )
+{
+  FT_Glyph  glyph;
+  int       i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( FT_Load_Glyph( face, i, load_flags ) )
+      continue;
+
+    TIMER_START( timer );
+    if ( !FT_Get_Glyph( face->glyph, &glyph ) )
+    {
+      FT_Done_Glyph( glyph );
+      done++;
+    }
+    TIMER_STOP( timer );
+  }
+
+  return done;
+}
+
+
+int
+test_get_cbox( btimer_t*  timer,
+               FT_Face    face,
+               void*      user_data )
+{
+  FT_Glyph  glyph;
+  FT_BBox   bbox;
+  int       i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( FT_Load_Glyph( face, i, load_flags ) )
+      continue;
+
+    if ( FT_Get_Glyph( face->glyph, &glyph ) )
+      continue;
+
+    TIMER_START( timer );
+    FT_Glyph_Get_CBox( glyph, FT_GLYPH_BBOX_PIXELS, &bbox );
+    TIMER_STOP( timer );
+
+    FT_Done_Glyph( glyph );
+    done++;
+  }
+
+  return done;
+}
+
+
+int
+test_get_char_index( btimer_t*  timer,
+                     FT_Face    face,
+                     void*      user_data )
+{
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  TIMER_START( timer );
+
+  for ( i = 0; i < charset.size; i++ )
+  {
+    if ( FT_Get_Char_Index(face, charset.code[i]) )
+      done++;
+  }
+
+  TIMER_STOP( timer );
+
+  return done;
+}
+
+
+int
+test_cmap_cache( btimer_t*  timer,
+                 FT_Face    face,
+                 void*      user_data )
+{
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  if ( !cmap_cache )
+  {
+    if ( FTC_CMapCache_New(cache_man, &cmap_cache) )
+      return 0;
+  }
+
+  TIMER_START( timer );
+
+  for ( i = 0; i < charset.size; i++ )
+  {
+    if ( FTC_CMapCache_Lookup( cmap_cache, font_type.face_id, 0, charset.code[i] ) )
+      done++;
+  }
+
+  TIMER_STOP( timer );
+
+  return done;
+}
+
+
+int
+test_image_cache( btimer_t*  timer,
+                  FT_Face    face,
+                  void*      user_data )
+{
+  FT_Glyph glyph;
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  if ( !image_cache )
+  {
+    if ( FTC_ImageCache_New(cache_man, &image_cache) )
+      return 0;
+  }
+
+  TIMER_START( timer );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( !FTC_ImageCache_Lookup(image_cache, &font_type, i, &glyph, NULL) )
+      done++;
+  }
+
+  TIMER_STOP( timer );
+
+  return done;
+}
+
+
+int
+test_sbit_cache( btimer_t*  timer,
+                 FT_Face    face,
+                 void*      user_data )
+{
+  FTC_SBit glyph;
+  int i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  if ( !sbit_cache )
+  {
+    if ( FTC_SBitCache_New(cache_man, &sbit_cache) )
+      return 0;
+  }
+
+  TIMER_START( timer );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( !FTC_SBitCache_Lookup(sbit_cache, &font_type, i, &glyph, NULL) )
+      done++;
+  }
+
+  TIMER_STOP( timer );
+
+  return done;
+}
+
+
+int
+test_cmap_iter( btimer_t*  timer,
+                FT_Face    face,
+                void*      user_data )
+{
+  FT_UInt   idx;
+  FT_ULong  charcode;
+
+
+  FT_UNUSED( user_data );
+
+  TIMER_START( timer );
+
+  charcode = FT_Get_First_Char( face, &idx );
+  while ( idx != 0 )
+    charcode = FT_Get_Next_Char( face, charcode, &idx );
+
+  TIMER_STOP( timer );
+
+  return 1;
+}
+
+
+int
+test_new_face( btimer_t*  timer,
+               FT_Face    face,
+               void*      user_data )
+{
+  FT_Face   bench_face;
+
+
+  FT_UNUSED( face );
+  FT_UNUSED( user_data );
+
+  TIMER_START( timer );
+
+  if ( !get_face( &bench_face ) )
+    FT_Done_Face( bench_face );
+
+  TIMER_STOP( timer );
+
+  return 1;
+}
+
+
+/*
+ * main
+ */
+
+void
+get_charset( FT_Face  face )
+{
+  FT_ULong  charcode;
+  FT_UInt   gindex;
   int i;
 
-  if (cmap)
-    return; /* Already available */
 
-  cmap = (charmap_t*)calloc(face->num_glyphs, sizeof(charmap_t));
+  charset.code = (FT_ULong*)calloc( face->num_glyphs, sizeof( FT_ULong ) );
+  if ( !charset.code )
+    return;
 
-  if (face->charmap)
+  if ( face->charmap )
   {
     i = 0;
     charcode = FT_Get_First_Char(face, &gindex);
@@ -119,471 +496,302 @@ get_cmap(void)
     /*                                                                      */
     while ( gindex && i < face->num_glyphs )
     {
-      cmap[i].index    = gindex;
-      cmap[i].charcode = charcode;
-      i++;
+      charset.code[i++] = charcode;
       charcode = FT_Get_Next_Char(face, charcode, &gindex);
     }
+
   }
   else
+  {
     /* no charmap, do an identity mapping */
-    for (i = 0; i < face->num_glyphs; i++)
+    for ( i = 0; i < face->num_glyphs; i++ )
+      charset.code[i] = i;
+  }
+
+  charset.size = i;
+}
+
+
+FT_Error
+get_face( FT_Face*     face )
+{
+  static unsigned char*  memory_file = NULL;
+  static size_t          memory_size;
+  int                    face_index = 0;
+  FT_Error               error;
+
+
+  if ( preload )
+  {
+    if ( !memory_file )
     {
-      cmap[i].index = i;
-      cmap[i].charcode = i;
-      i++;
+      FILE*  file = fopen( filename, "rb" );
+
+
+      if ( file == NULL )
+      {
+        fprintf( stderr, "couldn't find or open `%s'\n", filename );
+
+        return 1;
+      }
+
+      fseek( file, 0, SEEK_END );
+      memory_size = ftell( file );
+      fseek( file, 0, SEEK_SET );
+
+      memory_file = (FT_Byte*)malloc( memory_size );
+      if ( memory_file == NULL )
+      {
+        fprintf( stderr, "couldn't allocate memory to pre-load font file\n" );
+
+        return 1;
+      }
+
+      if ( fread( memory_file, 1, memory_size, file ) != memory_size )
+      {
+        fprintf( stderr, "read error\n" );
+        free( memory_file );
+        memory_file = NULL;
+
+        return 1;
+      }
     }
-}
 
-
-void
-bench(bench_t bench_func,
-      const char* title,
-      int max)
-{
-  int      i, n, done;
-  double   t0, delta;
-
-  printf("%-30s : ", title);
-  fflush(stdout);
-
-  get_cmap();
-
-  n = 0;
-  done = 0;
-  t0 = get_time();
-  do
-  {
-    for (i = 0; i < face->num_glyphs; i++)
-      if (!(*bench_func)(cmap[i].index, cmap[i].charcode))
-        done++;
-    n++;
-    delta = get_time() - t0;
+    error = FT_New_Memory_Face( lib, memory_file, memory_size, face_index, face );
   }
-  while ((!max || n < max) && delta < bench_time);
+  else
+    error = FT_New_Face(lib, filename, face_index, face);
 
-  printf("%5.3f us/op\n", delta * 1E6 / (double)done);
-}
+  if ( error )
+    fprintf( stderr, "couldn't load font resource\n");
 
-
-/*
- * Various tests
- */
-
-int
-load_test(FT_UInt idx,
-          FT_UInt charcode)
-{
-  FT_UNUSED( charcode );
-  return FT_Load_Glyph(face, idx, FT_LOAD_DEFAULT);
-}
-
-
-int
-fetch_test(FT_UInt idx,
-           FT_UInt charcode)
-{
-  FT_Glyph  glyph;
-  FT_Error  error;
-
-  FT_UNUSED( charcode );
-
-  error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT );
-  if ( !error )
-  {
-    error = FT_Get_Glyph( face->glyph, &glyph );
-    if ( !error )
-      FT_Done_Glyph( glyph );
-  }
   return error;
 }
 
-
-int
-cbox_test(FT_UInt idx,
-          FT_UInt charcode)
-{
-  FT_BBox  bbox;
-  FT_Glyph glyph;
-  FT_Error error;
-
-  FT_UNUSED( charcode );
-
-  error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT );
-  if ( !error )
-  {
-    error = FT_Get_Glyph( face->glyph, &glyph );
-    if ( !error )
-    {
-      FT_Glyph_Get_CBox( glyph, FT_GLYPH_BBOX_PIXELS, &bbox );
-      FT_Done_Glyph( glyph );
-    }
-  }
-  return error;
-}
-
-
-int
-cmap_test(FT_UInt idx,
-          FT_UInt charcode)
-{
-  FT_UNUSED( idx );
-
-  return !FT_Get_Char_Index(face, charcode);
-}
-
-
-int
-cmap_cache_test(FT_UInt idx,
-                FT_UInt charcode)
-{
-  FT_UNUSED( idx );
-
-  return !FTC_CMapCache_Lookup( cmap_cache, (FTC_FaceID)1, 0, charcode );
-}
-
-
-int
-image_cache_test(FT_UInt idx,
-                 FT_UInt charcode)
-{
-  FT_Glyph glyph;
-
-  FT_UNUSED( charcode );
-
-  return FTC_ImageCache_Lookup(image_cache, &font_type, idx, &glyph, NULL);
-}
-
-
-int
-sbit_cache_test(FT_UInt idx,
-                FT_UInt charcode)
-{
-  FTC_SBit glyph;
-
-  FT_UNUSED( charcode );
-
-  return FTC_SBitCache_Lookup(sbit_cache, &font_type, idx, &glyph, NULL);
-}
-
-
-void
-bench_open_close( const char*  filename,
-                  const char* title,
-                  int max)
-{
-  int     n, done;
-  double  t0, delta;
-
-  printf("%-30s : ", title);
-  fflush(stdout);
-
-  n = 0;
-  done = 0;
-  t0 = get_time();
-  do
-  {
-    FT_Face   bench_face;
-    FT_Error  error;
-
-    if ( preload )
-      error = FT_New_Memory_Face( lib, memory_file, memory_size, 0, &bench_face );
-    else
-      error = FT_New_Face( lib, filename, 0, &bench_face );
-    if ( !error )
-    {
-      FT_Done_Face( bench_face );
-    }
-    done++;
-    n++;
-    delta = get_time() - t0;
-  }
-  while ((!max || n < max) && delta < bench_time);
-
-  printf("%5.3f us/op\n", delta * 1E6 / (double)done);
-}
-
-
-void
-bench_cmap_parse( const char* title,
-                  int         max )
-{
-  int     n, done;
-  double  t0, delta;
-
-  printf("%-30s : ", title);
-  fflush(stdout);
-
-  n = 0;
-  done = 0;
-  t0 = get_time();
-  do
-  {
-    FT_UInt   gindex;
-    FT_ULong  charcode;
-
-    charcode = FT_Get_First_Char( face, &gindex );
-    while ( gindex != 0 )
-      charcode = FT_Get_Next_Char( face, charcode, &gindex );
-
-    done++;
-    n++;
-    delta = get_time() - t0;
-  }
-  while ((!max || n < max) && delta < bench_time);
-
-  printf("%5.3f us/op\n", delta * 1E6 / (double)done);
-}
-
-
-/*
- * main
- */
 
 void usage(void)
 {
+  int i;
+
+
   fprintf( stderr,
     "ftbench: bench some common FreeType paths\n"
     "-----------------------------------------\n\n"
     "Usage: ftbench [options] fontname\n\n"
-    "options:\n" );
-  fprintf( stderr,
-  "   -c : max iteration count for each test (0 means time limited)\n"
-  "   -m : max cache size in KByte (default is %d)\n", CACHE_SIZE );
-  fprintf( stderr,
-  "   -t : max time per bench in seconds (default is %.0f)\n", BENCH_TIME );
-  fprintf( stderr,
-  "   -p : preload font file in memory\n"
-  "   -b tests : perform chosen tests (default is all)\n"
-  "      a : Load\n"
-  "      b : Load + Get_Glyph\n"
-  "      c : Load + Get_Glyph + Get_CBox\n"
-  "      d : Get_Char_Index\n"
-  "      e : CMap cache\n"
-  "      f : Outline cache\n"
-  "      g : Bitmap cache\n"
-  "      h : SBit cache\n"
-  "      i : Open/Close\n"
-  "      j : Charmap iteration\n" );
+    "options:\n"
+    "   -C : compare with cached version if available\n"
+    "   -c : max iteration count for each test (0 means time limited)\n"
+    "   -f : load flags (hexadecimal)\n"
+    "   -m : max cache size in KByte (default is %d)\n"
+    "   -p : preload font file in memory\n"
+    "   -r : render mode (default is FT_RENDER_MODE_NORMAL)\n"
+    "   -s : face size (default is %d)\n"
+    "   -t : max time per bench in seconds (default is %.0f)\n"
+    "   -b tests : perform chosen tests (default is all)\n",
+    CACHE_SIZE, FACE_SIZE, BENCH_TIME );
+
+  for ( i = 0; i < N_FT_BENCH; i++ )
+  {
+    if ( !bench_desc[i] )
+      break;
+
+    fprintf( stderr, "      %c : %s\n", 'a' + i, bench_desc[i] );
+  }
 
   exit( 1 );
 }
 
 
-#define TEST(x) (!tests || strchr(tests, x))
-
+#define TEST(x) (!test_string || strchr(test_string, (x)))
 
 int
 main(int argc,
      char** argv)
 {
-  long max_bytes = CACHE_SIZE * 1024;
-  char* tests = NULL;
-  int size;
-  int  iteration_max = 0;
+  long     max_bytes = CACHE_SIZE * 1024;
+  char*    test_string = NULL;
+  int      size = FACE_SIZE;
+  int      max_iter = 0;
+  double   max_time = BENCH_TIME;
+  int      compare_cached = 0;
+  int      i;
 
-  while (argc > 1 && argv[1][0] == '-')
+  while ( 1 )
   {
-    const char*  arg = argv[1];
+    int  opt;
 
-    switch ( arg[1] )
+
+    opt = getopt( argc, argv, "Cc:f:m:pr:s:t:b:" );
+
+    if ( opt == -1 )
+      break;
+
+    switch ( opt )
     {
+    case 'C':
+      compare_cached = 1;
+      break;
+    case 'c':
+      max_iter = atoi( optarg );
+      break;
+    case 'f':
+      load_flags = strtol( optarg, NULL, 16 );
+      break;
     case 'm':
-      if ( arg[2] == 0 )
-      {
-        argc--;
-        argv++;
-        if ( argc < 2 )
-          usage();
-        arg = argv[1];
-      }
-      else
-        arg += 2;
-
-      if ( sscanf( arg, "%ld", &max_bytes) != 1 )
-        usage();
-
+      max_bytes = atoi( optarg );
       max_bytes *= 1024;
       break;
-
-    case 'c':
-      if ( arg[2] == 0 )
-      {
-        argc--;
-        argv++;
-        if ( argc < 2 )
-          usage();
-        arg = argv[1];
-      }
-      else
-        arg += 2;
-
-      if ( sscanf( arg, "%ld", &iteration_max ) != 1 )
-        usage();
-      break;
-
     case 'p':
       preload = 1;
       break;
-
+    case 'r':
+      render_mode = atoi( optarg );
+      if ( render_mode < 0 || render_mode >= FT_RENDER_MODE_MAX )
+        render_mode = FT_RENDER_MODE_NORMAL;
+      break;
+    case 's':
+      size = atoi( optarg );
+      if ( size <= 0 )
+        size = 1;
+      else if ( size > 500 )
+        size = 500;
+      break;
     case 't':
-      if ( arg[2] == 0 )
-      {
-        argc--;
-        argv++;
-        if ( argc < 2 )
-          usage();
-        arg = argv[1];
-      }
-      else
-        arg += 2;
-
-      if ( sscanf( arg, "%lf", &bench_time) != 1 )
-        usage();
+      max_time = atof( optarg );
       break;
-
     case 'b':
-      if ( arg[2] == 0 )
-      {
-        argc--;
-        argv++;
-        if ( argc < 2 )
-          usage();
-        arg = argv[1];
-      }
-      else
-        arg += 2;
-
-      tests = (char*)arg;
+      test_string = optarg;
       break;
-
     default:
-      fprintf(stderr, "Unknown argument `%s'\n\n", argv[1]);
       usage();
       break;
     }
-
-    argc--;
-    argv++;
   }
 
-  if ( argc != 2 )
+  argc -= optind;
+  argv += optind;
+
+  if ( argc != 1 )
     usage();
 
-  if (FT_Init_FreeType(&lib))
+  if ( FT_Init_FreeType( &lib ) )
   {
     fprintf( stderr, "could not initialize font library\n" );
+
     return 1;
   }
 
-  if ( preload )
-  {
-    FILE*  file = fopen( argv[1], "rb" );
-    if ( file == NULL )
-    {
-      fprintf( stderr, "couldn't find or open `%s'\n", argv[1] );
-      return 1;
-    }
-    fseek( file, 0, SEEK_END );
-    memory_size = ftell( file );
-    fseek( file, 0, SEEK_SET );
+  filename = *argv;
 
-    memory_file = (FT_Byte*)malloc( memory_size );
-    if ( memory_file == NULL )
-    {
-      fprintf( stderr, "couldn't allocate memory to pre-load font file\n" );
-      return 1;
-    }
-
-    fread( memory_file, 1, memory_size, file );
-    if ( FT_New_Memory_Face( lib, memory_file, memory_size, 0, &face ) )
-    {
-      fprintf( stderr, "couldn't load font resource\n" );
-      return 1;
-    }
-  }
-  else if ( FT_New_Face(lib, argv[1], 0, &face) )
-  {
-    fprintf( stderr, "couldn't load font resource\n");
+  if ( get_face( &face ) )
     return 1;
-  }
 
-  if (FT_IS_SCALABLE(face))
+  if ( FT_IS_SCALABLE( face ) )
   {
-    /* We're not benchmarking the scanline renderer, pick any size */
-    size = 10;
-    FT_Set_Pixel_Sizes(face, size, size);
+
+    if ( FT_Set_Pixel_Sizes( face, size, size ) )
+    {
+      fprintf( stderr, "failed to set pixel size to %d\n", size );
+
+      return 1;
+    }
   }
   else
     size = face->available_sizes[0].width;
 
-  if (TEST('a')) bench( load_test,  "Load", iteration_max );
-  if (TEST('b')) bench( fetch_test, "Load + Get_Glyph", iteration_max );
-  if (TEST('c')) bench( cbox_test,  "Load + Get_Glyph + Get_CBox", iteration_max );
+  get_charset( face );
 
-#if 0
-  cmap_desc.face_id    = (void*)1;
-  cmap_desc.type       = FTC_CMAP_BY_INDEX;
-  cmap_desc.u.encoding = FT_ENCODING_NONE;
-#endif
-  if (TEST('d') &&
-      face->charmap) /* some fonts (eg. windings) don't have a charmap */
+  FTC_Manager_New( lib, 0, 0, max_bytes, face_requester, NULL, &cache_man );
+
+  font_type.face_id = (FTC_FaceID) 1;
+  font_type.width   = (short) size;
+  font_type.height  = (short) size;
+  font_type.flags   = load_flags;
+
+  for ( i = 0; i < N_FT_BENCH; i++ )
   {
-    bench( cmap_test,  "Get_Char_Index", iteration_max );
+    btest_t  test;
+
+
+    if ( !TEST( 'a' + i ) )
+      continue;
+
+    test.title       = NULL;
+    test.bench       = NULL;
+    test.cache_first = 0;
+    test.user_data   = NULL;
+
+    switch ( i )
+    {
+    case FT_BENCH_LOAD_GLYPH:
+      test.title = "Load";
+      test.bench = test_load;
+      benchmark( &test, max_iter, max_time );
+
+      if ( compare_cached )
+      {
+        test.cache_first = 1;
+
+        test.title = "Load (image cached)";
+        test.bench = test_image_cache;
+        benchmark( &test, max_iter, max_time );
+
+        test.title = "Load (sbit cached)";
+        test.bench = test_sbit_cache;
+        benchmark( &test, max_iter, max_time );
+      }
+      break;
+    case FT_BENCH_RENDER:
+      test.title = "Render";
+      test.bench = test_render;
+      benchmark( &test, max_iter, max_time );
+      break;
+    case FT_BENCH_GET_GLYPH:
+      test.title = "Get_Glyph";
+      test.bench = test_get_glyph;
+      benchmark( &test, max_iter, max_time );
+      break;
+    case FT_BENCH_GET_CBOX:
+      test.title = "Get_CBox";
+      test.bench = test_get_cbox;
+      benchmark( &test, max_iter, max_time );
+      break;
+    case FT_BENCH_CMAP:
+      test.title = "Get_Char_Index";
+      test.bench = test_get_char_index;
+      benchmark( &test, max_iter, max_time );
+
+      if ( compare_cached )
+      {
+        test.cache_first = 1;
+
+        test.title = "Get_Char_Index (cached)";
+        test.bench = test_cmap_cache;
+        benchmark( &test, max_iter, max_time );
+      }
+      break;
+    case FT_BENCH_CMAP_ITER:
+      test.title = "Iterate CMap";
+      test.bench = test_cmap_iter;
+      benchmark( &test, max_iter, max_time );
+      break;
+    case FT_BENCH_NEW_FACE:
+      test.title = "New_Face";
+      test.bench = test_new_face;
+      benchmark( &test, max_iter, max_time );
+      break;
+    }
   }
 
-  if (!FTC_Manager_New(lib, 0, 0, max_bytes, face_requester, NULL, &cache_man))
-  {
-    if (TEST('e') &&
-        face->charmap && !FTC_CMapCache_New(cache_man, &cmap_cache))
-    {
-      bench( cmap_cache_test,  "CMap cache (1st run)", 1);
-      bench( cmap_cache_test,  "CMap cache", iteration_max );
-    }
+  if ( cache_man )
+    FTC_Manager_Done( cache_man );
 
-    font_type.face_id = (FTC_FaceID)1;
-    font_type.width   = (short) size;
-    font_type.height  = (short) size;
+  if ( charset.code )
+    free( charset.code );
 
-    if (!FTC_ImageCache_New(cache_man, &image_cache))
-    {
-      if (TEST('f'))
-      {
-        font_type.flags = FT_LOAD_NO_BITMAP;
-        bench( image_cache_test,  "Outline cache (1st run)", 1);
-        bench( image_cache_test,  "Outline cache", iteration_max );
-      }
+  FT_Done_Face( face );
 
-      if (TEST('g'))
-      {
-        font_type.flags = FT_LOAD_RENDER;
-        bench( image_cache_test,  "Bitmap cache (1st run)", 1);
-        bench( image_cache_test,  "Bitmap cache", iteration_max );
-      }
-    }
-
-    if (TEST('h') &&
-        !FTC_SBitCache_New(cache_man, &sbit_cache))
-    {
-      font_type.flags = FT_LOAD_DEFAULT;
-      bench( sbit_cache_test,  "SBit cache (1st run)", 1);
-      bench( sbit_cache_test,  "SBit cache", iteration_max );
-    }
-  }
-
-  if (TEST('i') )
-    bench_open_close( argv[1], "Open/Close file", iteration_max );
-
-  if (TEST('j'))
-    bench_cmap_parse( "Charmap iteration", iteration_max );
-
-  if (cmap)
-    free (cmap);
-
-  if (cache_man)
-    FTC_Manager_Done(cache_man);
-
-  FT_Done_FreeType(lib);
+  FT_Done_FreeType( lib );
 
   return 0;
 }

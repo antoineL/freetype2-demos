@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2002, 2003, 2004 by                                           */
+/*  Copyright 2002, 2003, 2004, 2005 by                                     */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -26,7 +26,7 @@
 #include <sys/time.h>
 #endif
 
-#include <unistd.h>
+#include "common.h"
 
 
 typedef struct {

@@ -1,5 +1,10 @@
 2005-12-04  Chia-I Wu  <b90201047@ntu.edu.tw>
 
+	* src/ftbench.c: Update copyright date.
+	Use `getopt' from `common.h'.
+
+2005-12-04  Chia-I Wu  <b90201047@ntu.edu.tw>
+
 	* src/ftbench.c: Formatting.
 	Make `face' and `charset' local variables.
 	(btest_t): Use `const' qualifier for `title'.

@@ -1,3 +1,17 @@
+2005-12-04  Chia-I Wu  <b90201047@ntu.edu.tw>
+
+	* src/ftbench.c: Formatting.
+	Make `face' and `charset' local variables.
+	(btest_t): Use `const' qualifier for `title'.
+	(bcharset_t): Change the type of `size' to `FT_Int'.
+	(face_requester, benchmark): Updated because `face' is no longer
+	global.
+	(test_get_char_index, test_cmap_cache, get_charset): Updated because
+	`charset' is no longer global.
+	(main): New variables, `face' and `charset'.
+	Updated because `face' and `charset' are local now.
+	`get_charset' only when perform FT_BENCH_CMAP.
+
 2005-12-02  Chia-I Wu  <b90201047@ntu.edu.tw>
 
 	Overhaul `ftbench.'  Now it can perform tests with arbitrary load

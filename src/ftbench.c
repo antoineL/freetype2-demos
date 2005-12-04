@@ -40,15 +40,15 @@ typedef int
             void*      user_data );
 
 typedef struct {
-  char*    title;
-  bcall_t  bench;
-  int      cache_first;
-  void*    user_data;
+  const char*  title;
+  bcall_t      bench;
+  int          cache_first;
+  void*        user_data;
 } btest_t;
 
 typedef struct
 {
-  FT_UInt    size;
+  FT_Int     size;
   FT_ULong*  code;
 } bcharset_t;
 
@@ -65,7 +65,6 @@ get_face( FT_Face*     face );
 #define FACE_SIZE  10
 
 FT_Library        lib;
-FT_Face           face;
 FTC_Manager       cache_man;
 FTC_CMapCache     cmap_cache;
 FTC_ImageCache    image_cache;
@@ -94,8 +93,6 @@ const char* bench_desc[] = {
   NULL
 };
 
-bcharset_t      charset;
-
 int             preload;
 char*           filename;
 
@@ -108,16 +105,16 @@ FT_Int32        load_flags  = FT_LOAD_DEFAULT;
  */
 
 FT_Error
-face_requester (FTC_FaceID face_id,
-                FT_Library library,
-                FT_Pointer request_data,\
-                FT_Face* aface)
+face_requester( FTC_FaceID  face_id,
+                FT_Library  library,
+                FT_Pointer  request_data,
+                FT_Face*    aface )
 {
   FT_UNUSED( face_id );
   FT_UNUSED( library );
-  FT_UNUSED( request_data );
 
-  *aface = face;
+  *aface = (FT_Face)request_data;
+
   return 0;
 }
 
@@ -151,7 +148,8 @@ get_time(void)
  */
 
 void
-benchmark( btest_t*  test,
+benchmark( FT_Face   face,
+           btest_t*  test,
            int       max_iter,
            double    max_time )
 {
@@ -204,7 +202,7 @@ test_load( btimer_t*  timer,
            FT_Face    face,
            void*      user_data )
 {
-  int i, done = 0;
+  int  i, done = 0;
 
 
   FT_UNUSED( user_data );
@@ -228,7 +226,7 @@ test_render( btimer_t*  timer,
              FT_Face    face,
              void*      user_data )
 {
-  int i, done = 0;
+  int  i, done = 0;
 
 
   FT_UNUSED( user_data );
@@ -314,16 +312,15 @@ test_get_char_index( btimer_t*  timer,
                      FT_Face    face,
                      void*      user_data )
 {
-  int i, done = 0;
+  bcharset_t*  charset = (bcharset_t*)user_data;
+  int          i, done = 0;
 
-
-  FT_UNUSED( user_data );
 
   TIMER_START( timer );
 
-  for ( i = 0; i < charset.size; i++ )
+  for ( i = 0; i < charset->size; i++ )
   {
-    if ( FT_Get_Char_Index(face, charset.code[i]) )
+    if ( FT_Get_Char_Index(face, charset->code[i]) )
       done++;
   }
 
@@ -338,10 +335,11 @@ test_cmap_cache( btimer_t*  timer,
                  FT_Face    face,
                  void*      user_data )
 {
-  int i, done = 0;
+  bcharset_t*  charset = (bcharset_t*)user_data;
+  int          i, done = 0;
 
 
-  FT_UNUSED( user_data );
+  FT_UNUSED( face );
 
   if ( !cmap_cache )
   {
@@ -351,9 +349,9 @@ test_cmap_cache( btimer_t*  timer,
 
   TIMER_START( timer );
 
-  for ( i = 0; i < charset.size; i++ )
+  for ( i = 0; i < charset->size; i++ )
   {
-    if ( FTC_CMapCache_Lookup( cmap_cache, font_type.face_id, 0, charset.code[i] ) )
+    if ( FTC_CMapCache_Lookup( cmap_cache, font_type.face_id, 0, charset->code[i] ) )
       done++;
   }
 
@@ -368,8 +366,8 @@ test_image_cache( btimer_t*  timer,
                   FT_Face    face,
                   void*      user_data )
 {
-  FT_Glyph glyph;
-  int i, done = 0;
+  FT_Glyph  glyph;
+  int       i, done = 0;
 
 
   FT_UNUSED( user_data );
@@ -399,8 +397,8 @@ test_sbit_cache( btimer_t*  timer,
                  FT_Face    face,
                  void*      user_data )
 {
-  FTC_SBit glyph;
-  int i, done = 0;
+  FTC_SBit  glyph;
+  int       i, done = 0;
 
 
   FT_UNUSED( user_data );
@@ -453,7 +451,7 @@ test_new_face( btimer_t*  timer,
                FT_Face    face,
                void*      user_data )
 {
-  FT_Face   bench_face;
+  FT_Face  bench_face;
 
 
   FT_UNUSED( face );
@@ -475,15 +473,16 @@ test_new_face( btimer_t*  timer,
  */
 
 void
-get_charset( FT_Face  face )
+get_charset( FT_Face      face,
+             bcharset_t*  charset )
 {
   FT_ULong  charcode;
   FT_UInt   gindex;
   int i;
 
 
-  charset.code = (FT_ULong*)calloc( face->num_glyphs, sizeof( FT_ULong ) );
-  if ( !charset.code )
+  charset->code = (FT_ULong*)calloc( face->num_glyphs, sizeof( FT_ULong ) );
+  if ( !charset->code )
     return;
 
   if ( face->charmap )
@@ -496,7 +495,7 @@ get_charset( FT_Face  face )
     /*                                                                      */
     while ( gindex && i < face->num_glyphs )
     {
-      charset.code[i++] = charcode;
+      charset->code[i++] = charcode;
       charcode = FT_Get_Next_Char(face, charcode, &gindex);
     }
 
@@ -505,10 +504,10 @@ get_charset( FT_Face  face )
   {
     /* no charmap, do an identity mapping */
     for ( i = 0; i < face->num_glyphs; i++ )
-      charset.code[i] = i;
+      charset->code[i] = i;
   }
 
-  charset.size = i;
+  charset->size = i;
 }
 
 
@@ -571,7 +570,7 @@ get_face( FT_Face*     face )
 
 void usage(void)
 {
-  int i;
+  int  i;
 
 
   fprintf( stderr,
@@ -608,13 +607,14 @@ int
 main(int argc,
      char** argv)
 {
-  long     max_bytes = CACHE_SIZE * 1024;
-  char*    test_string = NULL;
-  int      size = FACE_SIZE;
-  int      max_iter = 0;
-  double   max_time = BENCH_TIME;
-  int      compare_cached = 0;
-  int      i;
+  FT_Face     face;
+  long        max_bytes = CACHE_SIZE * 1024;
+  char*       test_string = NULL;
+  int         size = FACE_SIZE;
+  int         max_iter = 0;
+  double      max_time = BENCH_TIME;
+  int         compare_cached = 0;
+  int         i;
 
   while ( 1 )
   {
@@ -646,7 +646,7 @@ main(int argc,
       break;
     case 'r':
       render_mode = atoi( optarg );
-      if ( render_mode < 0 || render_mode >= FT_RENDER_MODE_MAX )
+      if ( render_mode >= FT_RENDER_MODE_MAX )
         render_mode = FT_RENDER_MODE_NORMAL;
       break;
     case 's':
@@ -699,9 +699,7 @@ main(int argc,
   else
     size = face->available_sizes[0].width;
 
-  get_charset( face );
-
-  FTC_Manager_New( lib, 0, 0, max_bytes, face_requester, NULL, &cache_man );
+  FTC_Manager_New( lib, 0, 0, max_bytes, face_requester, face, &cache_man );
 
   font_type.face_id = (FTC_FaceID) 1;
   font_type.width   = (short) size;
@@ -726,7 +724,7 @@ main(int argc,
     case FT_BENCH_LOAD_GLYPH:
       test.title = "Load";
       test.bench = test_load;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
 
       if ( compare_cached )
       {
@@ -734,60 +732,72 @@ main(int argc,
 
         test.title = "Load (image cached)";
         test.bench = test_image_cache;
-        benchmark( &test, max_iter, max_time );
+        benchmark( face, &test, max_iter, max_time );
 
         test.title = "Load (sbit cached)";
         test.bench = test_sbit_cache;
-        benchmark( &test, max_iter, max_time );
+        benchmark( face, &test, max_iter, max_time );
       }
       break;
     case FT_BENCH_RENDER:
       test.title = "Render";
       test.bench = test_render;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
       break;
     case FT_BENCH_GET_GLYPH:
       test.title = "Get_Glyph";
       test.bench = test_get_glyph;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
       break;
     case FT_BENCH_GET_CBOX:
       test.title = "Get_CBox";
       test.bench = test_get_cbox;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
       break;
     case FT_BENCH_CMAP:
-      test.title = "Get_Char_Index";
-      test.bench = test_get_char_index;
-      benchmark( &test, max_iter, max_time );
-
-      if ( compare_cached )
       {
-        test.cache_first = 1;
+        bcharset_t  charset;
 
-        test.title = "Get_Char_Index (cached)";
-        test.bench = test_cmap_cache;
-        benchmark( &test, max_iter, max_time );
+
+        get_charset( face, &charset );
+        if ( charset.code )
+        {
+          test.user_data = (void*)&charset;
+
+
+          test.title = "Get_Char_Index";
+          test.bench = test_get_char_index;
+
+          benchmark( face, &test, max_iter, max_time );
+
+          if ( compare_cached )
+          {
+            test.cache_first = 1;
+
+            test.title = "Get_Char_Index (cached)";
+            test.bench = test_cmap_cache;
+            benchmark( face, &test, max_iter, max_time );
+          }
+
+          free( charset.code );
+        }
       }
       break;
     case FT_BENCH_CMAP_ITER:
       test.title = "Iterate CMap";
       test.bench = test_cmap_iter;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
       break;
     case FT_BENCH_NEW_FACE:
       test.title = "New_Face";
       test.bench = test_new_face;
-      benchmark( &test, max_iter, max_time );
+      benchmark( face, &test, max_iter, max_time );
       break;
     }
   }
 
   if ( cache_man )
     FTC_Manager_Done( cache_man );
-
-  if ( charset.code )
-    free( charset.code );
 
   FT_Done_Face( face );
 

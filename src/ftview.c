@@ -821,11 +821,12 @@ Next:
   }
 
 
-  static char*
-  error_message( FT_Error error_code )
+  static void
+  write_header( FT_Error error_code )
   {
     FT_Face      face;
     const char*  basename;
+    const char*  format;
 
 
     error = FTC_Manager_LookupFace( handle->cache_manager,
@@ -833,13 +834,15 @@ Next:
     if ( error )
       PanicZ( "can't access font file" );
 
-    basename = ft_basename( handle->current_font->filepathname );
-
-    switch ( error_code )
+    if ( !status.header )
     {
+      basename = ft_basename( handle->current_font->filepathname );
+
+      switch ( error_code )
+      {
       case FT_Err_Ok:
         sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
-            face->style_name, basename );
+                 face->style_name, basename );
         break;
       case FT_Err_Invalid_Pixel_Size:
         sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
@@ -849,12 +852,53 @@ Next:
         break;
       default:
         sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
-            (FT_UShort)error_code );
+                 (FT_UShort)error_code );
         break;
+      }
+
+      status.header = status.header_buffer;
     }
 
-    return status.header_buffer;
+    grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+
+    format = ( status.encoding != FT_ENCODING_NONE )
+             ? "at %d points, first char code = 0x%x"
+             : "at %d points, first glyph index = %d";
+
+    snprintf( status.header_buffer, 256, format, status.ptsize, status.Num );
+
+    if ( FT_HAS_GLYPH_NAMES( face ) )
+    {
+      char*  p;
+      int    format_len, gindex, size;
+
+
+      size = strlen( status.header_buffer );
+      p    = status.header_buffer + size;
+      size = 256 - size;
+
+      format = ", name = ";
+      format_len = strlen( format );
+
+      if ( size >= format_len + 2 )
+      {
+        gindex = status.Num;
+        if ( status.encoding != FT_ENCODING_NONE )
+          gindex = FTDemo_Get_Index( handle, status.Num );
+
+        strcpy( p, format );
+        if ( FT_Get_Glyph_Name( face, gindex, p + format_len, size - format_len ) )
+          *p = '\0';
+      }
+    }
+
+    status.header = status.header_buffer;
+    grWriteCellString( display->bitmap, 0, HEADER_HEIGHT, status.header_buffer,
+                       display->fore_color );
+
+    grRefreshSurface( display->surface );
   }
+
 
   static void
   usage( char*  execname )
@@ -949,7 +993,6 @@ Next:
         char*  argv[] )
   {
     grEvent      event;
-    const char*  header_format;
 
 
     parse_cmdline( &argc, &argv );
@@ -974,10 +1017,6 @@ Next:
       setenv( "FT2_DEBUG", temp );
     }
 #endif
-
-    header_format = status.encoding != FT_ENCODING_NONE
-                    ? "at %d points, first char code = 0x%x"
-                    : "at %d points, first glyph index = %d";
 
     /* Initialize engine */
     handle = FTDemo_New( status.encoding );
@@ -1027,16 +1066,7 @@ Next:
         break;
       }
 
-      if ( !status.header )
-        status.header = error_message( error );
-
-      /* write header */
-      grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
-      sprintf( status.header_buffer, header_format, status.ptsize, status.Num );
-      grWriteCellString( display->bitmap, 0, HEADER_HEIGHT, status.header_buffer,
-                         display->fore_color );
-
-      grRefreshSurface( display->surface );
+      write_header( error );
 
       if ( status.dump_cache_stats )
       {

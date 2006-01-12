@@ -1,3 +1,18 @@
+2006-01-12  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	Add "ftoldmac", commandline program to test MacOS specific feature:
+	font file access by FSSpec, font file search by old/new QuickDraw
+	font name or ATS font name.
+
+	* mac/ftoldmac.c: Added.
+	* mac/Makefile: Unix Makefile for MacOS X.
+	* mac/ftoldmac.m68k_far.make.txt: MPW Makefile skelton.
+	* mac/ftoldmac.ppc_carbon.make.txt: MPW Makefile skelton.
+	* mac/ascii2mpw.py: Python script to generate MPW Makefile from
+	the skeltons.
+	* mac/README: Add note about ftoldmac, because ft2demos/mac was
+	originally for demos built by CodeWarrior.
+
 2005-12-08  Chia-I Wu  <b90201047@ntu.edu.tw>
 
 	* src/ftview.c (error_message): Renamed to write_header.

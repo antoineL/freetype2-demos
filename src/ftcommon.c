@@ -206,8 +206,25 @@
                          font->face_index,
                          aface );
 
-    if ( !error && (*aface)->charmaps )
-      (*aface)->charmap = (*aface)->charmaps[font->cmap_index];
+    if ( !error )
+    {
+      char*  suffix;
+      char   orig[4];
+
+      suffix = strrchr( font->filepathname, '.' );
+      if ( suffix && strlen( suffix ) >= 4 )
+      {
+        suffix++;
+
+        memcpy( orig, suffix, 4 );
+        memcpy( suffix, "afm", 4 );
+        FT_Attach_File( *aface, font->filepathname );
+        memcpy( suffix, orig, 4 );
+      }
+
+      if ( (*aface)->charmaps )
+        (*aface)->charmap = (*aface)->charmaps[font->cmap_index];
+    }
 
     return error;
   }
@@ -263,8 +280,6 @@
     /* string_init */
     memset( handle->string, 0, sizeof( TGlyph ) * MAX_GLYPHS );
     handle->string_length = 0;
-    handle->kerning_mode = KERNING_MODE_NORMAL;
-    handle->vertical = 0;
     handle->string_reload = 1;
 
     return handle;
@@ -900,24 +915,6 @@
 
 
   void
-  FTDemo_String_Set_Kerning( FTDemo_Handle*  handle,
-                             int             kerning_mode )
-  {
-    handle->kerning_mode  = kerning_mode;
-    handle->string_reload = 1;
-  }
-
-
-  void
-  FTDemo_String_Set_Vertical( FTDemo_Handle*  handle,
-                              int             vertical )
-  {
-    handle->vertical      = vertical;
-    handle->string_reload = 1;
-  }
-
-
-  void
   FTDemo_String_Set( FTDemo_Handle*        handle,
                      const unsigned char*  string )
   {
@@ -991,11 +988,9 @@
   string_load( FTDemo_Handle*  handle )
   {
     int        n;
-    FT_UInt    prev_index     = 0;
-    FT_Pos     prev_rsb_delta = 0;
-    FT_Vector  pen, delta;
     FT_Size    size;
     FT_Face    face;
+    FT_Pos     prev_rsb_delta = 0;
 
 
     error = FTDemo_Get_Size( handle, &size );
@@ -1004,8 +999,6 @@
 
     face = size->face;
 
-    pen.x = 0;
-    pen.y = 0;
     for ( n = 0; n < handle->string_length; n++ )
     {
       PGlyph  glyph = handle->string + n;
@@ -1019,99 +1012,136 @@
       }
 
       /* load the glyph and get the image */
-      if ( FT_Load_Glyph( face, glyph->glyph_index, handle->image_type.flags ) ||
-           FT_Get_Glyph( face->glyph, &glyph->image ) )
-        continue;
-
-      /* adjust pen position */
-      if ( !handle->vertical && handle->kerning_mode )
-      {
-        if ( n > 0 )
-        {
-          FT_Vector  kern;
-
-
-          FT_Get_Kerning( face, prev_index, glyph->glyph_index,
-                          handle->hinted ? FT_KERNING_DEFAULT : FT_KERNING_UNFITTED,
-                          &kern );
-
-          pen.x += kern.x;
-          pen.y += kern.y;
-        }
-        prev_index = glyph->glyph_index;
-
-        if ( handle->kerning_mode > KERNING_MODE_NORMAL )
-        {
-          if ( n > 0 )
-          {
-            if ( prev_rsb_delta - face->glyph->lsb_delta >= 32 )
-              pen.x -= 64;
-            else if ( prev_rsb_delta - face->glyph->lsb_delta < -32 )
-              pen.x += 64;
-          }
-          prev_rsb_delta = face->glyph->rsb_delta;
-        }
-      }
-
-      if ( handle->vertical )
+      if ( !FT_Load_Glyph( face, glyph->glyph_index, handle->image_type.flags ) &&
+           !FT_Get_Glyph( face->glyph, &glyph->image ) )
       {
         FT_Glyph_Metrics*  metrics = &face->glyph->metrics;
 
 
-        delta.x = metrics->vertBearingX - metrics->horiBearingX;
-        delta.y = -metrics->vertBearingY - metrics->horiBearingY;
+        /* note that in vertical layout, y-positive goes downwards */
 
-        delta.x = ROUND( delta.x );
-        delta.y = ROUND( delta.y );
+        glyph->vvector.x  = metrics->vertBearingX - metrics->horiBearingX;
+        glyph->vvector.y  = -metrics->vertBearingY - metrics->horiBearingY;
 
-        /* hack pen position */
-        pen.x += delta.x;
-        pen.y += delta.y;
-      }
+        glyph->vadvance.x = 0;
+        glyph->vadvance.y = -metrics->vertAdvance;
 
-      if ( glyph->image->format != FT_GLYPH_FORMAT_BITMAP )
-      {
-        error = FT_Glyph_Transform( glyph->image, NULL, &pen );
-
-        if ( error )
-        {
-          FT_Done_Glyph( glyph->image );
-          glyph->image = NULL;
-          continue;
-        }
-      }
-      else
-      {
-        FT_BitmapGlyph  bitmap;
-
-
-        bitmap = (FT_BitmapGlyph)glyph->image;
-
-        bitmap->left += pen.x >> 6;
-        bitmap->top  += pen.y >> 6;
-      }
-
-      if ( handle->vertical )
-      {
-        /* restore pen position */
-        pen.x -= delta.x;
-        pen.y -= delta.y;
-
-        pen.x = 0;
-        if ( face->glyph->metrics.vertAdvance == 0 )
-          pen.y -= ( face->size->metrics.y_ppem * 11 / 10 ) << 6;
+        if ( prev_rsb_delta - face->glyph->lsb_delta >= 32 )
+          glyph->delta = -1 << 6;
+        else if ( prev_rsb_delta - face->glyph->lsb_delta < -32 )
+          glyph->delta = 1 << 6;
         else
-          pen.y -= CEIL( face->glyph->metrics.vertAdvance );
-      }
-      else
-      {
-        pen.x += face->glyph->advance.x;
-        pen.y = 0;
+          glyph->delta = 0;
       }
     }
 
-    handle->string_extent.x = pen.x;
-    handle->string_extent.y = pen.y;
+    return FT_Err_Ok;
+  }
+
+
+  FT_Error
+  string_render_prepare( FTDemo_Handle*          handle,
+                         FTDemo_String_Context*  sc,
+                         FT_Vector*              advances )
+  {
+    FT_Face     face;
+    FT_Size     size;
+    PGlyph      glyph;
+    FT_Pos      track_kern = 0;
+    FT_UInt     prev_index;
+    FT_Vector*  prev_advance;
+    FT_Vector   extent = { 0, 0};
+    FT_Int      i;
+
+
+    error = FTDemo_Get_Size( handle, &size );
+    if ( error )
+      return error;
+
+    face = size->face;
+
+    if ( !sc->vertical && sc->kerning_degree )
+    {
+      FT_Fixed  ptsize;
+
+
+      ptsize = FT_MulFix( face->units_per_EM, face->size->metrics.x_scale );
+
+      if ( FT_Get_Track_Kerning( face, ptsize << 10,
+                                 -sc->kerning_degree,
+                                 &track_kern ) )
+        track_kern = 0;
+      else
+        track_kern >>= 10;
+    }
+
+    for ( i = 0; i < handle->string_length; i++ )
+    {
+      glyph = handle->string + i;
+
+      if ( !glyph->image )
+        continue;
+
+      if ( sc->vertical )
+        advances[i] = glyph->vadvance;
+      else
+      {
+        advances[i] = glyph->image->advance;
+        advances[i].x >>= 10;
+        advances[i].y >>= 10;
+
+        if ( i > 0 )
+        {
+          prev_advance->x += track_kern;
+
+          if ( sc->kerning_mode )
+          {
+            FT_Vector  kern;
+
+
+            FT_Get_Kerning( face, prev_index, glyph->glyph_index,
+                FT_KERNING_UNFITTED, &kern );
+
+            prev_advance->x += kern.x;
+            prev_advance->y += kern.y;
+
+            if ( sc->kerning_mode > KERNING_MODE_NORMAL )
+              prev_advance->x += glyph->delta;
+          }
+        }
+      }
+
+      if ( i > 0 )
+      {
+        if ( handle->hinted )
+        {
+          prev_advance->x = ROUND( prev_advance->x );
+          prev_advance->y = ROUND( prev_advance->y );
+        }
+
+        extent.x += prev_advance->x;
+        extent.y += prev_advance->y;
+      }
+
+      prev_index   = glyph->glyph_index;
+      prev_advance = advances + i;
+    }
+
+    if ( i > 0 )
+    {
+      if ( handle->hinted )
+      {
+        prev_advance->x = ROUND( prev_advance->x );
+        prev_advance->y = ROUND( prev_advance->y );
+      }
+
+      extent.x += prev_advance->x;
+      extent.y += prev_advance->y;
+
+      /*store the extent in the last slot */
+      i = handle->string_length - 1;
+      advances[i] = extent;
+    }
 
     return FT_Err_Ok;
   }
@@ -1138,23 +1168,23 @@
 
 
   FT_Error
-  FTDemo_String_Draw( FTDemo_Handle*   handle,
-                      FTDemo_Display*  display,
-                      int              center_x,
-                      int              center_y,
-                      FT_Matrix*       matrix,
-                      FT_Byte          gamma_ramp[256] )
+  FTDemo_String_Draw( FTDemo_Handle*          handle,
+                      FTDemo_Display*         display,
+                      FTDemo_String_Context*  sc,
+                      int                     x,
+                      int                     y )
   {
     int        n;
-    FT_Vector  start;
+    FT_Vector  pen, advances[MAX_GLYPHS];
     FT_Size    size;
     FT_Face    face;
 
 
-    if ( center_x < 0 ||
-         center_y < 0 ||
-         center_x > display->bitmap->width ||
-         center_y > display->bitmap->rows )
+    if ( !sc                        ||
+         x < 0                      ||
+         y < 0                      ||
+         x > display->bitmap->width ||
+         y > display->bitmap->rows )
       return FT_Err_Invalid_Argument;
 
     error = FTDemo_Get_Size( handle, &size );
@@ -1172,23 +1202,32 @@
       handle->string_reload = 0;
     }
 
-    /* get start position */
-    start = handle->string_extent;
+    error = string_render_prepare( handle, sc, advances );
+    if ( error )
+      return error;
+
+    /* change to Cartesian coordinates */
+    y = display->bitmap->rows - y;
+
+    /* get the extent, which we store in the last slot */
+    pen = advances[handle->string_length - 1];
+
+    pen.x = FT_MulFix( pen.x, sc->center );
+    pen.y = FT_MulFix( pen.y, sc->center );
+    
     /* XXX sbits */
-    if ( matrix && FT_IS_SCALABLE( face ) )
+    /* get pen position */
+    if ( sc->matrix && FT_IS_SCALABLE( face ) )
     {
-      FT_Vector_Transform( &start, matrix );
-      start.x = ( center_x << 6 ) - start.x / 2;
-      start.y = ( center_y << 6 ) + start.y / 2;
+      FT_Vector_Transform( &pen, sc->matrix );
+      pen.x = ( x << 6 ) - pen.x;
+      pen.y = ( y << 6 ) - pen.y;
     }
     else
     {
-      start.x = ROUND( ( center_x << 6 ) - start.x / 2 );
-      start.y = ROUND( ( center_y << 6 ) + start.y / 2 );
+      pen.x = ROUND( ( x << 6 ) - pen.x );
+      pen.y = ROUND( ( y << 6 ) - pen.y );
     }
-
-    /* change to Cartesian coordinates */
-    start.y = ( display->bitmap->rows << 6 ) - start.y;
 
     for ( n = 0; n < handle->string_length; n++ )
     {
@@ -1207,7 +1246,11 @@
 
       if ( image->format != FT_GLYPH_FORMAT_BITMAP )
       {
-        error = FT_Glyph_Transform( image, matrix, &start );
+        if ( sc->vertical )
+          error = FT_Glyph_Transform( image, NULL, &glyph->vvector );
+
+        if ( !error )
+          error = FT_Glyph_Transform( image, sc->matrix, &pen );
 
         if ( error )
         {
@@ -1220,9 +1263,23 @@
         FT_BitmapGlyph  bitmap = (FT_BitmapGlyph)image;
 
 
-        bitmap->left += start.x >> 6;
-        bitmap->top  += start.y >> 6;
+        if ( sc->vertical )
+        {
+          bitmap->left += ( glyph->vvector.x + pen.x ) >> 6;
+          bitmap->top  += ( glyph->vvector.x + pen.y ) >> 6;
+        }
+        else
+        {
+          bitmap->left += pen.x >> 6;
+          bitmap->top  += pen.y >> 6;
+        }
       }
+
+      if ( sc->matrix )
+        FT_Vector_Transform( advances + n, sc->matrix );
+
+      pen.x += advances[n].x;
+      pen.y += advances[n].y;
 
       FT_Glyph_Get_CBox( image, FT_GLYPH_BBOX_PIXELS, &bbox );
 
@@ -1250,8 +1307,8 @@
                                         &dummy1, &dummy2, &glyf );
         if ( !error )
         {
-          if ( gamma_ramp )
-            gamma_ramp_apply( gamma_ramp, &bit3 );
+          if ( sc->gamma_ramp )
+            gamma_ramp_apply( sc->gamma_ramp, &bit3 );
 
           /* change back to the usual coordinates */
           top = display->bitmap->rows - top;

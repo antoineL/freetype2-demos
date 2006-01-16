@@ -22,26 +22,35 @@
 #include <stdarg.h>
 #include <math.h>
 
+#define CELLSTRING_HEIGHT  8
 #define MAXPTSIZE  500                 /* dtp */
 
 
   static char*  Text = (char *)"The quick brown fox jumps over the lazy dog";
 
+  enum {
+    RENDER_MODE_STRING,
+    RENDER_MODE_KERNCMP,
+    N_RENDER_MODES
+  };
+
   static struct {
+    int          render_mode;
     FT_Encoding  encoding;
     int          res;
     int          ptsize;            /* current point size */
     double       gamma;
-
-    int          use_gamma;
-    FT_Byte      gamma_ramp[256];
     int          angle;
+
+    FTDemo_String_Context  sc;
+
+    FT_Byte      gamma_ramp[256];
     FT_Matrix    trans_matrix;
     int          font_index;
     char*        header;
     char         header_buffer[256];
 
-  } status = { FT_ENCODING_UNICODE, 72, 48, 2.0 };
+  } status = { RENDER_MODE_STRING, FT_ENCODING_UNICODE, 72, 48, 2.0, 0 };
 
   static FTDemo_Display*  display;
   static FTDemo_Handle*   handle;
@@ -83,7 +92,9 @@
     grWriteln( "  h         : toggle outline hinting" );
     grWriteln( "  l         : toggle low precision rendering" );
     grLn();
+    grWriteln( "  1-2       : select rendering mode" );
     grWriteln( "  k         : cycle through kerning modes" );
+    grWriteln( "  t         : cycle through kerning degrees" );
     grWriteln( "  V         : toggle vertical rendering" );
     grLn();
     grWriteln( "  G         : toggle gamma correction" );
@@ -139,7 +150,13 @@
     status.angle = ( status.angle + delta ) % 360;
 
     if ( status.angle == 0 )
+    {
+      status.sc.matrix = NULL;
+
       return;
+    }
+
+    status.sc.matrix = &status.trans_matrix;
 
     if ( status.angle < 0 )
       status.angle += 360;
@@ -193,11 +210,43 @@
   }
 
 
+  static void
+  event_render_mode_change( int delta )
+  {
+    if ( delta )
+    {
+      status.render_mode = ( status.render_mode + delta ) % N_RENDER_MODES;
+
+      if ( status.render_mode < 0 )
+        status.render_mode += N_RENDER_MODES;
+    }
+
+    switch ( status.render_mode )
+    {
+    case RENDER_MODE_STRING:
+      status.header = NULL;
+      break;
+    case RENDER_MODE_KERNCMP:
+      status.header = (char *)"Kerning comparision";
+      break;
+    }
+  }
+
+
   static int
   Process_Event( grEvent*  event )
   {
-    int  ret = 0;
+    FTDemo_String_Context*  sc = &status.sc;
+    int                     ret = 0;
 
+
+    if ( event->key >= '1' && event->key < '1' + N_RENDER_MODES )
+    {
+      status.render_mode = event->key - '1';
+      event_render_mode_change( 0 );
+
+      return ret;
+    }
 
     switch ( event->key )
     {
@@ -250,35 +299,46 @@
     case grKEY( 'l' ):
       handle->low_prec = !handle->low_prec;
       status.header    = handle->low_prec
-                          ? (char *)"rendering precision is now forced to low"
-                          : (char *)"rendering precision is now normal";
+                         ? (char *)"rendering precision is now forced to low"
+                         : (char *)"rendering precision is now normal";
 
       FTDemo_Update_Current_Flags( handle );
       break;
 
     case grKEY( 'k' ):
-        FTDemo_String_Set_Kerning( handle, ( handle->kerning_mode + 1 ) % 
-                                   N_KERNING_MODES );
-        status.header =
-          handle->kerning_mode == KERNING_MODE_SMART
-            ? (char *)"kerning and side bearing correction is now active"
-            : handle->kerning_mode == KERNING_MODE_NORMAL
-                ? (char *)"kerning is now active"
-                : (char *)"kerning is now ignored";
+      sc->kerning_mode = ( sc->kerning_mode + 1 ) % N_KERNING_MODES;
+      status.header =
+        sc->kerning_mode == KERNING_MODE_SMART
+        ? (char *)"pair kerning and side bearing correction is now active"
+        : sc->kerning_mode == KERNING_MODE_NORMAL
+          ? (char *)"pair kerning is now active"
+          : (char *)"pair kerning is now ignored";
+      break;
+
+    case grKEY( 't' ):
+      sc->kerning_degree = ( sc->kerning_degree + 1 ) % N_KERNING_DEGREES;
+      status.header =
+        sc->kerning_degree == KERNING_DEGREE_NONE
+        ? (char *)"no track kerning"
+        : sc->kerning_degree == KERNING_DEGREE_LIGHT
+          ? (char *)"light track kerning active"
+          : sc->kerning_degree == KERNING_DEGREE_MEDIUM
+            ? (char *)"medium track kerning active"
+            : (char *)"tight track kerning active";
       break;
 
     case grKEY( 'V' ):
-        FTDemo_String_Set_Vertical( handle, !handle->vertical );
-        status.header = handle->vertical
-                        ? (char *)"using vertical layout"
-                        : (char *)"using horizontal layout";
+      sc->vertical  = !sc->vertical;
+      status.header = sc->vertical
+                      ? (char *)"using vertical layout"
+                      : (char *)"using horizontal layout";
       break;
 
     case grKEY( 'G' ):
-      status.use_gamma = !status.use_gamma;
-      status.header    = status.use_gamma
-                         ? (char *)"gamma correction is now on"
-                         : (char *)"gamma correction is now off";
+      sc->gamma_ramp = sc->gamma_ramp ? NULL : status.gamma_ramp;
+      status.header  = sc->gamma_ramp
+                       ? (char *)"gamma correction is now on"
+                       : (char *)"gamma correction is now off";
       break;
 
     case grKEY( 'g' ):
@@ -333,8 +393,8 @@
   }
 
 
-  static char*
-  error_message( FT_Error error_code )
+  static void
+  write_header( FT_Error  error_code )
   {
     FT_Face      face;
     const char*  basename;
@@ -345,10 +405,12 @@
     if ( error )
       PanicZ( "can't access font file" );
       
-    basename = ft_basename( handle->current_font->filepathname );
-
-    switch ( error_code )
+    if ( !status.header )
     {
+      basename = ft_basename( handle->current_font->filepathname );
+
+      switch ( error_code )
+      {
       case FT_Err_Ok:
         sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
             face->style_name, basename );
@@ -363,9 +425,18 @@
         sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
             (FT_UShort)error_code );
         break;
+      }
+
+      status.header = status.header_buffer;
     }
 
-    return status.header_buffer;
+    grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+
+    sprintf( status.header_buffer, "at %d points, angle = %d", status.ptsize, status.angle );
+    grWriteCellString( display->bitmap, 0, CELLSTRING_HEIGHT, status.header_buffer,
+                       display->fore_color );
+
+    grRefreshSurface( display->surface );
   }
 
 
@@ -493,30 +564,69 @@
     {
       FTDemo_Display_Clear( display );
 
-      error = FT_Err_Ok;
-
-      if ( !error )
+      switch ( status.render_mode )
       {
+      case RENDER_MODE_STRING:
+        status.sc.center = 1L << 15;
         error = FTDemo_String_Draw( handle, display,
+                                    &status.sc,
                                     display->bitmap->width / 2,
-                                    display->bitmap->rows / 2,
-                                    !handle->use_sbits && status.angle
-                                      ? &status.trans_matrix : NULL,
-                                    status.use_gamma ? status.gamma_ramp
-                                                     : NULL );
-        if ( !error && status.use_gamma )
-          gamma_ramp_draw( status.gamma_ramp, display->bitmap );
+                                    display->bitmap->rows / 2 );
+        break;
+      case RENDER_MODE_KERNCMP:
+        {
+          FTDemo_String_Context  sc = status.sc;
+          FT_Int                 x, y;
+          FT_UInt                height;
+
+
+          x = 55;
+
+          /* whatever.. */
+          height = status.ptsize * status.res / 72;
+          if ( height < CELLSTRING_HEIGHT )
+            height = CELLSTRING_HEIGHT;
+
+          /* First line: none */
+          sc.center         = 0;
+          sc.kerning_mode   = 0;
+          sc.kerning_degree = 0;
+          sc.vertical       = 0;
+          sc.matrix         = NULL;
+
+          y = CELLSTRING_HEIGHT * 2 + display->bitmap->rows / 4 + height;
+          grWriteCellString( display->bitmap, 5,
+                             y - ( height + CELLSTRING_HEIGHT ) / 2,
+                             "none", display->fore_color );
+          error = FTDemo_String_Draw( handle, display, &sc, x, y );
+
+
+          /* Second line: track kern only */
+          sc.kerning_degree = status.sc.kerning_degree;
+
+          y += height;
+          grWriteCellString( display->bitmap, 5,
+                             y - ( height + CELLSTRING_HEIGHT ) / 2,
+                             "track", display->fore_color );
+          error = FTDemo_String_Draw( handle, display, &sc, x, y );
+
+
+          /* Third line: track kern + pair kern */
+          sc.kerning_mode      = status.sc.kerning_mode;
+
+          y += height;
+          grWriteCellString( display->bitmap, 5,
+                             y - ( height + CELLSTRING_HEIGHT ) / 2,
+                             "both", display->fore_color );
+          error = FTDemo_String_Draw( handle, display, &sc, x, y );
+        }
+        break;
       }
 
-      if ( !status.header )
-        status.header = error_message( error );
+      if ( !error && status.sc.gamma_ramp )
+        gamma_ramp_draw( status.gamma_ramp, display->bitmap );
 
-      /* write header */
-      grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
-      sprintf( status.header_buffer, "at %d points, angle = %d", status.ptsize, status.angle );
-      grWriteCellString( display->bitmap, 0, 8, status.header_buffer, display->fore_color );
-
-      grRefreshSurface( display->surface );
+      write_header( error );
 
       status.header = 0;
       grListenSurface( display->surface, 0, &event );

@@ -1,3 +1,16 @@
+2006-01-16  Chia-I Wu  <b90201047@ntu.edu.tw>
+
+	* src/ftcommon.c, src/ftcommon.h: The prototype of
+	`FTDemo_String_Draw' is changed to have more flexiblity.  For example,
+	we can now draw the string twice with different kerning modes withouth
+	re-loading the glyphs.
+	(my_face_requester): Try to attach the file having the same name as the
+	font, but with suffix ".afm".
+
+	* src/ftstring.c: Updated along with many cleanups.
+	Track kerning support (toggle by `t').
+	New rendering mode for kerning comparison (toggle by `2').
+
 2006-01-12  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	Add "ftoldmac", commandline program to test MacOS specific feature:

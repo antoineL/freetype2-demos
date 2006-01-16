@@ -99,7 +99,11 @@
   typedef struct  TGlyph_
   {
     FT_UInt    glyph_index;
-    FT_Glyph   image;
+    FT_Glyph   image;   /* the glyph image */
+
+    FT_Pos     delta;   /* delta caused by hinting */
+    FT_Vector  vvector; /* vert. origin => hori. origin */
+    FT_Vector  vadvance; /* vertical advance */
 
   } TGlyph, *PGlyph;
 
@@ -124,11 +128,29 @@
   };
 
   enum {
+    KERNING_DEGREE_NONE = 0,
+    KERNING_DEGREE_LIGHT,
+    KERNING_DEGREE_MEDIUM,
+    KERNING_DEGREE_TIGHT,
+    N_KERNING_DEGREES,
+  };
+
+  enum {
     KERNING_MODE_NONE = 0,      /* 0: no kerning;                  */
     KERNING_MODE_NORMAL,        /* 1: `kern' values                */
     KERNING_MODE_SMART,         /* 2: `kern' + side bearing errors */
     N_KERNING_MODES
   };
+
+  typedef struct
+  {
+    int         kerning_mode;
+    int         kerning_degree;
+    FT_Fixed    center;            /* 0..1 */
+    int         vertical;          /* displayed vertically? */
+    FT_Matrix*  matrix;            /* string transformation */
+    FT_Byte*    gamma_ramp;        /* an array of size 256 */
+  } FTDemo_String_Context;
 
   typedef struct
   {
@@ -162,9 +184,6 @@
     TGlyph            string[MAX_GLYPHS];
     int               string_length;
     int               string_reload;
-    FT_Vector         string_extent;
-    int               kerning_mode;
-    int               vertical;
 
     FT_Encoding       encoding;
     FT_Bitmap         bitmap;            /* used as bitmap conversion buffer */
@@ -267,19 +286,6 @@
                     int*             pen_y);
 
 
-  /* set the kerning mode used for string drawing */
-  void
-  FTDemo_String_Set_Kerning( FTDemo_Handle*  handle,
-                             int             kerning_mode );
-
-
-  /* set to vertical layout */
-  /* note that some font formats don't have vertical metrics */
-  void
-  FTDemo_String_Set_Vertical( FTDemo_Handle*  handle,
-                              int             vertical );
-
-
   /* set the string to be drawn */
   void
   FTDemo_String_Set( FTDemo_Handle*        handle,
@@ -287,15 +293,13 @@
 
 
   /* draw a string centered at (center_x, center_y) */
-  /* with optional transformation and gamma correction */
   /* note that handle->use_sbits_cache is not supported */
   FT_Error
-  FTDemo_String_Draw( FTDemo_Handle*   handle,
-                      FTDemo_Display*  display,
-                      int              center_x,
-                      int              center_y,
-                      FT_Matrix*       matrix,
-                      FT_Byte          gamma_ramp[256] );
+  FTDemo_String_Draw( FTDemo_Handle*          handle,
+                      FTDemo_Display*         display,
+                      FTDemo_String_Context*  sc,
+                      int                     center_x,
+                      int                     center_y );
 
 
   /* make a FT_Encoding tag from a string */

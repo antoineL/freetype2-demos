@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2002, 2003, 2004, 2005 by                                */
+/*  Copyright 1996-2002, 2003, 2004, 2005, 2006 by                          */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -226,6 +226,7 @@
     case RENDER_MODE_STRING:
       status.header = NULL;
       break;
+
     case RENDER_MODE_KERNCMP:
       status.header = (char *)"Kerning comparision";
       break;
@@ -413,13 +414,15 @@
       {
       case FT_Err_Ok:
         sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
-            face->style_name, basename );
+                 face->style_name, basename );
         break;
       case FT_Err_Invalid_Pixel_Size:
-        sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid pixel size (file `%s')",
+                 basename );
         break;
       case FT_Err_Invalid_PPem:
-        sprintf( status.header_buffer, "Invalid ppem value (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid ppem value (file `%s')",
+                 basename );
         break;
       default:
         sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
@@ -430,11 +433,13 @@
       status.header = status.header_buffer;
     }
 
-    grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+    grWriteCellString( display->bitmap, 0, 0,
+                       status.header, display->fore_color );
 
-    sprintf( status.header_buffer, "at %d points, angle = %d", status.ptsize, status.angle );
-    grWriteCellString( display->bitmap, 0, CELLSTRING_HEIGHT, status.header_buffer,
-                       display->fore_color );
+    sprintf( status.header_buffer, "at %d points, angle = %d",
+             status.ptsize, status.angle );
+    grWriteCellString( display->bitmap, 0, CELLSTRING_HEIGHT,
+                       status.header_buffer, display->fore_color );
 
     grRefreshSurface( display->surface );
   }
@@ -519,7 +524,7 @@
   main( int     argc,
         char**  argv )
   {
-    grEvent   event;
+    grEvent  event;
 
 
     parse_cmdline( &argc, &argv );
@@ -554,7 +559,8 @@
     if ( !display )
       PanicZ( "could not allocate display surface" );
 
-    grSetTitle( display->surface, "FreeType String Viewer - press F1 for help" );
+    grSetTitle( display->surface,
+                "FreeType String Viewer - press F1 for help" );
 
     event_gamma_change( 0 );
     event_font_change( 0 );
@@ -573,6 +579,7 @@
                                     display->bitmap->width / 2,
                                     display->bitmap->rows / 2 );
         break;
+
       case RENDER_MODE_KERNCMP:
         {
           FTDemo_String_Context  sc = status.sc;

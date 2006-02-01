@@ -13,14 +13,14 @@ ifeq ($(PLATFORM),beos)
 
   # add the BeOS driver object file to the graphics library `graph.a'
   #
-  GRAPH_OBJS += $(OBJ_DIR)/grbeos.$(SO)
+  GRAPH_OBJS += $(OBJ_DIR_2)/grbeos.$(SO)
 
   DEVICES         += BEOS
   DEVICE_INCLUDES += $(GR_BEOS)
 
   # the rule used to compile the graphics driver
   #
-  $(OBJ_DIR)/grbeos.$(SO): $(GR_BEOS)/grbeos.cpp $(GR_BEOS)/grbeos.h
+  $(OBJ_DIR_2)/grbeos.$(SO): $(GR_BEOS)/grbeos.cpp $(GR_BEOS)/grbeos.h
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
                 $I$(subst /,$(COMPILER_SEP),$(GR_BEOS)) \
                 $(X11_INCLUDE:%=$I%) \

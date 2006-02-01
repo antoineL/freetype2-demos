@@ -1,28 +1,68 @@
+2006-02-01  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile (PLATFORM): Define to `unixdev' if PLATFORM=unix and
+	DEVEL_DIR is defined.
+	(BIN_DIR, OBJ_DIR): Replaced with...
+	(BIN_DIR_2, OBJ_DIR_2): New variables, set with `?='.
+	Update all callers.
+	(BIN_DIR): Set also.
+	(COMPILE): Add definition for FT_CONFIG_MODULES_H since we always
+	build with an uninstalled FreeType version.
+	(ftdump.$(SO), ftvalid.$(SO), ftview.$(SO): Add -DFT2_BUILD_LIBRARY
+	since these programs use internal headers.
+
+	* graph/rules.mk, graph/*/rules.mk: s/OBJ_DIR/OBJ_DIR_2/.
+
+	* src/ftcommon.c (string_render_prepare): Fix compiler warnings.
+
 2006-01-16  Chia-I Wu  <b90201047@ntu.edu.tw>
 
-	* src/ftcommon.c, src/ftcommon.h: The prototype of
-	`FTDemo_String_Draw' is changed to have more flexiblity.  For example,
-	we can now draw the string twice with different kerning modes withouth
-	re-loading the glyphs.
-	(my_face_requester): Try to attach the file having the same name as the
-	font, but with suffix ".afm".
+	Add support for track kerning and a new rendering mode for kerning
+	comparison to ftstring.
+
+	* src/ftcommon.c (my_face_requester): Try to attach the file having
+	the same name as the font, but with suffix `.afm'.
+	(FTDemo_New): Updated.
+	(FTDemo_String_Set_Kerning, FTDemo_String_Set_Vertical): Removed.
+	(string_load): Rewritten.
+	(string_render_prepare): New function.
+	(FTDemo_String_Draw): Rewritten to have more flexiblity.  For
+	example, we can now draw the string twice with different kerning
+	modes without reloading the glyphs.
+
+	* src/ftcommon.h (TGlyph): Add more data, mainly taken from
+	FTDemo_Handle structure.
+	(KERNING_DEGREE_XXX): New enumerations.
+	(FTDemo_String_Context): New structure.
+	(FTDemo_Handle): Updated.
+	(FTDemo_String_Set_Kerning, FTDemo_String_Set_Vertical): Removed.
+	(FTDemo_String_Draw): Updated.
 
 	* src/ftstring.c: Updated along with many cleanups.
-	Track kerning support (toggle by `t').
-	New rendering mode for kerning comparison (toggle by `2').
+	(CELLSTRING_HEIGHT): New macro.
+	(RENDER_MODE_XXX): New enumeration values.
+	(status): Add more fields.
+	(event_help, event_angle_change): Updated.
+	(event_render_mode_change): New function.
+	(Process_Event): Handle `1', `2', and `t' events.
+	Update handling of `g', `k', and `V' events.
+	(error_message): Renamed to...
+	(write_header): This.
+	Display point size and rotation angle.
+	(main): Handle new render mode.
 
 2006-01-12  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
-	Add "ftoldmac", commandline program to test MacOS specific feature:
-	font file access by FSSpec, font file search by old/new QuickDraw
-	font name or ATS font name.
+	Add `ftoldmac' commandline program to test MacOS specific feature:
+	font file access by FSSpec, font file search by old/new QuickDraw,
+	and font name or ATS font name.
 
 	* mac/ftoldmac.c: Added.
 	* mac/Makefile: Unix Makefile for MacOS X.
-	* mac/ftoldmac.m68k_far.make.txt: MPW Makefile skelton.
-	* mac/ftoldmac.ppc_carbon.make.txt: MPW Makefile skelton.
+	* mac/ftoldmac.m68k_far.make.txt: MPW Makefile skeleton.
+	* mac/ftoldmac.ppc_carbon.make.txt: MPW Makefile skeleton.
 	* mac/ascii2mpw.py: Python script to generate MPW Makefile from
-	the skeltons.
+	the skeletons.
 	* mac/README: Add note about ftoldmac, because ft2demos/mac was
 	originally for demos built by CodeWarrior.
 

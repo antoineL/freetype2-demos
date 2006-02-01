@@ -18,13 +18,11 @@ space := $(empty) $(empty)
 # TOP_DIR_2 is the directory is the top of the demonstration
 # programs directory.
 #
-ifndef TOP_DIR
-  TOP_DIR := ../freetype2
-endif
-
-ifndef TOP_DIR_2
-  TOP_DIR_2 := .
-endif
+# OBJ_DIR gives the objects directory of the FreeType library.
+#
+TOP_DIR   ?= ../freetype2
+TOP_DIR_2 ?= .
+OBJ_DIR   ?= $(TOP_DIR)/objs
 
 
 ######################################################################
@@ -66,6 +64,13 @@ else
 
   have_makefile := $(strip $(wildcard Makefile))
 
+  ifeq ($(PLATFORM),unix)
+    ifdef DEVEL_DIR
+      PLATFORM := unixdev
+    endif
+  endif
+
+
   ####################################################################
   #
   # Define a few important variables now.
@@ -75,19 +80,19 @@ else
     TOP_DIR   := $(shell cd $(TOP_DIR); pwd)
     TOP_DIR_2 := $(shell cd $(TOP_DIR_2); pwd)
     ifneq ($(have_makefile),)
-      BIN_DIR := $(TOP_DIR_2)/bin
-      OBJ_DIR := $(TOP_DIR_2)/obj
+      BIN_DIR_2 ?= $(TOP_DIR_2)/bin
+      OBJ_DIR_2 ?= $(TOP_DIR_2)/obj
     else
-      BIN_DIR := .
-      OBJ_DIR := .
+      BIN_DIR_2 ?= .
+      OBJ_DIR_2 ?= .
     endif
   else
     ifneq ($(have_makefile),)
-      BIN_DIR := bin
-      OBJ_DIR := obj
+      BIN_DIR_2 ?= bin
+      OBJ_DIR_2 ?= obj
     else
-      BIN_DIR := .
-      OBJ_DIR := .
+      BIN_DIR_2 ?= .
+      OBJ_DIR_2 ?= .
     endif
   endif
 
@@ -101,7 +106,9 @@ else
 
   FT_INCLUDES := $(OBJ_BUILD) $(BUILD_DIR) $(TOP_DIR)/include $(SRC_DIR)
 
-  COMPILE = $(CC) $(CFLAGS) $(INCLUDES:%=$I%)
+  COMPILE = $(CC) $(CFLAGS) \
+                  $(INCLUDES:%=$I%) \
+                  $DFT_CONFIG_MODULES_H="<ftmodule.h>"
 
   FTLIB := $(LIB_DIR)/$(LIBRARY).$A
 
@@ -188,16 +195,16 @@ else
   else
 
     clean_demo:
-	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR)/*.$(SO))
+	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR_2)/*.$(SO))
 	    -$(DELETE) $(subst /,$(SEP),$(SRC_DIR)/*.bak graph/*.bak)
 	    -$(DELETE) $(subst /,$(SEP),$(SRC_DIR)/*~ graph/*~)
 
     distclean_demo: clean_demo
-	    -$(DELETE) $(subst /,$(SEP),$(EXES:%=$(BIN_DIR)/%$E))
+	    -$(DELETE) $(subst /,$(SEP),$(EXES:%=$(BIN_DIR_2)/%$E))
 	    -$(DELETE) $(subst /,$(SEP),$(GRAPH_LIB))
     ifeq ($(PLATFORM),unix)
-	      -$(DELETE) $(BIN_DIR)/.libs/*
-	      -$(DELDIR) $(BIN_DIR)/.libs
+	      -$(DELETE) $(BIN_DIR_2)/.libs/*
+	      -$(DELDIR) $(BIN_DIR_2)/.libs
     endif
 
   endif
@@ -234,7 +241,7 @@ else
   #    EXES += ttdebug
   #  endif
 
-  exes: $(EXES:%=$(BIN_DIR)/%$E)
+  exes: $(EXES:%=$(BIN_DIR_2)/%$E)
 
 
   INCLUDES := $(subst /,$(COMPILER_SEP),$(FT_INCLUDES))
@@ -244,7 +251,7 @@ else
   #
   # Rules for compiling object files for text-only demos.
   #
-  COMMON_OBJ := $(OBJ_DIR)/common.$(SO)
+  COMMON_OBJ := $(OBJ_DIR_2)/common.$(SO)
   $(COMMON_OBJ): $(SRC_DIR)/common.c
   ifdef DOSLIKE
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DEXPAND_WILDCARDS 
@@ -252,73 +259,71 @@ else
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
   endif
 
-  FTCOMMON_OBJ := $(OBJ_DIR)/ftcommon.$(SO)
+  FTCOMMON_OBJ := $(OBJ_DIR_2)/ftcommon.$(SO)
   $(FTCOMMON_OBJ): $(SRC_DIR)/ftcommon.c $(SRC_DIR)/ftcommon.h
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
-  $(OBJ_DIR)/%.$(SO): $(SRC_DIR)/%.c $(FTLIB)
+  $(OBJ_DIR_2)/%.$(SO): $(SRC_DIR)/%.c $(FTLIB)
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftlint.$(SO): $(SRC_DIR)/ftlint.c
+  $(OBJ_DIR_2)/ftlint.$(SO): $(SRC_DIR)/ftlint.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftbench.$(SO): $(SRC_DIR)/ftbench.c
+  $(OBJ_DIR_2)/ftbench.$(SO): $(SRC_DIR)/ftbench.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
 
-  $(OBJ_DIR)/ftchkwd.$(SO): $(SRC_DIR)/ftchkwd.c
+  $(OBJ_DIR_2)/ftchkwd.$(SO): $(SRC_DIR)/ftchkwd.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
 
-  $(OBJ_DIR)/compos.$(SO): $(SRC_DIR)/compos.c
+  $(OBJ_DIR_2)/compos.$(SO): $(SRC_DIR)/compos.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftmemchk.$(SO): $(SRC_DIR)/ftmemchk.c
+  $(OBJ_DIR_2)/ftmemchk.$(SO): $(SRC_DIR)/ftmemchk.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/fttry.$(SO): $(SRC_DIR)/fttry.c
+  $(OBJ_DIR_2)/fttry.$(SO): $(SRC_DIR)/fttry.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftdump.$(SO): $(SRC_DIR)/ftdump.c
-	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
-
-  $(OBJ_DIR)/testname.$(SO): $(SRC_DIR)/testname.c
-	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
-
-  $(OBJ_DIR)/ftvalid.$(SO): $(SRC_DIR)/ftvalid.c
+  $(OBJ_DIR_2)/testname.$(SO): $(SRC_DIR)/testname.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
   # We simplify the dependencies on the graphics library by using
   # $(GRAPH_LIB) directly.
 
-  $(OBJ_DIR)/ftview.$(SO): $(SRC_DIR)/ftview.c \
-                           $(GRAPH_LIB)
-	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
-
-  $(OBJ_DIR)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
+  $(OBJ_DIR_2)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
+  $(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/ftstring.$(SO): $(SRC_DIR)/ftstring.c \
+  $(OBJ_DIR_2)/ftstring.$(SO): $(SRC_DIR)/ftstring.c \
                              $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR)/fttimer.$(SO): $(SRC_DIR)/fttimer.c $(GRAPH_LIB)
+  $(OBJ_DIR_2)/fttimer.$(SO): $(SRC_DIR)/fttimer.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
-# $(OBJ_DIR)/ftsbit.$(SO): $(SRC_DIR)/ftsbit.c $(GRAPH_LIB)
+# $(OBJ_DIR_2)/ftsbit.$(SO): $(SRC_DIR)/ftsbit.c $(GRAPH_LIB)
 #	 $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+
+
+  ####################################################################
+  #
+  # Special rule to compile the `ftdump' program as it includes
+  # internal header files.
+  #
+  $(OBJ_DIR_2)/ftdump.$(SO): $(SRC_DIR)/ftdump.c
+	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
 
   ####################################################################
@@ -326,8 +331,28 @@ else
   # Special rule to compile the `t1dump' program as it includes
   # the Type1 source path.
   #
-  $(OBJ_DIR)/t1dump.$(SO): $(SRC_DIR)/t1dump.c
+  $(OBJ_DIR_2)/t1dump.$(SO): $(SRC_DIR)/t1dump.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+
+
+  ####################################################################
+  #
+  # Special rule to compile the `ftvalid' program as it includes
+  # internal header files.
+  #
+  $(OBJ_DIR_2)/ftvalid.$(SO): $(SRC_DIR)/ftvalid.c
+	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
+
+
+  ####################################################################
+  #
+  # Special rule to compile the `ftview' program as it includes
+  # internal header files.
+  #
+  $(OBJ_DIR_2)/ftview.$(SO): $(SRC_DIR)/ftview.c \
+                           $(GRAPH_LIB)
+	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
 
   ####################################################################
@@ -344,7 +369,7 @@ else
     EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
   endif
 
-  $(OBJ_DIR)/ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
+  $(OBJ_DIR_2)/ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) \
                      $I$(subst /,$(COMPILER_SEP),$(TOP_DIR)/src/truetype) \
                      $(EXTRAFLAGS)
@@ -355,60 +380,60 @@ else
   # Rules used to link the executables.  Note that they could be
   # overridden by system-specific things.
   #
-  $(BIN_DIR)/ftlint$E: $(OBJ_DIR)/ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftlint$E: $(OBJ_DIR_2)/ftlint.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/ftbench$E: $(OBJ_DIR)/ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftbench$E: $(OBJ_DIR_2)/ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/ftchkwd$E: $(OBJ_DIR)/ftchkwd.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftchkwd$E: $(OBJ_DIR_2)/ftchkwd.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/ftmemchk$E: $(OBJ_DIR)/ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftmemchk$E: $(OBJ_DIR_2)/ftmemchk.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/compos$E: $(OBJ_DIR)/compos.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/compos$E: $(OBJ_DIR_2)/compos.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/ftvalid$E: $(OBJ_DIR)/ftvalid.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftvalid$E: $(OBJ_DIR_2)/ftvalid.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/ftdump$E: $(OBJ_DIR)/ftdump.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/ftdump$E: $(OBJ_DIR_2)/ftdump.$(SO) $(FTLIB)
 	  $(LINK_COMMON)
 
-  $(BIN_DIR)/fttry$E: $(OBJ_DIR)/fttry.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/fttry$E: $(OBJ_DIR_2)/fttry.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR)/ftsbit$E: $(OBJ_DIR)/ftsbit.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/ftsbit$E: $(OBJ_DIR_2)/ftsbit.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR)/t1dump$E: $(OBJ_DIR)/t1dump.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/t1dump$E: $(OBJ_DIR_2)/t1dump.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR)/ttdebug$E: $(OBJ_DIR)/ttdebug.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/ttdebug$E: $(OBJ_DIR_2)/ttdebug.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR)/testname$E: $(OBJ_DIR)/testname.$(SO) $(FTLIB)
+  $(BIN_DIR_2)/testname$E: $(OBJ_DIR_2)/testname.$(SO) $(FTLIB)
 	  $(LINK)
 
 
-  $(BIN_DIR)/ftview$E: $(OBJ_DIR)/ftview.$(SO) $(FTLIB) \
+  $(BIN_DIR_2)/ftview$E: $(OBJ_DIR_2)/ftview.$(SO) $(FTLIB) \
                        $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 
-  $(BIN_DIR)/ftgamma$E: $(OBJ_DIR)/ftgamma.$(SO) $(FTLIB) \
+  $(BIN_DIR_2)/ftgamma$E: $(OBJ_DIR_2)/ftgamma.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 
-  $(BIN_DIR)/ftmulti$E: $(OBJ_DIR)/ftmulti.$(SO) $(FTLIB) \
+  $(BIN_DIR_2)/ftmulti$E: $(OBJ_DIR_2)/ftmulti.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(LINK_GRAPH)
 
-  $(BIN_DIR)/ftstring$E: $(OBJ_DIR)/ftstring.$(SO) $(FTLIB) \
+  $(BIN_DIR_2)/ftstring$E: $(OBJ_DIR_2)/ftstring.$(SO) $(FTLIB) \
                          $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 
-  $(BIN_DIR)/fttimer$E: $(OBJ_DIR)/fttimer.$(SO) $(FTLIB) \
+  $(BIN_DIR_2)/fttimer$E: $(OBJ_DIR_2)/fttimer.$(SO) $(FTLIB) \
                         $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(LINK_GRAPH)
 

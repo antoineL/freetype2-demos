@@ -13,13 +13,13 @@ ifeq ($(PLATFORM),win32)
 
   # add the Win32 driver object file to the graphics library `graph.lib'
   #
-  GRAPH_OBJS += $(OBJ_DIR)/grwin32.$O
+  GRAPH_OBJS += $(OBJ_DIR_2)/grwin32.$O
 
   DEVICES += WIN32
 
   # the rule used to compile the graphics driver
   #
-  $(OBJ_DIR)/grwin32.$O: $(GR_WIN32)/grwin32.c $(GR_WIN32)/grwin32.h
+  $(OBJ_DIR_2)/grwin32.$O: $(GR_WIN32)/grwin32.c $(GR_WIN32)/grwin32.h
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
                 $I$(subst /,$(COMPILER_SEP),$(GR_WIN32)) \
                 $T$(subst /,$(COMPILER_SEP),$@ $<)

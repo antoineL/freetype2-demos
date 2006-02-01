@@ -14,7 +14,7 @@ ifdef ALLEGRO
 
   # add Allegro driver to lib objects
   #
-  GRAPH_OBJS += $(OBJ_DIR)/gralleg.$O
+  GRAPH_OBJS += $(OBJ_DIR_2)/gralleg.$O
 
   # add Allegro driver to list of devices
   #
@@ -22,7 +22,7 @@ ifdef ALLEGRO
 
   # our compilation rule
   #
-  $(OBJ_DIR)/gralleg.$O : $(GR_ALLEG)/gralleg.c $(GR_ALLEG)/gralleg.h
+  $(OBJ_DIR_2)/gralleg.$O : $(GR_ALLEG)/gralleg.c $(GR_ALLEG)/gralleg.h
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
                 $I$(subst /,$(COMPILER_SEP),$(GR_ALLEG)) \
                 $T$(subst /,$(COMPILER_SEP),$@ $<)

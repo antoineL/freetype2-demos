@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005 by                                                       */
+/*  Copyright 2005, 2006 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -99,10 +99,10 @@
   typedef struct  TGlyph_
   {
     FT_UInt    glyph_index;
-    FT_Glyph   image;   /* the glyph image */
+    FT_Glyph   image;    /* the glyph image */
 
-    FT_Pos     delta;   /* delta caused by hinting */
-    FT_Vector  vvector; /* vert. origin => hori. origin */
+    FT_Pos     delta;    /* delta caused by hinting */
+    FT_Vector  vvector;  /* vert. origin => hori. origin */
     FT_Vector  vadvance; /* vertical advance */
 
   } TGlyph, *PGlyph;
@@ -150,6 +150,7 @@
     int         vertical;          /* displayed vertically? */
     FT_Matrix*  matrix;            /* string transformation */
     FT_Byte*    gamma_ramp;        /* an array of size 256 */
+
   } FTDemo_String_Context;
 
   typedef struct
@@ -292,7 +293,7 @@
                      const unsigned char*  string );
 
 
-  /* draw a string centered at (center_x, center_y) */
+  /* draw a string centered at (center_x, center_y) --  */
   /* note that handle->use_sbits_cache is not supported */
   FT_Error
   FTDemo_String_Draw( FTDemo_Handle*          handle,

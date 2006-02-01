@@ -12,7 +12,7 @@
 
 
 GRAPH_INCLUDES := $(subst /,$(COMPILER_SEP),$(TOP_DIR_2)/graph)
-GRAPH_LIB      := $(OBJ_DIR)/graph.$(SA)
+GRAPH_LIB      := $(OBJ_DIR_2)/graph.$(SA)
 
 GRAPH := $(TOP_DIR_2)/graph
 
@@ -27,13 +27,13 @@ GRAPH_H := $(GRAPH)/graph.h    \
            $(GRAPH)/gblblit.h
 
 
-GRAPH_OBJS := $(OBJ_DIR)/grblit.$(SO)   \
-              $(OBJ_DIR)/grobjs.$(SO)   \
-              $(OBJ_DIR)/grfont.$(SO)   \
-              $(OBJ_DIR)/grdevice.$(SO) \
-              $(OBJ_DIR)/grinit.$(SO)   \
-              $(OBJ_DIR)/gblender.$(SO) \
-              $(OBJ_DIR)/gblblit.$(SO)
+GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(SO)   \
+              $(OBJ_DIR_2)/grobjs.$(SO)   \
+              $(OBJ_DIR_2)/grfont.$(SO)   \
+              $(OBJ_DIR_2)/grdevice.$(SO) \
+              $(OBJ_DIR_2)/grinit.$(SO)   \
+              $(OBJ_DIR_2)/gblender.$(SO) \
+              $(OBJ_DIR_2)/gblblit.$(SO)
 
 
 # Default value for COMPILE_GRAPH_LIB;
@@ -63,14 +63,14 @@ $(GRAPH_LIB): $(GRAPH_OBJS)
 
 # pattern rule for normal sources
 #
-$(OBJ_DIR)/%.$(SO): $(GRAPH)/%.c $(GRAPH_H)
+$(OBJ_DIR_2)/%.$(SO): $(GRAPH)/%.c $(GRAPH_H)
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 
 
 # a special rule is used for 'grinit.o' as it needs the definition
 # of some macros like "-DDEVICE_X11" or "-DDEVICE_OS2_PM"
 #
-$(OBJ_DIR)/grinit.$(SO): $(GRAPH)/grinit.c $(GRAPH_H)
+$(OBJ_DIR_2)/grinit.$(SO): $(GRAPH)/grinit.c $(GRAPH_H)
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
               $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)
 

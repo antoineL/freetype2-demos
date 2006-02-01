@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005 by                                                       */
+/*  Copyright 2005, 2006 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -198,8 +198,8 @@
   {
     PFont  font = (PFont)face_id;
 
-
     FT_UNUSED( request_data );
+
 
     error = FT_New_Face( lib,
                          font->filepathname,
@@ -210,6 +210,7 @@
     {
       char*  suffix;
       char   orig[4];
+
 
       suffix = strrchr( font->filepathname, '.' );
       if ( suffix && strlen( suffix ) >= 4 )
@@ -1012,7 +1013,8 @@
       }
 
       /* load the glyph and get the image */
-      if ( !FT_Load_Glyph( face, glyph->glyph_index, handle->image_type.flags ) &&
+      if ( !FT_Load_Glyph( face, glyph->glyph_index,
+                           handle->image_type.flags )  &&
            !FT_Get_Glyph( face->glyph, &glyph->image ) )
       {
         FT_Glyph_Metrics*  metrics = &face->glyph->metrics;
@@ -1047,10 +1049,10 @@
     FT_Face     face;
     FT_Size     size;
     PGlyph      glyph;
-    FT_Pos      track_kern = 0;
-    FT_UInt     prev_index;
-    FT_Vector*  prev_advance;
-    FT_Vector   extent = { 0, 0};
+    FT_Pos      track_kern   = 0;
+    FT_UInt     prev_index   = 0;
+    FT_Vector*  prev_advance = NULL;
+    FT_Vector   extent       = {0, 0};
     FT_Int      i;
 
 
@@ -1184,7 +1186,7 @@
          x < 0                      ||
          y < 0                      ||
          x > display->bitmap->width ||
-         y > display->bitmap->rows )
+         y > display->bitmap->rows  )
       return FT_Err_Invalid_Argument;
 
     error = FTDemo_Get_Size( handle, &size );
@@ -1231,9 +1233,9 @@
 
     for ( n = 0; n < handle->string_length; n++ )
     {
-      PGlyph     glyph = handle->string + n;
-      FT_Glyph   image;
-      FT_BBox    bbox;
+      PGlyph    glyph = handle->string + n;
+      FT_Glyph  image;
+      FT_BBox   bbox;
 
 
       if ( !glyph->image )
@@ -1296,7 +1298,7 @@
       if ( bbox.xMax > 0                      &&
            bbox.yMax > 0                      &&
            bbox.xMin < display->bitmap->width &&
-           bbox.yMin < display->bitmap->rows )
+           bbox.yMin < display->bitmap->rows  )
       {
         int       left, top, dummy1, dummy2;
         grBitmap  bit3;

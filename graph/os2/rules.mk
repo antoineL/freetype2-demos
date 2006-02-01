@@ -16,13 +16,13 @@ ifeq ($(PLATFORM),os2)
 
   # add the OS/2 driver object file to the graphics library `graph.a'
   #
-  GRAPH_OBJS += $(OBJ_DIR)/gros2pm.$O
+  GRAPH_OBJS += $(OBJ_DIR_2)/gros2pm.$O
 
   DEVICES += OS2_PM
 
   # the rule used to compile the graphics driver
   #
-  $(OBJ_DIR)/gros2pm.$O: $(GR_OS2)/gros2pm.c $(GR_OS2)/gros2pm.h
+  $(OBJ_DIR_2)/gros2pm.$O: $(GR_OS2)/gros2pm.c $(GR_OS2)/gros2pm.h
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
                 $I$(subst /,$(COMPILER_SEP),$(GR_OS2)) \
                 $T$(subst /,$(COMPILER_SEP),$@ $<)

@@ -8,7 +8,7 @@
 	(BIN_DIR): Set also.
 	(COMPILE): Add definition for FT_CONFIG_MODULES_H since we always
 	build with an uninstalled FreeType version.
-	(ftdump.$(SO), ftvalid.$(SO), ftview.$(SO): Add -DFT2_BUILD_LIBRARY
+	(ftdump.$(SO), ftvalid.$(SO), ftview.$(SO)): Add -DFT2_BUILD_LIBRARY
 	since these programs use internal headers.
 
 	* graph/rules.mk, graph/*/rules.mk: s/OBJ_DIR/OBJ_DIR_2/.

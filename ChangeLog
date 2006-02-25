@@ -1,3 +1,9 @@
+2006-02-25  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftbench.c, src/ftcommon.c, src/ftvalid.c: Add proper casts
+	where necessary to allow compilation with C++.
+	Other minor fixes to remove compiler warnings.
+
 2006-02-01  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile (PLATFORM): Define to `unixdev' if PLATFORM=unix and

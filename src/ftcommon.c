@@ -78,7 +78,7 @@
     grBitmap         bit;
 
 
-    display = malloc( sizeof( FTDemo_Display ) );
+    display = (FTDemo_Display *)malloc( sizeof( FTDemo_Display ) );
     if ( !display )
       return NULL;
 
@@ -237,7 +237,7 @@
     FTDemo_Handle*  handle;
 
 
-    handle = malloc( sizeof( FTDemo_Handle ) );
+    handle = (FTDemo_Handle *)malloc( sizeof( FTDemo_Handle ) );
     if ( !handle )
       return NULL;
 
@@ -1346,7 +1346,7 @@
       l  += (unsigned long)s[i];
     }
 
-    return l;
+    return (FT_Encoding)l;
   }
 
 

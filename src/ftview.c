@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005 by                                */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006 by                          */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -49,7 +49,8 @@
 #define Y_TOO_LONG( y, size, display) \
           ( ( y ) >= ( display )->bitmap->rows )
 
-  enum {
+  enum
+  {
     RENDER_MODE_ALL = 0,
     RENDER_MODE_EMBOLDEN,
     RENDER_MODE_STROKE,
@@ -58,7 +59,8 @@
     N_RENDER_MODES
   };
 
-  static struct {
+  static struct  status_
+  {
     int          render_mode;
     FT_Encoding  encoding;
     int          res;
@@ -300,6 +302,8 @@ Next:
 
     const unsigned char*  p;
 
+
+    num_indices = num_indices;  /* pacify compiler */
 
     error = FTDemo_Get_Size( handle, &size );
     if ( error )

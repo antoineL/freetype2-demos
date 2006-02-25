@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2002, 2003, 2004, 2005 by                                     */
+/*  Copyright 2002, 2003, 2004, 2005, 2006 by                               */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -645,7 +645,7 @@ main(int argc,
       preload = 1;
       break;
     case 'r':
-      render_mode = atoi( optarg );
+      render_mode = (FT_Render_Mode)atoi( optarg );
       if ( render_mode >= FT_RENDER_MODE_MAX )
         render_mode = FT_RENDER_MODE_NORMAL;
       break;

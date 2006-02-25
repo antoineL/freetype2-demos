@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality font engine         */
 /*                                                                          */
-/*  Copyright 2005 by                                                       */
+/*  Copyright 2005, 2006 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftvalid: Validates layout related tables of OpenType and                */
@@ -59,8 +59,8 @@
   } ValidatorType;
 
   static const char*  validator_symbols[] = { OT_VALIDATOR_SYMBOL, 
-					      GX_VALIDATOR_SYMBOL, 
-					      CKERN_VALIDATOR_SYMBOL,
+                                              GX_VALIDATOR_SYMBOL, 
+                                              CKERN_VALIDATOR_SYMBOL,
                                               NULL };
 
   static ValidatorType  validator;
@@ -516,8 +516,8 @@
    */
   static int
   run_ckern_validator( FT_Face      face, 
-		       const char*  dialect_request, 
-		       int          validation_level )
+                       const char*  dialect_request, 
+                       int          validation_level )
   {
     FT_UInt    validation_flags;
     FT_Error   error;
@@ -531,7 +531,7 @@
     validation_flags  = validation_level;
     
     if ( strcmp( dialect_request, "ms:apple" ) == 0 ||  
-	 strcmp( dialect_request, "apple:ms" ) == 0 )
+         strcmp( dialect_request, "apple:ms" ) == 0 )
       validation_flags |= FT_VALIDATE_MS | FT_VALIDATE_APPLE;
     else if ( strcmp( dialect_request, "ms" ) == 0 )
       validation_flags |= FT_VALIDATE_MS;
@@ -544,13 +544,13 @@
     }
 
     printf( "[%s:%s] validation targets: %s...", 
-	    execname, validator_symbols[validator], dialect_request );
+            execname, validator_symbols[validator], dialect_request );
 
 
     error = FT_ClassicKern_Validate(
               face,
-	      validation_flags,
-	      &data );
+              validation_flags,
+              &data );
 
 
     if ( data )
@@ -561,7 +561,7 @@
       printf( "no kern\n" );
     
     FT_ClassicKern_Free( face, data );
-	      
+              
     return (int)error;
   }
 
@@ -620,24 +620,24 @@
       {
       case 't':
         {
-	  int i;
-	  
+          int i;
+          
 
-	  for ( i = 0; /* No condition here */; i++ )
-	  {
-	    if ( validator_symbols[i] == NULL )
-	    {
-	      fprintf( stderr, "*** Unknown validator name: %s\n", optarg );
-	      print_usage();
-	    }
-	    
-	    if ( strcmp( optarg, validator_symbols[i] ) == 0 )
-	    {
-	      validator = i;
-	      break;
-	    }
-	  }
-	}
+          for ( i = 0; /* No condition here */; i++ )
+          {
+            if ( validator_symbols[i] == NULL )
+            {
+              fprintf( stderr, "*** Unknown validator name: %s\n", optarg );
+              print_usage();
+            }
+            
+            if ( strcmp( optarg, validator_symbols[i] ) == 0 )
+            {
+              validator = (ValidatorType)i;
+              break;
+            }
+          }
+        }
         break;
 
       case 'T':
@@ -720,23 +720,23 @@
       switch ( validator )
       {
       case OT_VALIDATE:
-	if ( dump_table_list == 0 )
-	  status = run_ot_validator( face, tables, validation_level );
-	else
-	  status = list_ot_tables  ( face );
-	break;
+        if ( dump_table_list == 0 )
+          status = run_ot_validator( face, tables, validation_level );
+        else
+          status = list_ot_tables  ( face );
+        break;
       case GX_VALIDATE:
-	if ( dump_table_list == 0 )
-	  status = run_gx_validator( face, tables, validation_level );
-	else
-	  status = list_gx_tables  ( face );
-	break;
+        if ( dump_table_list == 0 )
+          status = run_gx_validator( face, tables, validation_level );
+        else
+          status = list_gx_tables( face );
+        break;
       case CKERN_VALIDATE:
-	if ( dump_table_list == 0 )
-	  status = run_ckern_validator( face, tables, validation_level );
-	else
-	  status = list_ckern_tables  ( face );
-	break;
+        if ( dump_table_list == 0 )
+          status = run_ckern_validator( face, tables, validation_level );
+        else
+          status = list_ckern_tables( face );
+        break;
       }
       
       FT_Done_Face( face );

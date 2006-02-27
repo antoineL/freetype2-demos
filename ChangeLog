@@ -1,3 +1,8 @@
+2006-02-27  Chia-I Wu  <b90201047@ntu.edu.tw>
+
+	* src/ftcommon.c (my_face_requester): Attach the AFM only for
+	PFA and PFB.
+
 2006-02-25  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftbench.c, src/ftcommon.c, src/ftvalid.c: Add proper casts

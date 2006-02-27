@@ -213,7 +213,8 @@
 
 
       suffix = strrchr( font->filepathname, '.' );
-      if ( suffix && strlen( suffix ) >= 4 )
+      if ( suffix && ( strcasecmp( suffix, ".pfa" ) == 0 ||
+                       strcasecmp( suffix, ".pfb" ) == 0 ) )
       {
         suffix++;
 

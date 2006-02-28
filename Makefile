@@ -36,6 +36,18 @@ ifndef CONFIG_MK
 endif
 
 
+######################################################################
+#
+# MODULES_CFG points to the current `modules.cfg' to use.  It is defined
+# by default as $(TOP_DIR)/modules.cfg.
+#
+MODULES_CFG ?= $(TOP_DIR)/modules.cfg
+
+ifeq ($(wildcard $(MODULES_CFG)),)
+  no_modules_cfg := 1
+endif
+
+
 ####################################################################
 #
 # Check that we have a working `config.mk' in the above directory.
@@ -61,6 +73,10 @@ else
   # flags).
   #
   include $(CONFIG_MK)
+
+  ifndef no_modules_cfg
+    include $(MODULES_CFG)
+  endif
 
   have_makefile := $(strip $(wildcard Makefile))
 
@@ -229,10 +245,18 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd ftvalid
+  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring ftgamma
+
+  # ftvalid requires ftgxval.c and ftotval.c
+  #
+  ifneq ($(findstring ftgxval.c,$(BASE_EXTENSIONS)),)
+    ifneq ($(findstring ftotval.c,$(BASE_EXTENSIONS)),)
+      EXES += ftvalid
+    endif
+  endif
 
   # Only uncomment the following lines if the truetype driver was
   # compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined.

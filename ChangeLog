@@ -1,3 +1,9 @@
+2006-02-28  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* Makefile: include modules.cfg to reflect module configuration,
+	and ftvalid is built when required stubs (ftgxval and ftotval)
+	are built in libfreetype.
+
 2006-02-27  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	* mac/ftoldmac.m68k_far.make.txt, mac/ftoldmac.ppc_classic.make.txt:

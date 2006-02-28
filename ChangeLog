@@ -1,13 +1,12 @@
 2006-02-27  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
-	* mac/ftoldmac.m68k_far.make.txt,
-	mac/ftoldmac.ppc_classic.make.txt:
-        Update to new header inclusion introduced on 2006-02-16.
+	* mac/ftoldmac.m68k_far.make.txt, mac/ftoldmac.ppc_classic.make.txt:
+	Update to new header inclusion introduced on 2006-02-16.
 
 2006-02-27  Chia-I Wu  <b90201047@ntu.edu.tw>
 
-	* src/ftcommon.c (my_face_requester): Attach the AFM only for
-	PFA and PFB.
+	* src/ftcommon.c (my_face_requester): Attach the AFM only for PFA
+	and PFB.
 
 2006-02-25  Werner Lemberg  <wl@gnu.org>
 

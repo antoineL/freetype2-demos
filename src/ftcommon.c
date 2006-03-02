@@ -1093,7 +1093,7 @@
         advances[i].x >>= 10;
         advances[i].y >>= 10;
 
-        if ( i > 0 )
+        if ( prev_advance )
         {
           prev_advance->x += track_kern;
 
@@ -1114,7 +1114,7 @@
         }
       }
 
-      if ( i > 0 )
+      if ( prev_advance )
       {
         if ( handle->hinted )
         {
@@ -1130,7 +1130,7 @@
       prev_advance = advances + i;
     }
 
-    if ( i > 0 )
+    if ( prev_advance )
     {
       if ( handle->hinted )
       {

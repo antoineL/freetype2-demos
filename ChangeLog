@@ -1,3 +1,7 @@
+2006-03-02  Chia-I Wu  <b90201047@ntu.edu.tw>
+
+	* src/ftcommon.c (string_render_prepare): Fix a possible crash.
+
 2006-02-28  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	* Makefile: include modules.cfg to reflect module configuration,

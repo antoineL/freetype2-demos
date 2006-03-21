@@ -65,6 +65,7 @@
     FT_Encoding  encoding;
     int          res;
     int          ptsize;            /* current point size */
+    int          lcd_mode;
     double       gamma;
 
     int          debug;
@@ -76,7 +77,7 @@
     char         header_buffer[256];
     int          Fail;
 
-  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, 1.0 };
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0 };
 
 
   static FTDemo_Display*  display;
@@ -324,7 +325,7 @@ Next:
       i--;
     }
 
-    while ( *p )
+    while ( *p && num_indices != 0 )
     {
       FT_UInt  gindex;
 
@@ -334,16 +335,25 @@ Next:
       error = FTDemo_Draw_Index( handle, display, gindex, &x, &y );
       if ( error )
         status.Fail++;
-      else if ( X_TOO_LONG( x, size, display ) )
+      else
       {
-        x  = start_x;
-        y += step_y;
+        /* Draw_Index adds one pixel space */
+        x--;
 
-        if ( Y_TOO_LONG( y, size, display ) )
-          break;
+        if ( X_TOO_LONG( x, size, display ) )
+        {
+          x  = start_x;
+          y += step_y;
+
+          if ( Y_TOO_LONG( y, size, display ) )
+            break;
+        }
       }
 
       p++;
+
+      if ( num_indices > 0 )
+        num_indices -= 1;
     }
 
     return FT_Err_Ok;
@@ -918,6 +928,8 @@ Next:
     fprintf( stderr,  "  -f index  specify first index to display\n" );
     fprintf( stderr,  "  -e enc    specify encoding tag (default: no encoding)\n" );
     fprintf( stderr,  "  -D        dump cache usage statistics\n" );
+    fprintf( stderr,  "  -m mess   use 'mess' as text message\n" );
+    fprintf( stderr,  "  -l nn     change rendering mode, nn must be 0 to %d", N_LCD_MODES );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -936,7 +948,7 @@ Next:
 
     while ( 1 )
     {
-      option = getopt( *argc, *argv, "Dde:f:l:r:" );
+      option = getopt( *argc, *argv, "Dde:f:L:l:r:m:" );
 
       if ( option == -1 )
         break;
@@ -959,10 +971,24 @@ Next:
         status.Num  = atoi( optarg );
         break;
 
-      case 'l':
+      case 'L':
         status.trace_level = atoi( optarg );
         if ( status.trace_level < 1 || status.trace_level > 7 )
           usage( execname );
+        break;
+
+      case 'l':
+        status.lcd_mode = atoi( optarg );
+        if ( status.lcd_mode < 0 || status.lcd_mode > N_LCD_MODES )
+        {
+          fprintf( stderr, "-l argument must be between 0 and %d\n", N_LCD_MODES );
+          exit(3);
+        }
+        break;
+
+      case 'm':
+        Text = optarg;
+        status.render_mode = RENDER_MODE_TEXT;
         break;
 
       case 'r':
@@ -1043,6 +1069,11 @@ Next:
 
     event_font_change( 0 );
 
+    if ( status.lcd_mode >= 0 )
+      handle->lcd_mode = status.lcd_mode;
+
+    FTDemo_Update_Current_Flags( handle );
+
     for ( ;; )
     {
       FTDemo_Display_Clear( display );
@@ -1062,7 +1093,7 @@ Next:
         break;
 
       case RENDER_MODE_TEXT:
-        error = Render_Text( handle->current_font->num_indices, status.Num );
+        error = Render_Text( -1, status.Num );
         break;
 
       case RENDER_MODE_WATERFALL:
@@ -1072,6 +1103,7 @@ Next:
 
       write_header( error );
 
+#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR < 2
       if ( status.dump_cache_stats )
       {
         /* dump simple cache manager statistics */
@@ -1084,6 +1116,7 @@ Next:
                                handle->cache_manager->num_nodes
                            : 0.0 );
       }
+#endif
 
       status.header = 0;
       grListenSurface( display->surface, 0, &event );

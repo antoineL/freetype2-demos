@@ -1,9 +1,21 @@
 2006-03-20  David Turner  <david@freetype.org>
 
-    * src/ftview.c: disabling cache statistics dump, since the cache
-    internals are not available anymore
+	Disable cache statistics dump, since the cache
+	internals are not available anymore.
+	Rename `-l' to `-L'.
+	Add new command line options `-m text' and `-l render_mode'.
 
-    * src/ftview.c: adding new option flags "-m" and "-l"
+	* src/ftview.c (status): Add member `lcd_mode'.
+	(Render_Text): Compensate the additional empty pixels inserted by
+	Draw_Index.
+	Hande number of glyph indices better.
+	(parse_cmdline): Handle `-m' and `-l'.
+	Updated.
+	(usage): Updated.
+	(main): Handle `status.lcd_mode'.
+	Updated.
+	Print cache statistics only conditionally (for FreeType versions
+	lower than 2.2).
 
 2006-03-02  Chia-I Wu  <b90201047@ntu.edu.tw>
 

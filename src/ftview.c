@@ -928,8 +928,9 @@ Next:
     fprintf( stderr,  "  -f index  specify first index to display\n" );
     fprintf( stderr,  "  -e enc    specify encoding tag (default: no encoding)\n" );
     fprintf( stderr,  "  -D        dump cache usage statistics\n" );
-    fprintf( stderr,  "  -m mess   use 'mess' as text message\n" );
-    fprintf( stderr,  "  -l nn     change rendering mode, nn must be 0 to %d", N_LCD_MODES );
+    fprintf( stderr,  "  -m text   use `text' for rendering\n" );
+    fprintf( stderr,  "  -l nn     change rendering mode (0 <= nn <= %d)\n",
+             N_LCD_MODES );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -981,13 +982,14 @@ Next:
         status.lcd_mode = atoi( optarg );
         if ( status.lcd_mode < 0 || status.lcd_mode > N_LCD_MODES )
         {
-          fprintf( stderr, "-l argument must be between 0 and %d\n", N_LCD_MODES );
-          exit(3);
+          fprintf( stderr, "argument to `l' must be between 0 and %d\n",
+                   N_LCD_MODES );
+          exit( 3 );
         }
         break;
 
       case 'm':
-        Text = optarg;
+        Text               = optarg;
         status.render_mode = RENDER_MODE_TEXT;
         break;
 

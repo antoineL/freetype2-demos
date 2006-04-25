@@ -1,3 +1,8 @@
+2006-04-24  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c (Render_Stroke): Update parameters in call to
+	FT_Stroker_New.
+
 2006-03-20  David Turner  <david@freetype.org>
 
 	Disable cache statistics dump, since the cache

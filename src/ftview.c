@@ -114,7 +114,7 @@
 
     i = first_index;
 
-    error = FT_Stroker_New( size->face->memory, &stroker );
+    error = FT_Stroker_New( handle->library, &stroker );
     if ( error )
       goto Exit;
 
@@ -989,7 +989,7 @@ Next:
         break;
 
       case 'm':
-        Text               = optarg;
+        Text               = (unsigned char*)optarg;
         status.render_mode = RENDER_MODE_TEXT;
         break;
 

@@ -414,8 +414,9 @@
       font->filepathname = (char*)malloc( strlen( filename ) + 1 );
       strcpy( (char*)font->filepathname, filename );
 
-      font->face_index   = i;
-      font->cmap_index   = face->charmap ? FT_Get_Charmap_Index( face->charmap ) : 0;
+      font->face_index = i;
+      font->cmap_index = face->charmap ? FT_Get_Charmap_Index( face->charmap )
+                                       : 0;
 
       switch ( handle->encoding )
       {
@@ -446,15 +447,19 @@
       if ( handle->max_fonts == 0 )
       {
         handle->max_fonts = 16;
-        handle->fonts     = (PFont*)calloc( handle->max_fonts, sizeof ( PFont ) );
+        handle->fonts     = (PFont*)calloc( handle->max_fonts,
+                                            sizeof ( PFont ) );
       }
       else if ( handle->num_fonts >= handle->max_fonts )
       {
         handle->max_fonts *= 2;
-        handle->fonts      = (PFont*)realloc( handle->fonts, handle->max_fonts * sizeof ( PFont ) );
+        handle->fonts      = (PFont*)realloc( handle->fonts,
+                                              handle->max_fonts *
+                                                sizeof ( PFont ) );
 
         memset( &handle->fonts[handle->num_fonts], 0,
-                ( handle->max_fonts - handle->num_fonts ) * sizeof ( PFont ) );
+                ( handle->max_fonts - handle->num_fonts ) *
+                  sizeof ( PFont ) );
       }
 
       handle->fonts[handle->num_fonts++] = font;
@@ -567,7 +572,7 @@
 
   FT_Error
   FTDemo_Get_Size( FTDemo_Handle*  handle,
-                   FT_Size*        asize)
+                   FT_Size*        asize )
   {
     FTC_ScalerRec  scaler;
     FT_Size        size;

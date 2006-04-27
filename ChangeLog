@@ -1,3 +1,10 @@
+2006-04-26  David Turner <david@freetype.org>
+
+
+	* Version 2.2 released.
+	=======================
+
+
 2006-04-24  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (Render_Stroke): Update parameters in call to

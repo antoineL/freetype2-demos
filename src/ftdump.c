@@ -673,6 +673,8 @@
       printf( "\n" );
       Print_Type( face );
 
+      printf( "   glyph count: %d\n", face->num_glyphs );
+
       if ( name_tables && FT_IS_SFNT( face ) )
       {
         printf( "\n" );

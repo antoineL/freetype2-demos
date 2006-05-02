@@ -1,3 +1,7 @@
+2006-05-02  David Turner <david@freetype.org>
+
+        * src/ftdump.c: added dump of glyph count
+
 2006-04-26  David Turner <david@freetype.org>
 
 

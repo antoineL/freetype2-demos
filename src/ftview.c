@@ -76,6 +76,7 @@
     char*        header;
     char         header_buffer[256];
     int          Fail;
+    int          preload;
 
   } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0 };
 
@@ -931,6 +932,7 @@ Next:
     fprintf( stderr,  "  -m text   use `text' for rendering\n" );
     fprintf( stderr,  "  -l nn     change rendering mode (0 <= nn <= %d)\n",
              N_LCD_MODES );
+    fprintf( stderr,  "  -p        preload file in memory, simulates memory-mapped file\n" );
     fprintf( stderr,  "\n" );
 
     exit( 1 );
@@ -949,7 +951,7 @@ Next:
 
     while ( 1 )
     {
-      option = getopt( *argc, *argv, "Dde:f:L:l:r:m:" );
+      option = getopt( *argc, *argv, "Dde:f:L:l:r:m:p" );
 
       if ( option == -1 )
         break;
@@ -997,6 +999,10 @@ Next:
         status.res = atoi( optarg );
         if ( status.res < 1 )
           usage( execname );
+        break;
+
+      case 'p':
+        status.preload = 1;
         break;
 
       default:
@@ -1052,6 +1058,9 @@ Next:
 
     /* Initialize engine */
     handle = FTDemo_New( status.encoding );
+
+    if ( status.preload )
+      FTDemo_Set_Preload( handle, 1 );
 
     for ( ; argc > 0; argc--, argv++ )
       FTDemo_Install_Font( handle, argv[0] );

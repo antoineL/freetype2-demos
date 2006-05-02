@@ -200,12 +200,14 @@
 
     FT_UNUSED( request_data );
 
-
-    error = FT_New_Face( lib,
-                         font->filepathname,
-                         font->face_index,
-                         aface );
-
+    if ( font->file_address != NULL )
+      error = FT_New_Memory_Face( lib, font->file_address, font->file_size,
+                                  font->face_index, aface );
+    else
+      error = FT_New_Face( lib,
+                           font->filepathname,
+                           font->face_index,
+                           aface );
     if ( !error )
     {
       char*  suffix;
@@ -220,6 +222,9 @@
 
         memcpy( orig, suffix, 4 );
         memcpy( suffix, "afm", 4 );
+        FT_Attach_File( *aface, font->filepathname );
+
+        memcpy( suffix, "pfm", 4 );
         FT_Attach_File( *aface, font->filepathname );
         memcpy( suffix, orig, 4 );
       }
@@ -418,6 +423,34 @@
       font->cmap_index = face->charmap ? FT_Get_Charmap_Index( face->charmap )
                                        : 0;
 
+      if ( handle->preload )
+      {
+        FILE*   file = fopen( filename, "rb" );
+        size_t  file_size;
+
+        if ( file == NULL )  /* shouldn't happen */
+        {
+          free( font );
+          return FT_Err_Invalid_Argument;
+        }
+
+        fseek( file, 0, SEEK_END );
+        file_size = ftell( file );
+        fseek( file, 0, SEEK_SET );
+
+        font->file_address = malloc( file_size );
+        fread( font->file_address, 1, file_size, file );
+
+        font->file_size    = file_size;
+
+        fclose( file );
+      }
+      else
+      {
+        font->file_address = NULL;
+        font->file_size    = 0;
+      }
+
       switch ( handle->encoding )
       {
       case FT_ENCODING_NONE:
@@ -493,6 +526,12 @@
     handle->string_reload = 1;
   }
 
+  void
+  FTDemo_Set_Preload( FTDemo_Handle*  handle,
+                      int             preload )
+  {
+    handle->preload = !!preload;
+  }
 
   void
   FTDemo_Set_Current_Pointsize( FTDemo_Handle*  handle,
@@ -1222,7 +1261,7 @@
 
     pen.x = FT_MulFix( pen.x, sc->center );
     pen.y = FT_MulFix( pen.y, sc->center );
-    
+
     /* XXX sbits */
     /* get pen position */
     if ( sc->matrix && FT_IS_SCALABLE( face ) )

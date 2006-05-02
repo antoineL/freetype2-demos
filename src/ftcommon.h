@@ -114,6 +114,8 @@
     int          face_index;
     int          cmap_index;
     int          num_indices;
+    void*        file_address;  /* for preloaded files */
+    size_t       file_size;
 
   } TFont, *PFont;
 
@@ -178,6 +180,7 @@
     int               low_prec;          /* force low precision         */
     int               autohint;          /* force auto-hinting          */
     int               lcd_mode;
+    int               preload;           /* force font file preloading */
 
     /* don't touch the following fields! */
 
@@ -199,7 +202,7 @@
   void
   FTDemo_Done( FTDemo_Handle*  handle );
 
-  
+
   /* install a font */
   FT_Error
   FTDemo_Install_Font( FTDemo_Handle*  handle,
@@ -207,14 +210,18 @@
 
 
   void
+  FTDemo_Set_Preload( FTDemo_Handle*  handle,
+                      int             preload );
+
+  void
   FTDemo_Set_Current_Font( FTDemo_Handle*  handle,
                            PFont           font );
-             
-  void       
+
+  void
   FTDemo_Set_Current_Size( FTDemo_Handle*  handle,
                            int             pixel_size );
-             
-  void       
+
+  void
   FTDemo_Set_Current_Pointsize( FTDemo_Handle*  handle,
                                 int             point_size,
                                 int             res );

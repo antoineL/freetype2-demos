@@ -1,3 +1,17 @@
+/****************************************************************************/
+/*                                                                          */
+/*  The FreeType project -- a free and portable quality font engine         */
+/*                                                                          */
+/*  Copyright 2006 by                                                       */
+/*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
+/*                                                                          */
+/*                                                                          */
+/*  gbench is a small program used to benchmark a new algorithm             */
+/*  performing gamma-corrected alpha-blending.                              */
+/*                                                                          */
+/****************************************************************************/
+
+
 #ifndef __GBENCH_H__
 #define __GBENCH_H__
 
@@ -67,3 +81,6 @@
 
 
 #endif /* __GBENCH_H__ */
+
+
+/* End */

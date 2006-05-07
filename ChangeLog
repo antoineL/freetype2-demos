@@ -1,9 +1,30 @@
+2006-05-06  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdump.c (main): Fix compiler warning.
+
 2006-05-02  David Turner <david@freetype.org>
 
-        * src/ftcommon.c, src/ftcommon.h, src/ftview.c: added support for
-        font preloading with the '-p' flag.
+	Add support for font preloading with the `-p' flag, simulating
+	memory-mapped file access.
 
-        * src/ftdump.c: added dump of glyph count
+	* src/ftcommon.h (TFont): New elements `file_address' and
+	`file_size'.
+	(FTDemo_Handle): New element `preload'.
+	(FTDemo_Set_Preload): New prototype.
+
+	* src/ftcommon.c (my_face_requester): Use FT_New_Memory_Face for
+	preloaded font.
+	Handle PFM files also.
+	(FTDemo_Install_Font): Handle preloading (this is, load font into a
+	buffer).
+	(FTDemo_Set_Preload): New function.
+
+	* src/ftview.c (status): Add `preload' field.
+	(parse_cmdline): Handle `-p' command line option.
+	(usage): Updated.
+	(main):
+
+	* src/ftdump.c (main): Add glyph count dump.
 
 2006-04-26  David Turner <david@freetype.org>
 
@@ -1151,7 +1172,7 @@
 
 	* src/ftview.c: Minor change to support debugging mode of 2.1.x.
 
-2002-02-14  Detlef Würkner  <tetisoft@apg.lahn.de>
+2002-02-14  Detlef WÃ¼rkner  <tetisoft@apg.lahn.de>
 
 	* src/fttimer.c (ConvertRaster): Handle embedded bitmaps properly.
 	* src/ftstring.c (use_sbits): Default value is no 0.
@@ -1443,5 +1464,5 @@
 
 Local Variables:
 version-control: never
-coding: latin-1
+coding: utf-8
 End:

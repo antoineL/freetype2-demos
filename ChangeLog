@@ -1,3 +1,9 @@
+2006-05-10  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile (clean distclean) [no_config_mk]: Fix warning message.
+	(dist): New target to build .tar.bz2, .tar.gz, and .zip bundles. 
+	Note that there are still many hard-coded version strings.
+
 2006-05-06  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdump.c (main): Fix compiler warning.

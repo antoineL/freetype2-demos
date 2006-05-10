@@ -62,7 +62,8 @@ ifdef no_config_mk
   exes:
 	  @echo Please compile the library before the demo programs!
   clean distclean:
-	  @echo "I need \`$(subst /,$(SEP),$(TOP_DIR)/config.mk)' to do that!"
+	  @echo "I need a path to FreeType 2's \`config.mk' to do that!"
+	  @echo "Set the \`TOP_DIR' variable to the correct value."
 
 else
 
@@ -463,5 +464,46 @@ else
 
 
 endif
+
+
+# This target builds the tarballs.
+#
+# Not to be run by a normal user -- there are no attempts to make it
+# generic.
+
+dist:
+	-rm -rf tmp
+	rm -f ft2demos-2.2.1.tar.gz
+	rm -f ft2demos-2.2.1.tar.bz2
+	rm -f ftdmo221.zip
+
+	for d in `find . -wholename '*/CVS' -prune \
+	                 -o -type f \
+	                 -o -print` ; do \
+	  mkdir -p tmp/$$d ; \
+	done ;
+
+	currdir=`pwd` ; \
+	for f in `find . -wholename '*/CVS' -prune \
+	                 -o -name .cvsignore \
+	                 -o -type d \
+	                 -o -print` ; do \
+	  ln -s $$currdir/$$f tmp/$$f ; \
+	done
+
+	cd tmp ; \
+	$(MAKE) distclean
+
+	mv tmp ft2demos-2.2.1
+
+	tar cfh - ft2demos-2.2.1 \
+	| gzip -c > ft2demos-2.2.1.tar.gz
+	tar cfh - ft2demos-2.2.1 \
+	| bzip2 -c > ft2demos-2.2.1.tar.bz2
+
+	@# Use CR/LF for zip files.
+	zip -lr ftdmo221.zip ft2demos-2.2.1
+
+	rm -fr ft2demos-2.2.1
 
 # EOF

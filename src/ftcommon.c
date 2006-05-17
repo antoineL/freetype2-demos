@@ -26,6 +26,12 @@
 #include <string.h>
 #include <stdarg.h>
 
+
+#ifdef _WIN32
+#define strcasecmp  _stricmp
+#endif
+
+
   FT_Error   error;
 
 
@@ -55,10 +61,6 @@
     exit( 1 );
   }
 
-
-#ifndef strcasecmp
-#define strcasecmp _stricmp
-#endif
 
   /*************************************************************************/
   /*************************************************************************/

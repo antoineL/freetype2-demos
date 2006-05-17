@@ -49,9 +49,10 @@
 #define Y_TOO_LONG( y, size, display) \
           ( ( y ) >= ( display )->bitmap->rows )
 
-#ifndef snprintf
-#define snprintf _snprintf
+#ifdef _Win32
+#define snprintf  _snprintf
 #endif
+
 
   enum
   {

@@ -30,7 +30,7 @@ ifeq ($(PLATFORM),win32)
     GRAPH_LINK += -luser32 -lgdi32
   endif
 
-  ifeq ($(CC),cl)    # test for Visual C++
+  ifeq ($(findstring $(CC),cl icl), $(CC))    # test for Visual C++ & Intel C++
     COMPILE_GRAPH_LIB = lib /nologo /out:$(subst /,$(COMPILER_SEP),$(GRAPH_LIB) $(GRAPH_OBJS))
     LINK              = cl /nologo /MD /Fe$(subst /,$(COMPILER_SEP),$@ $< $(FTLIB))
     GRAPH_LINK       += user32.lib gdi32.lib

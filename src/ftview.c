@@ -49,6 +49,10 @@
 #define Y_TOO_LONG( y, size, display) \
           ( ( y ) >= ( display )->bitmap->rows )
 
+#ifndef snprintf
+#define snprintf _snprintf
+#endif
+
   enum
   {
     RENDER_MODE_ALL = 0,

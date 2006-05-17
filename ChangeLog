@@ -1,3 +1,12 @@
+2006-05-17  yi luo  <luoyi.ly@gmail.com>
+
+	* graph/win32/rules.mk: Add support for icl compiler.
+
+	* src/ftcommon.c (strcasecmp): Define to `_stricmp' if not
+	available.
+
+	* src/ftview.c (snprintf): Define to `_snprintf' if not available.
+
 2006-05-12  Werner Lemberg  <wl@gnu.org>
 
 

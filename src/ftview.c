@@ -49,7 +49,7 @@
 #define Y_TOO_LONG( y, size, display) \
           ( ( y ) >= ( display )->bitmap->rows )
 
-#ifdef _Win32
+#ifdef _WIN32
 #define snprintf  _snprintf
 #endif
 

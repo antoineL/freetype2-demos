@@ -104,7 +104,7 @@
   void
   Print_Type( FT_Face  face )
   {
-    FT_ModuleRec*  module;
+    FT_Module  module;
 
 
     printf( "font type entries\n" );

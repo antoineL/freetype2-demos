@@ -796,10 +796,23 @@ main(int argc,
     }
   }
 
+ /* the following is a bit subtle: when we call FTC_Manager_Done,
+  * this normally destroys all FT_Face objects that the cache might
+  * have created by calling the face requester.
+  *
+  * however, this little benchmark as a tricky face requester that
+  * doesn't create a new FT_Face through FT_New_Face, but simply
+  * pass a pointer to the one that was previously created.
+  *
+  * if the cache manager was used before, the call to FTC_Manager_Done
+  * will discard our single FT_Face.
+  *
+  * in the case where no cache manager is in place, or if no test
+  * was run, the call to FT_Done_FreeType will release any remaining
+  * FT_Face anyway
+  */
   if ( cache_man )
     FTC_Manager_Done( cache_man );
-
-  FT_Done_Face( face );
 
   FT_Done_FreeType( lib );
 

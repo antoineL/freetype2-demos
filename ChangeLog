@@ -1,3 +1,8 @@
+2006-06-04  David Turner  <david@freetype.org>
+
+  * src/ftbench.c (main): fixed a subtle memory corruption bug
+  at program exit. Reported by luoy.li@gmail.com
+
 2006-05-21  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdump.c (Print_Type): Fix type for `module'.  Reported by
@@ -27,7 +32,7 @@
 2006-05-10  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile (clean distclean) [no_config_mk]: Fix warning message.
-	(dist): New target to build .tar.bz2, .tar.gz, and .zip bundles. 
+	(dist): New target to build .tar.bz2, .tar.gz, and .zip bundles.
 	Note that there are still many hard-coded version strings.
 
 2006-05-06  Werner Lemberg  <wl@gnu.org>

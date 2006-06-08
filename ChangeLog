@@ -1,7 +1,16 @@
+2006-06-07  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.c (FTDemo_Display_Done, FTDemo_Done): Protect against
+	NULL argument.
+
+	* src/ftview.c (Fatal): New function to finalize FreeType library.
+	This allows to use FreeType's memory debugger in case of errors.
+	s/PanicZ/Fatal/.
+
 2006-06-04  David Turner  <david@freetype.org>
 
-  * src/ftbench.c (main): fixed a subtle memory corruption bug
-  at program exit. Reported by luoy.li@gmail.com
+	* src/ftbench.c (main): fixed a subtle memory corruption bug
+	at program exit.  Reported by <luoy.li@gmail.com>.
 
 2006-05-21  Werner Lemberg  <wl@gnu.org>
 

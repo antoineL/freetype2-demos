@@ -98,6 +98,15 @@
 
 
 
+  static void
+  Fatal( const char* message )
+  {
+    FTDemo_Display_Done( display );
+    FTDemo_Done( handle );
+    PanicZ( message );
+  }
+
+
   static FT_Error
   Render_Stroke( int  num_indices,
                  int  first_index )
@@ -852,7 +861,7 @@ Next:
     error = FTC_Manager_LookupFace( handle->cache_manager,
                                     handle->image_type.face_id, &face );
     if ( error )
-      PanicZ( "can't access font file" );
+      Fatal( "can't access font file" );
 
     if ( !status.header )
     {
@@ -1071,11 +1080,11 @@ Next:
       FTDemo_Install_Font( handle, argv[0] );
 
     if ( handle->num_fonts == 0 )
-      PanicZ( "could not find/open any font file" );
+      Fatal( "could not find/open any font file" );
 
     display = FTDemo_Display_New( gr_pixel_mode_rgb24 );
     if ( !display )
-      PanicZ( "could not allocate display surface" );
+      Fatal( "could not allocate display surface" );
 
     memset( display->fore_color.chroma, 0, 4 );
     memset( display->back_color.chroma, 0xff, 4 );

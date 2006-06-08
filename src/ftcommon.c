@@ -121,6 +121,9 @@
   void
   FTDemo_Display_Done( FTDemo_Display*  display )
   {
+    if ( !display )
+      return;
+
     grDoneBitmap( display->bitmap );
     grDoneSurface( display->surface );
 
@@ -303,6 +306,9 @@
   {
     int  i;
 
+
+    if ( !handle )
+      return;
 
     for ( i = 0; i < handle->max_fonts; i++ )
     {

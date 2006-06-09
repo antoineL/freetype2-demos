@@ -472,7 +472,6 @@
         font->num_indices = 0x110000L;
         break;
 
-      case FT_ENCODING_MS_SYMBOL:
       case FT_ENCODING_ADOBE_LATIN_1:
       case FT_ENCODING_ADOBE_STANDARD:
       case FT_ENCODING_ADOBE_EXPERT:
@@ -480,6 +479,10 @@
       case FT_ENCODING_APPLE_ROMAN:
         font->num_indices = 0x100L;
         break;
+
+        /* some fonts use range 0x00-0x100, others have 0xF000-0xF0FF */
+      case FT_ENCODING_MS_SYMBOL:
+        font->num_indices = 0x10000L;
 
       default:
         font->num_indices = 0x10000L;

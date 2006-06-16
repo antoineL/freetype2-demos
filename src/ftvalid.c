@@ -38,6 +38,19 @@
 
 
   static char*  execname;
+  static FT_Library     library;
+
+  typedef enum 
+  { 
+    OT_VALIDATE = 0,
+    GX_VALIDATE,
+    CKERN_VALIDATE,
+
+    LAST_VALIDATE,
+
+  } ValidatorType;
+  static ValidatorType  validator;
+
   
   typedef struct  TableSpecRec_
   {
@@ -46,29 +59,9 @@
 
   } TableSpecRec, *TableSpec;
 
-
-  typedef enum 
-  { 
-#define OT_VALIDATOR_SYMBOL "ot" 
-    OT_VALIDATE = 0,
-#define GX_VALIDATOR_SYMBOL "gx" 
-    GX_VALIDATE,
-#define CKERN_VALIDATOR_SYMBOL "ckern" 
-    CKERN_VALIDATE,
-
-  } ValidatorType;
-
-  static const char*  validator_symbols[] = { OT_VALIDATOR_SYMBOL, 
-                                              GX_VALIDATOR_SYMBOL, 
-                                              CKERN_VALIDATOR_SYMBOL,
-                                              NULL };
-
-  static ValidatorType  validator;
-
-  
 #define MAKE_TABLE_SPEC( x ) { TTAG_##x, FT_VALIDATE_##x }
 
-  static const TableSpecRec  ot_table_spec[] = 
+  static TableSpecRec  ot_table_spec[] = 
   {
     MAKE_TABLE_SPEC( BASE ),
     MAKE_TABLE_SPEC( GDEF ),
@@ -78,7 +71,7 @@
   };
 #define N_OT_TABLE_SPEC  ( sizeof ( ot_table_spec ) / sizeof ( TableSpecRec ) )
 
-  static const TableSpecRec  gx_table_spec[] = 
+  static TableSpecRec  gx_table_spec[] = 
   {
     MAKE_TABLE_SPEC( feat ),
     MAKE_TABLE_SPEC( mort ),
@@ -93,6 +86,83 @@
   };
 #define N_GX_TABLE_SPEC  ( sizeof ( gx_table_spec ) / sizeof ( TableSpecRec ) )
 
+
+  typedef struct  ValidatorRec_
+  {
+    ValidatorType  type;
+    const char*    symbol;
+
+    const char*    unimplemented_message;
+    int         (* is_implemented)( FT_Library library );
+
+    FT_Error    (* run)           ( FT_Face     face,
+				    const char* tables,
+				    int         validation_level );
+    int         (* list_tables)   ( FT_Face     face );
+
+    TableSpec       table_spec;   
+    unsigned int    n_table_spec;
+
+  } ValidatorRec, *Validator;
+
+  static int is_ot_validator_implemented    ( FT_Library library );
+  static int is_gx_validator_implemented    ( FT_Library library );
+  static int is_ckern_validator_implemented ( FT_Library library );
+  static int run_ot_validator               ( FT_Face      face, 
+					      const char*  tables, 
+					      int          validation_level );
+  static int run_gx_validator               ( FT_Face      face, 
+					      const char*  tables, 
+					      int          validation_level );
+  static int run_ckern_validator            ( FT_Face      face, 
+					      const char*  dialect_request, 
+					      int          validation_level );
+  static int list_ot_tables                 ( FT_Face  face );
+  static int list_gx_tables                 ( FT_Face  face );
+  static int list_ckern_tables              ( FT_Face  face );
+
+
+  ValidatorRec validators[] = {
+    {
+      OT_VALIDATE,
+      "ot",
+      ( "FT_OpenType_Validate" 
+	"is disabled. replace FreeType2 with " 
+	"otvalid" 
+	"-enabled version\n" ),
+      is_ot_validator_implemented,
+      run_ot_validator,
+      list_ot_tables,
+      ot_table_spec,
+      N_OT_TABLE_SPEC,
+    },
+    {
+      GX_VALIDATE,
+      "gx",
+      ( "FT_TrueTypeGX_Validate"
+	"is disabled. replace FreeType2 with " 
+	"gxvalid" 
+	"-enabled version\n" ),
+      is_gx_validator_implemented,
+      run_gx_validator,
+      list_gx_tables,
+      gx_table_spec,
+      N_GX_TABLE_SPEC,
+    },
+    {
+      CKERN_VALIDATE,
+      "ckern",
+      ( "FT_ClassicKern_Validate"
+	"is disabled. replace FreeType2 with " 
+	"gxvalid" 		/* NOTE: classic kern validator is in gxvalid. */
+	"-enabled version\n" ),
+      is_ckern_validator_implemented,
+      run_ckern_validator,
+      list_ckern_tables,
+      NULL,
+      0,
+    },
+  };
 
 
   static void
@@ -131,8 +201,8 @@
   static void
   print_usage( void )
   {
-    unsigned int i;
-
+    unsigned int i, j;
+    Validator v;
 
     fprintf( stderr, "\n" );
     fprintf( stderr, "ftvalid: layout table validator -- part of the FreeType project\n" );
@@ -141,35 +211,37 @@
     fprintf( stderr, "Usage: %s [options] fontfile\n", execname );
     fprintf( stderr, "\n" );
     fprintf( stderr, "  -t validator              select validator. \n");
-    fprintf( stderr, "                            Currently \"ot\", \"gx\" and \"ckern\" are available.\n" );
+    fprintf( stderr, "                            Available validators: ");
+    for ( i = 0; i < LAST_VALIDATE; i++ )
+    {
+      v = &validators[i];
+      fprintf( stderr, "\"%s\"%s ", v->symbol, v->is_implemented( library )? "": "(NOT IMPLEMENTED)");
+    }
+    fprintf( stderr, "\n");
+
     fprintf( stderr, "\n" );
-    fprintf( stderr, "  -T \"sfnt:tabl:enam:es  \"  [ot or gx] select snft table names to be \n" );
+    fprintf( stderr, "  -T \"sfnt:tabl:enam:es  \"  select snft table names to be \n" );
     fprintf( stderr, "                            validated. `:' is for separating table names.\n" );
     fprintf( stderr, "\n" );
-    fprintf( stderr, "                            Supported tables in ot validator are:\n" );
 
-    fprintf( stderr, "                            " );
-
-    for ( i = 0; i < N_OT_TABLE_SPEC; i++ )
+    for ( i = 0; i < LAST_VALIDATE; i++ )
     {
-      print_tag( stderr, ot_table_spec[i].tag );
-      fprintf( stderr, " " );
+      v = &validators[i];
+
+      if ( v->n_table_spec == 0 )
+	continue;
+
+      fprintf( stderr, "                            Supported tables in %s validator are:\n", v->symbol );
+      fprintf( stderr, "                            " );
+      for ( j = 0; j < v->n_table_spec; j++ )
+      {
+	print_tag( stderr, v->table_spec[j].tag );
+	fprintf( stderr, " " );
+      }
+
+      fprintf( stderr, "\n" );
+      fprintf( stderr, "\n" );      
     }
-
-    fprintf( stderr, "\n" );
-    fprintf( stderr, "\n" );
-    fprintf( stderr, "                            Supported tables in gx validator are:\n" );
-
-    fprintf( stderr, "                            " );
-
-    for ( i = 0; i < N_GX_TABLE_SPEC; i++ )
-    {
-      print_tag( stderr, gx_table_spec[i].tag );
-      fprintf( stderr, " " );
-    }
-
-    fprintf( stderr, "\n" );
-    fprintf( stderr, "\n" );
 
     fprintf( stderr, "  -T \"ms:apple\"             [ckern] select (a) classic kern dialect(s) for \n" );
     fprintf( stderr, "                            validation. `:' is for separating dialect names.\n" );
@@ -372,7 +444,7 @@
                  int                 spec_count )
   {
     printf( "[%s:%s] validation targets: ",
-            execname, validator_symbols[validator] );
+            execname, validators[validator].symbol );
     print_tables( stdout, validation_flags, spec, spec_count );
     printf( "-------------------------------------------------------------------\n" );
   }
@@ -393,7 +465,7 @@
       if ( ( spec[i].validation_flag & validation_flags ) &&
              data[i] != NULL                              )
       {
-        printf( "[%s:%s] ", execname, validator_symbols[validator] );
+        printf( "[%s:%s] ", execname, validators[validator].symbol );
         print_tag( stdout, spec[i].tag );
         printf( "...pass\n" );
         n_passes++;
@@ -403,11 +475,11 @@
     if ( n_passes == 0 )
     {
       printf( "[%s:%s] layout tables are invalid.\n",
-              execname, validator_symbols[validator] );
+              execname, validators[validator].symbol );
       printf( "[%s:%s] set FT2_DEBUG environment variable to \n",
-              execname, validator_symbols[validator] );
+              execname, validators[validator].symbol );
       printf( "[%s:%s] know the validation detail. \n",
-              execname, validator_symbols[validator] );
+              execname, validators[validator].symbol );
     }
   }
 
@@ -415,6 +487,15 @@
   /* 
    * OpenType related funtions
    */
+  static int
+  is_ot_validator_implemented( FT_Library library )
+  {
+    FT_Module mod;
+    
+    mod = FT_Get_Module( library, "otvalid" );
+    return mod? 1: 0;
+  }
+
   static int
   run_ot_validator( FT_Face      face,
                     const char*  tables,
@@ -466,6 +547,15 @@
    * TrueTypeGX related funtions
    */
   static int
+  is_gx_validator_implemented( FT_Library library )
+  {
+    FT_Module mod;
+    
+    mod = FT_Get_Module( library, "gxvalid" );
+    return mod? 1: 0;
+  }
+
+  static int
   run_gx_validator( FT_Face      face, 
                     const char*  tables, 
                     int          validation_level )
@@ -515,6 +605,16 @@
    * Classic kern related funtions
    */
   static int
+  is_ckern_validator_implemented( FT_Library library )
+  {
+    FT_Module mod;
+
+    mod = FT_Get_Module( library, "gxvalid" );
+    return mod? 1: 0;
+  }
+
+
+  static int
   run_ckern_validator( FT_Face      face, 
                        const char*  dialect_request, 
                        int          validation_level )
@@ -544,7 +644,7 @@
     }
 
     printf( "[%s:%s] validation targets: %s...", 
-            execname, validator_symbols[validator], dialect_request );
+            execname, validators[validator].symbol, dialect_request );
 
 
     error = FT_ClassicKern_Validate(
@@ -584,6 +684,8 @@
   main( int     argc, 
         char**  argv )
   {
+    FT_Error    error;
+  
     char*  fontfile;
     int    option;
     int    status;
@@ -595,8 +697,12 @@
 #if 0
     int  trace_level;
 #endif  /* 0 */
-    
+
     execname = ft_basename( argv[0] );
+
+    error = FT_Init_FreeType( &library );
+    if ( error )
+      panic ( error, "Could not initialize FreeType library" );
 
     /*
      * Parsing options
@@ -621,22 +727,21 @@
       case 't':
         {
           int i;
-          
 
-          for ( i = 0; /* No condition here */; i++ )
+	  validator = LAST_VALIDATE;
+          for ( i = 0; i < LAST_VALIDATE; i++ )
           {
-            if ( validator_symbols[i] == NULL )
-            {
-              fprintf( stderr, "*** Unknown validator name: %s\n", optarg );
-              print_usage();
-            }
-            
-            if ( strcmp( optarg, validator_symbols[i] ) == 0 )
+            if ( strcmp( optarg, validators[i].symbol ) == 0 )
             {
               validator = (ValidatorType)i;
               break;
             }
           }
+	  if ( validator == LAST_VALIDATE )
+	  {
+	    fprintf( stderr, "*** Unknown validator name: %s\n", optarg );
+	    print_usage();
+	  }
         }
         break;
 
@@ -701,43 +806,25 @@
      * Run a validator
      */
     {
-      FT_Library  library;
       FT_Face     face;
-      FT_Error    error;
 
 
       status = 0;
 
-      error = FT_Init_FreeType( &library );
-      if ( error )
-        panic ( error, "Could not initialize FreeType library" );
+      if ( !validators[validator].is_implemented( library ) )
+	panic( FT_Err_Unimplemented_Feature, 
+	       validators[validator].unimplemented_message );
+
 
       /* TODO: Multiple faces in a font file? */
       error = FT_New_Face( library, fontfile, 0, &face );
       if ( error )
         panic( error, "Could not open face." );
       
-      switch ( validator )
-      {
-      case OT_VALIDATE:
-        if ( dump_table_list == 0 )
-          status = run_ot_validator( face, tables, validation_level );
-        else
-          status = list_ot_tables  ( face );
-        break;
-      case GX_VALIDATE:
-        if ( dump_table_list == 0 )
-          status = run_gx_validator( face, tables, validation_level );
-        else
-          status = list_gx_tables( face );
-        break;
-      case CKERN_VALIDATE:
-        if ( dump_table_list == 0 )
-          status = run_ckern_validator( face, tables, validation_level );
-        else
-          status = list_ckern_tables( face );
-        break;
-      }
+      if ( dump_table_list )
+	validators[validator].list_tables( face );
+      else
+	validators[validator].run( face, tables, validation_level );
       
       FT_Done_Face( face );
       FT_Done_FreeType( library );

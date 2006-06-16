@@ -1,3 +1,28 @@
+2006-06-17  Masatake YAMATO  <jet@gyve.org>
+
+	* src/ftvalid.c: Rearrange code.
+	(library): Make variable having global scope.
+	(OT_VALIDATOR_SYMBOL): Removed.
+	(GX_VALIDATOR_SYMBOL): Removed.
+	(CKERN_VALIDATOR_SYMBOL): Removed.
+	(validator_symbols): Removed.
+	(ValidatorType::LAST_VALIDATE): New enum element used in loop sentinel.
+	(ot_table_spec): Remove const modifier.
+	(gx_table_spec): Remove const modifier.
+	(Validator): New data type.
+	(validators): New variable.
+	(print_usage): Use validators.
+	(report_header, report_result): Use validators.
+	(is_ot_validator_implemented): New function.
+	(is_gx_validator_implemented): New function.
+	(is_ckern_validator_implemented): New function.
+	(run_ckern_validator): Use validators.
+	(main): Initialize library at the beginning of main.
+	Use validators. Report messages and exit if the validator 
+	specified by command line is not implemented in libfreetype2 
+	linked to ftvalid.  Suggested by George Williams.
+
+
 2006-06-09  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.c (FTDemo_Install_Font): Fix index range for MS

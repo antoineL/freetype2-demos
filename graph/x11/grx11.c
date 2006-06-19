@@ -5,7 +5,7 @@
  *  This is the driver for displaying inside a window under X11,
  *  used by the graphics utility of the FreeType test suite.
  *
- *  Copyright 1999-2000, 2001, 2002, 2005 by Antoine Leca, David Turner
+ *  Copyright 1999-2000, 2001, 2002, 2005, 2006 by Antoine Leca,
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -861,8 +861,7 @@ typedef  unsigned long   uint32;
     &gr_x11_format_bgr0888,
     &gr_x11_format_rgb8880,
     &gr_x11_format_bgr8880,
-
-    NULL,
+    NULL
   };
 
   typedef struct  grX11DeviceRec_
@@ -917,8 +916,8 @@ typedef  unsigned long   uint32;
       XDepth*      formats;
       XVisualInfo  templ;
 
-
-      formats = XListPixmapFormats( x11dev.display, &count );
+      templ.screen = DefaultScreen( x11dev.display );
+      formats      = XListPixmapFormats( x11dev.display, &count );
 
 #ifdef TEST
       printf( "available pixmap formats\n" );
@@ -946,7 +945,6 @@ typedef  unsigned long   uint32;
             XVisualInfo*  visual;
             XVisualInfo*  visuals;
 
-            templ.screen = DefaultScreen( x11dev.display );
             templ.depth  = format->depth;
             visuals      = XGetVisualInfo( x11dev.display,
                                            VisualScreenMask | VisualDepthMask,
@@ -956,29 +954,30 @@ typedef  unsigned long   uint32;
             for ( visual = visuals; count2 > 0; count2--, visual++ )
             {
 #ifdef TEST
-              const char*  string = "unknown";
-
+              const char*  visualClass;
 
               switch ( visual->Class )
               {
               case TrueColor:
-                string = "TrueColor";
+                visualClass = "TrueColor";
                 break;
               case DirectColor:
-                string = "DirectColor";
+                visualClass = "DirectColor";
                 break;
               case PseudoColor:
-                string = "PseudoColor";
+                visualClass = "PseudoColor";
                 break;
               case StaticGray:
-                string = "StaticGray";
+                visualClass = "StaticGray";
                 break;
               case StaticColor:
-                string = "StaticColor";
+                visualClass = "StaticColor";
                 break;
               case GrayScale:
-                string = "GrayScale";
+                visualClass = "GrayScale";
                 break;
+              default:
+                visualClass = "unknown";
               }
 
               printf( ">   RGB %04lx:%04lx:%04lx, colors %3d, bits %2d  %s\n",
@@ -987,7 +986,7 @@ typedef  unsigned long   uint32;
                       visual->blue_mask,
                       visual->colormap_size,
                       visual->bits_per_rgb,
-                      string );
+                      visualClass );
 #endif /* TEST */
 
               /* compare to the list of supported formats */
@@ -1350,7 +1349,7 @@ typedef  unsigned long   uint32;
       XSetWindowAttributes  xswa;
       long                  xswa_mask = CWBackPixel | CWEventMask | CWCursor;
 
-      xswa.border_pixel = BlackPixel( display, screen);
+      xswa.border_pixel = BlackPixel( display, screen );
 
       if (surface->visual == DefaultVisual( display, screen ) )
       {
@@ -1522,7 +1521,7 @@ typedef  unsigned long   uint32;
         if ( event.key == grKeyEsc )
           return 0;
 
-        /* otherwise, display key string */
+        /* otherwise, display key name */
         color.value = ( color.value + 8 ) & 127;
         {
           int          count = sizeof ( key_names ) / sizeof ( key_names[0] );

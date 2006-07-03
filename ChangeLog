@@ -1,3 +1,13 @@
+2006-07-03  Masatake YAMATO  <jet@gyve.org>
+
+	* src/ftvalid.c (library): Move this global variable to main as
+	a local variable.
+	(print_usage): Introduce function static variable 
+	"library"; and added one argument for initializing the static variable.
+	(main): Call print_usage with `library'.
+	(main, else, parse_table_specs, find_validation_flag): Call print_usage
+	with NULL.
+
 2006-06-17  Masatake YAMATO  <jet@gyve.org>
 
 	* src/ftvalid.c: Rearrange code.

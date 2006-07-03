@@ -38,7 +38,6 @@
 
 
   static char*  execname;
-  static FT_Library     library;
 
   typedef enum 
   { 
@@ -198,11 +197,22 @@
   }
 
 
+  /* To initialize the internal variable, call this 
+     funtion with FT_Library variable. Then call
+     with NULL. The print messages is printed if
+     call with NULL. */
   static void
-  print_usage( void )
+  print_usage( FT_Library  library_initializer )
   {
     unsigned int i, j;
     Validator v;
+    static FT_Library library;
+
+    if (library_initializer)
+    {
+      library = library_initializer;
+      return ;
+    }
 
     fprintf( stderr, "\n" );
     fprintf( stderr, "ftvalid: layout table validator -- part of the FreeType project\n" );
@@ -320,7 +330,7 @@
     print_tag( stderr, tag );
     fprintf( stderr, "\n" );
 
-    print_usage();
+    print_usage( NULL );
 
     return 0;
   }
@@ -344,7 +354,7 @@
     if (( len % 5 ) != 4 )
     {
       fprintf( stderr, "*** Wrong length of table names\n" );
-      print_usage();
+      print_usage( NULL );
     }
     
     for ( i = 0; i < len; i++ )
@@ -354,7 +364,7 @@
         if ( tables[i] != ':' )
         {
           fprintf( stderr, "*** Wrong table separator: %c\n", tables[i] );
-          print_usage();
+          print_usage( NULL );
         }
         i++;
       }
@@ -640,7 +650,7 @@
     else
     {
       fprintf( stderr, "Wrong classic kern dialect: %s\n", dialect_request );
-      print_usage();
+      print_usage( NULL );
     }
 
     printf( "[%s:%s] validation targets: %s...", 
@@ -684,6 +694,7 @@
   main( int     argc, 
         char**  argv )
   {
+    FT_Library  library;
     FT_Error    error;
   
     char*  fontfile;
@@ -703,6 +714,10 @@
     error = FT_Init_FreeType( &library );
     if ( error )
       panic ( error, "Could not initialize FreeType library" );
+
+    /* Initialize print_usage internal variable */
+    print_usage( library );
+
 
     /*
      * Parsing options
@@ -740,7 +755,7 @@
 	  if ( validator == LAST_VALIDATE )
 	  {
 	    fprintf( stderr, "*** Unknown validator name: %s\n", optarg );
-	    print_usage();
+	    print_usage( NULL );
 	  }
         }
         break;
@@ -759,12 +774,12 @@
         {
           fprintf( stderr, "*** Validation level is out of range: %d\n",
                            validation_level );
-          print_usage();
+          print_usage( NULL );
         }
         break;
 
       default:
-        print_usage();
+        print_usage( NULL );
         break;
       }
     }
@@ -775,12 +790,12 @@
     if ( argc == 0 )
     {
       fprintf(stderr, "*** Font file is not specified.\n");
-      print_usage();
+      print_usage( NULL );
     }
     else if ( argc > 1 )
     {
       fprintf(stderr, "*** Too many font files.\n");
-      print_usage();
+      print_usage( NULL );
     }
 
     fontfile = argv[0];

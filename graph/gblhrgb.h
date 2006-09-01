@@ -24,9 +24,9 @@
       {
         /* nothing */
       }
-      else if ( aa == ((GBLENDER_SHADE_COUNT << 16) |
-                       (GBLENDER_SHADE_COUNT << 8)  |
-                       (GBLENDER_SHADE_COUNT)       ) )
+      else if ( aa == (((GBLENDER_SHADE_COUNT-1) << 16) |
+                       ((GBLENDER_SHADE_COUNT-1) << 8)  |
+                        (GBLENDER_SHADE_COUNT-1)        ) )
       {
         GDST_COPY(dst);
       }

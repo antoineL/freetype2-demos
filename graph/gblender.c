@@ -311,8 +311,8 @@ gblender_lookup( GBlender       blender,
 NewNode:
   key->background = background;
   key->foreground = foreground;
-  key->cells      = blender->cells + \
-                    idx0*(GBLENDER_SHADE_COUNT*GBLENDER_CELL_SIZE);
+  key->cells      = blender->cells +
+                    idx*(GBLENDER_SHADE_COUNT*GBLENDER_CELL_SIZE);
 
   gblender_reset_key( blender, key );
 
@@ -424,7 +424,7 @@ gblender_lookup_channel( GBlender       blender,
 
 NewNode:
   key->backfore   = backfore;
-  key->index      = (signed short)( idx0 * GBLENDER_SHADE_COUNT );
+  key->index      = (signed short)( idx * GBLENDER_SHADE_COUNT );
 
   gblender_reset_channel_key( blender, key );
 

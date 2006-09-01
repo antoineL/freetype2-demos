@@ -26,7 +26,7 @@
       {
         /* nothing */
       }
-      else if ( a == GBLENDER_SHADE_COUNT )
+      else if ( a == GBLENDER_SHADE_COUNT-1 )
       {
         GDST_COPY(dst);
       }

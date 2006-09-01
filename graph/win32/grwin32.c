@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* define to activate OLPC swizzle */
+#define xxSWIZZLE
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -117,7 +120,10 @@
     HBITMAP       hbm;
     grEvent       ourevent;
     int           eventToProcess;
-
+    grBitmap      bgrBitmap;  /* windows wants data in BGR format !! */
+#ifdef SWIZZLE
+    grBitmap      swizzle_bitmap;
+#endif
   } grWin32Surface;
 
 
@@ -131,6 +137,10 @@ gr_win32_surface_done( grWin32Surface*  surface )
     DestroyWindow ( surface->window );
     PostMessage( surface->window, WM_QUIT, 0, 0 );
   }
+#ifdef SWIZZLE
+  grDoneBitmap( &surface->swizzle_bitmap );
+#endif
+  grDoneBitmap( &surface->bgrBitmap );
   grDoneBitmap( &surface->root.bitmap );
 }
 
@@ -147,6 +157,7 @@ gr_win32_surface_refresh_rectangle(
   int           row_bytes, delta;
   LPBITMAPINFO  pbmi   = surface->pbmi;
   HANDLE        window = surface->window;
+  grBitmap*     bitmap = &surface->root.bitmap;
 
   LOG(( "gr_win32_surface_refresh_rectangle: ( %p, %d, %d, %d, %d )\n",
         (long)surface, x, y, w, h ));
@@ -183,11 +194,59 @@ gr_win32_surface_refresh_rectangle(
   if ( row_bytes*8 != pbmi->bmiHeader.biWidth * pbmi->bmiHeader.biBitCount )
     pbmi->bmiHeader.biWidth  = row_bytes * 8 / pbmi->bmiHeader.biBitCount;
 
+#ifdef SWIZZLE
+  {
+    grBitmap*  swizzle = &surface->swizzle_bitmap;
+
+    gr_swizzle_rgb24( bitmap->buffer, bitmap->pitch,
+                      swizzle->buffer, swizzle->pitch,
+                      bitmap->width,
+                      bitmap->rows );
+
+    bitmap = swizzle;
+  }
+#endif
+
+  /* copy to BGR buffer */
+  {
+    unsigned char*  read_line   = (unsigned char*)bitmap->buffer;
+    int             read_pitch  = bitmap->pitch;
+    unsigned char*  write_line  = (unsigned char*)surface->bgrBitmap.buffer;
+    int             write_pitch = surface->bgrBitmap.pitch;
+    int             height      = bitmap->rows;
+    int             width       = bitmap->width;
+    int             xx;
+
+    if (read_pitch < 0)
+      read_line -= (height-1)*read_pitch;
+
+    if (write_pitch < 0)
+      write_line -= (height-1)*write_pitch;
+
+    for ( ; height > 0; height-- )
+    {
+      unsigned char*  read       = read_line;
+      unsigned char*  read_limit = read + 3*width;
+      unsigned char*  write      = write_line;
+      int             xx;
+
+      for ( ; read < read_limit; read += 3, write += 3 )
+      {
+        write[0] = read[2];
+        write[1] = read[1];
+        write[2] = read[0];
+      }
+
+      read_line  += read_pitch;
+      write_line += write_pitch;
+    }
+  }
+
   hDC = GetDC ( window );
   SetDIBits ( hDC, surface->hbm,
               0,
-              surface->root.bitmap.rows,
-              surface->root.bitmap.buffer,
+              bitmap->rows,
+              surface->bgrBitmap.buffer,
               pbmi,
               DIB_RGB_COLORS );
 
@@ -270,6 +329,30 @@ gr_win32_surface_init( grWin32Surface*  surface,
                     bitmap->rows,
                     bitmap ) )
     return 0;
+
+  /* allocate the BGR shadow bitmap */
+  if ( grNewBitmap( bitmap->mode,
+                    bitmap->grays,
+                    bitmap->width,
+                    bitmap->rows,
+                    &surface->bgrBitmap ) )
+    return 0;
+
+  surface->bgrBitmap.pitch = -surface->bgrBitmap.pitch;
+
+#ifdef SWIZZLE
+  if ( bitmap->mode == gr_pixel_mode_rgb24 )
+  {
+    if ( grNewBitmap( bitmap->mode,
+                      bitmap->grays,
+                      bitmap->width,
+                      bitmap->rows,
+                      &surface->swizzle_bitmap ) )
+      return 0;
+
+    surface->swizzle_bitmap.pitch = -surface->swizzle_bitmap.pitch;
+  }
+#endif
 
   LOG(( "       -- output bitmap =\n" ));
   LOG(( "       --   mode   = %d\n", bitmap->mode ));

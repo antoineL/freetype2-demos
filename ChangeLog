@@ -4,6 +4,8 @@
         graph/gblhrgb.h, graph/gblvbgr.h, graph/gblvrgb.h:
         fixing last bugs in the glyph blender/blitter
 
+        * graph/win32/grwin32.c: fixing RGB/BGR ordering (Win32 uses BGR
+        ordering for its 24-bit bitmaps !!)
 
 2006-07-03  Masatake YAMATO  <jet@gyve.org>
 

@@ -1,31 +1,44 @@
 2006-09-01  David Turner  <david@freetype.org>
 
-        * graph/gblcolor.h, graph/gblender.c, graph/gblhbgr.h,
-        graph/gblhrgb.h, graph/gblvbgr.h, graph/gblvrgb.h:
-        fixing last bugs in the glyph blender/blitter
+	Fix various bugs in the glyph blender/blitter.
 
-        * graph/win32/grwin32.c: fixing RGB/BGR ordering (Win32 uses BGR
-        ordering for its 24-bit bitmaps !!)
+	* graph/gblcolor.h, graph/gblhbgr.h, graph/gblhrgb.h,
+	graph/gblvbgr.h, graph/gblvrgb.h: Fix off-by-one
+	error.
+
+	* graph/gblender.c (gblender_lookup): Fix computation of key->cells.
+	(gblender_lookup_channel): Fix computation of key->index.
+
+	* graph/win32/grwin32.c: Fix RGB/BGR ordering -- Win32 uses BGR
+	ordering for its 24-bit bitmaps.
+	(SWIZZLE): New macro (set to undefined).
+	(grWin32SurfaceRec): Add `bgrBitmap'.
+	[SWIZZLE]: Add `swizzle_bitmap'.
+	(gr_win32_surface_done) [SWIZZLE]: Handle `swizzle_bitmap'.
+	(gr_win32_surface_refresh_rectangle): Do conversion RGB->BGR.
+	(gr_win32_surface_init): Initialize `bgrBitmap'.
+	[SWIZZLE]: Initialize `swizzle_bitmap'.
 
 2006-07-03  Masatake YAMATO  <jet@gyve.org>
 
-	* src/ftvalid.c (library): Move this global variable to main as
-	a local variable.
-	(print_usage): Introduce function static variable
-	"library"; and added one argument for initializing the static variable.
+	* src/ftvalid.c (library): Move this global variable to main as a
+	local variable.
+	(print_usage): Introduce function static variable `library'.
+	Add one argument for initializing the static variable.
 	(main): Call print_usage with `library'.
-	(main, else, parse_table_specs, find_validation_flag): Call print_usage
-	with NULL.
+	(main, else, parse_table_specs, find_validation_flag): Call
+	print_usage with NULL.
 
 2006-06-17  Masatake YAMATO  <jet@gyve.org>
 
 	* src/ftvalid.c: Rearrange code.
 	(library): Make variable having global scope.
-	(OT_VALIDATOR_SYMBOL): Removed.
-	(GX_VALIDATOR_SYMBOL): Removed.
-	(CKERN_VALIDATOR_SYMBOL): Removed.
-	(validator_symbols): Removed.
-	(ValidatorType::LAST_VALIDATE): New enum element used in loop sentinel.
+	(OT_VALIDATOR_SYMBOL): Remove.
+	(GX_VALIDATOR_SYMBOL): Remove.
+	(CKERN_VALIDATOR_SYMBOL): Remove.
+	(validator_symbols): Remove.
+	(ValidatorType::LAST_VALIDATE): New enum element used in loop
+	sentinel.
 	(ot_table_spec): Remove const modifier.
 	(gx_table_spec): Remove const modifier.
 	(Validator): New data type.
@@ -37,10 +50,10 @@
 	(is_ckern_validator_implemented): New function.
 	(run_ckern_validator): Use validators.
 	(main): Initialize library at the beginning of main.
-	Use validators. Report messages and exit if the validator
-	specified by command line is not implemented in libfreetype2
-	linked to ftvalid.  Suggested by George Williams.
-
+	Use validators.
+	Report messages and exit if the validator specified by command line
+	is not implemented in libfreetype2 linked to ftvalid.  Suggested by
+	George Williams.
 
 2006-06-09  Werner Lemberg  <wl@gnu.org>
 

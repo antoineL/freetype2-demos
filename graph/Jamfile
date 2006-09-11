@@ -6,13 +6,14 @@ SubDir  FT2DEMO_TOP graph ;
 GRAPH_INCLUDE = $(FT2DEMO_GRAPH) ;
 GRAPH_LIB     = $(LIBPREFIX)graph$(SUFLIB) ;
 
-graph_sources = grblit 
-                grobjs 
-                grfont 
-                grdevice 
+graph_sources = grblit
+                grobjs
+                grfont
+                grdevice
                 grinit
                 gblender
                 gblblit
+                grswizzle
                 ;
 
 if $(OS) = BEOS

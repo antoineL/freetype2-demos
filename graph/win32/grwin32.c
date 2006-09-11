@@ -31,7 +31,9 @@
 
 #include <grobjs.h>
 #include <grdevice.h>
-
+#ifdef SWIZZLE
+#include <grswizzle.h>
+#endif
 
 /* logging facility */
 #include <stdarg.h>
@@ -198,10 +200,11 @@ gr_win32_surface_refresh_rectangle(
   {
     grBitmap*  swizzle = &surface->swizzle_bitmap;
 
-    gr_swizzle_rgb24( bitmap->buffer, bitmap->pitch,
-                      swizzle->buffer, swizzle->pitch,
-                      bitmap->width,
-                      bitmap->rows );
+    gr_swizzle_rect_rgb24( bitmap->buffer, bitmap->pitch,
+                           swizzle->buffer, swizzle->pitch,
+                           bitmap->width,
+                           bitmap->rows,
+                           0, 0, bitmap->width, bitmap->rows );
 
     bitmap = swizzle;
   }
@@ -215,7 +218,6 @@ gr_win32_surface_refresh_rectangle(
     int             write_pitch = surface->bgrBitmap.pitch;
     int             height      = bitmap->rows;
     int             width       = bitmap->width;
-    int             xx;
 
     if (read_pitch < 0)
       read_line -= (height-1)*read_pitch;
@@ -228,7 +230,6 @@ gr_win32_surface_refresh_rectangle(
       unsigned char*  read       = read_line;
       unsigned char*  read_limit = read + 3*width;
       unsigned char*  write      = write_line;
-      int             xx;
 
       for ( ; read < read_limit; read += 3, write += 3 )
       {

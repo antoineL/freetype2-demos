@@ -1,3 +1,9 @@
+2006-09-11  David Turner  <david@freetype.org>
+
+        * graph/grswizzle.[hc], graph/win32/grwin32.c: added support
+        for OLPC swizzle simulation (must define SWIZZLE at compile time
+        for this to work)
+
 2006-09-01  David Turner  <david@freetype.org>
 
 	Fix various bugs in the glyph blender/blitter.

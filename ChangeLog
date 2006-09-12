@@ -1,8 +1,18 @@
 2006-09-11  David Turner  <david@freetype.org>
 
-        * graph/grswizzle.[hc], graph/win32/grwin32.c: added support
-        for OLPC swizzle simulation (must define SWIZZLE at compile time
-        for this to work)
+	Add support for OLPC swizzle simulation (must define SWIZZLE at
+	compile time for this to work).
+
+	* graph/grswizzle.c, graph/grswizzle.h: New files.
+
+	* graph/grdevice.h (gr_swizzle_rbg24): Declare.
+
+	* graph/Jamfile (graph_sources): Add `grswizzle'.
+
+	* graph/win32/grwin32.c [SWIZZLE]: Include `grswizzle.h'.
+	(gr_win32_surface_refresh_rectangle) [SWIZZLE]: Don't call
+	gr_swizzle_rgb24 but gr_rect_swizzle_rgb24.
+	Remove unused variables.
 
 2006-09-01  David Turner  <david@freetype.org>
 

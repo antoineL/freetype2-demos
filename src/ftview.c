@@ -24,6 +24,7 @@
 #include FT_INTERNAL_DEBUG_H
 #include FT_STROKER_H
 #include FT_SYNTHESIS_H
+#include FT_LCD_FILTER_H
 
 #define MAXPTSIZE      500                 /* dtp */
 #define HEADER_HEIGHT  8
@@ -83,7 +84,7 @@
     int          Fail;
     int          preload;
 
-  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0 };
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0, 0, 0, 0, 0, 0, NULL };
 
 
   static FTDemo_Display*  display;
@@ -1072,6 +1073,8 @@ Next:
 
     /* Initialize engine */
     handle = FTDemo_New( status.encoding );
+
+    FT_Library_SetLcdFilter( handle->library, FT_LCD_FILTER_DEFAULT );
 
     if ( status.preload )
       FTDemo_Set_Preload( handle, 1 );

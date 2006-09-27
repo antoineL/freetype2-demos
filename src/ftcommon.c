@@ -919,11 +919,12 @@
 
 
   FT_Error
-  FTDemo_Draw_Glyph( FTDemo_Handle*   handle,
-                     FTDemo_Display*  display,
-                     FT_Glyph         glyph,
-                     int*             pen_x,
-                     int*             pen_y )
+  FTDemo_Draw_Glyph_Color( FTDemo_Handle*   handle,
+                           FTDemo_Display*  display,
+                           FT_Glyph         glyph,
+                           int*             pen_x,
+                           int*             pen_y,
+                           grColor          color )
   {
     int       left, top, x_advance, y_advance;
     grBitmap  bit3;
@@ -941,7 +942,7 @@
 
     /* now render the bitmap into the display surface */
     grBlitGlyphToBitmap( display->bitmap, &bit3, *pen_x + left,
-                         *pen_y - top, display->fore_color );
+                         *pen_y - top, color );
 
     if ( glyf )
       FT_Done_Glyph( glyf );
@@ -950,6 +951,20 @@
 
     return FT_Err_Ok;
   }
+
+
+  FT_Error
+  FTDemo_Draw_Glyph( FTDemo_Handle*   handle,
+                     FTDemo_Display*  display,
+                     FT_Glyph         glyph,
+                     int*             pen_x,
+                     int*             pen_y )
+  {
+    return FTDemo_Draw_Glyph_Color( handle, display,
+                                    glyph, pen_x, pen_y,
+                                    display->fore_color );
+  }
+
 
 
   FT_Error

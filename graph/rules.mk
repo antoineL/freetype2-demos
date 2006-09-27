@@ -27,13 +27,16 @@ GRAPH_H := $(GRAPH)/graph.h    \
            $(GRAPH)/gblblit.h
 
 
-GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(SO)   \
-              $(OBJ_DIR_2)/grobjs.$(SO)   \
-              $(OBJ_DIR_2)/grfont.$(SO)   \
-              $(OBJ_DIR_2)/grdevice.$(SO) \
-              $(OBJ_DIR_2)/grinit.$(SO)   \
-              $(OBJ_DIR_2)/gblender.$(SO) \
+GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(SO)    \
+              $(OBJ_DIR_2)/grobjs.$(SO)    \
+              $(OBJ_DIR_2)/grfont.$(SO)    \
+              $(OBJ_DIR_2)/grfill.$(SO)    \
+              $(OBJ_DIR_2)/grswizzle.$(SO) \
+              $(OBJ_DIR_2)/grdevice.$(SO)  \
+              $(OBJ_DIR_2)/grinit.$(SO)    \
+              $(OBJ_DIR_2)/gblender.$(SO)  \
               $(OBJ_DIR_2)/gblblit.$(SO)
+
 
 
 # Default value for COMPILE_GRAPH_LIB;

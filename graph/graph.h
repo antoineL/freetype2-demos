@@ -190,6 +190,14 @@
                        grColor    color );
 
 
+  /* values must be in 0..255 range */
+  extern grColor
+  grFindColor( grBitmap*  target,
+               int        red,
+               int        green,
+               int        blue,
+               int        alpha );
+
 #if 0
 
  /**********************************************************************
@@ -297,6 +305,27 @@
   extern  void  grDoneBitmap( grBitmap*  bit );
 
 
+  extern void
+  grFillHLine( grBitmap*  target,
+               int        x,
+               int        y,
+               int        width,
+               grColor    color );
+
+  extern void
+  grFillVLine( grBitmap*  target,
+               int        x,
+               int        y,
+               int        height,
+               grColor    color );
+
+  extern void
+  grFillRect( grBitmap*   target,
+              int         x,
+              int         y,
+              int         width,
+              int         height,
+              grColor     color );
 
 
  /*************************************************************************/

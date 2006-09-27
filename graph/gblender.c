@@ -36,6 +36,7 @@ gblender_set_gamma_table( double           gamma_value,
 
       gamma_ramp_inv[ii] = (unsigned char)(255*x);
     }
+    gamma_ramp_inv[gmax] = 255;
   }
   else
   {
@@ -49,6 +50,8 @@ gblender_set_gamma_table( double           gamma_value,
     /* linear to voltage */
     for ( ii = 0; ii < gmax; ii++ )
       gamma_ramp_inv[ii] = (unsigned char)( pow( (double)ii/gmax, gamma_inv ) * 255.0f );
+
+    gamma_ramp_inv[gmax] = 255;
   }
 }
 

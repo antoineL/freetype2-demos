@@ -1,3 +1,17 @@
+2006-09-27  David Turner  <david@freetype.org>
+
+        * src/ftview.c: adding support for LCD color filtering
+        as specified by FT_LCD_FILTER_H
+
+        * src/ftgrid.c: new auto-fitter debugger, this is a very
+        preliminary version. It only compiles with Jam at the moment,
+        and you must have AF_DEBUG defined in your src/autofit/aftypes.h
+        to be able to link it anyway
+
+        * graph/graph.h, graph/grfill.c (NEW FILE): adding new functions:
+        'grFindColor', 'grFillHLine', 'grFillVLine', 'grFillRect'; they're
+        mainly used by the auto-fit debugger
+
 2006-09-11  David Turner  <david@freetype.org>
 
 	Add support for OLPC swizzle simulation (must define SWIZZLE at

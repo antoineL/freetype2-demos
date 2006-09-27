@@ -13,6 +13,7 @@ graph_sources = grblit
                 grinit
                 gblender
                 gblblit
+                grfill
                 grswizzle
                 ;
 

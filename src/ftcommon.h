@@ -284,6 +284,13 @@
                      int*             pen_x,
                      int*             pen_y);
 
+  FT_Error
+  FTDemo_Draw_Glyph_Color( FTDemo_Handle*   handle,
+                           FTDemo_Display*  display,
+                           FT_Glyph         glyph,
+                           int*             pen_x,
+                           int*             pen_y,
+                           grColor          color );
 
   /* given FT_GlyphSlot, draw a glyph on the display */
   FT_Error

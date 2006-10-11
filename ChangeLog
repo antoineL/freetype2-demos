@@ -1,25 +1,59 @@
 2006-10-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
-	* mac/ftoldmac.c: improve the conditionals in source to separate
-	Toolbox QuickDraw and Carbon QuickDraw.
+	* mac/ftoldmac.c (print_help): Renamed to...
+	(print_help_and_exit): This.  Update callers.
+	Improve the conditionals in source to separate Toolbox QuickDraw and
+	Carbon QuickDraw.
+	(reserveToolBoxQuickDrawFontName, test_face_quickdraw,
+	test_font_list_quickdraw_old, test_font_list_quickdraw,
+	test_font_list_ats): Ditto.
 
 2006-10-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
-	* mac/Makefile: sync the change of Makefile on 2006-02-01
+	* mac/Makefile: Synchronize with the changes of top-level Makefile
+	on 2006-02-01.
 
 2006-09-27  David Turner  <david@freetype.org>
 
-        * src/ftview.c: adding support for LCD color filtering
-        as specified by FT_LCD_FILTER_H
+	Add support for LCD color filtering to ftview.
 
-        * src/ftgrid.c: new auto-fitter debugger, this is a very
-        preliminary version. It only compiles with Jam at the moment,
-        and you must have AF_DEBUG defined in your src/autofit/aftypes.h
-        to be able to link it anyway
+	* src/ftview.c: Include FT_LCD_FILTER_H.
+	(status): Initialize it completely.
+	(main): Call FT_Library_SetLcdFilter.
 
-        * graph/graph.h, graph/grfill.c (NEW FILE): adding new functions:
-        'grFindColor', 'grFillHLine', 'grFillVLine', 'grFillRect'; they're
-        mainly used by the auto-fit debugger
+	* src/ftcommon.c (FT_Demo_Draw_Glyph): Renamed to...
+	(FT_Demo_Draw_Glyph_Color): This.  Add an argument to pass the
+	colour.
+	(FT_Demo_Draw_Glyph): New function, calling
+	FT_Demo_Draw_Glyph_Color.
+
+	* src/ftcommon.h (FT_Demo_Draw_Glyph_Color): New declaration.
+
+	* src/ftgrid.c: New file, implemeting an auto-fitter debugger.  This
+	is a very preliminary version.  It only compiles with Jam at the
+	moment, and you must have AF_DEBUG defined in your
+	`src/autofit/aftypes.h' file to be able to link it.
+
+	* src/Jamfile (GRAPHIC_PROGRAMS): Add ftgrid.
+
+	* graph/graph.h (grFindColor, grFillHLine, grFillVLine, grFillRect):
+	New declarations.
+
+	* graph/grfill.c: New file which implements `grFillHLine',
+	`grFillVLine', and `grFillRect'.  They are mainly used by the
+	auto-fitter debugger.
+
+	* graph/grobjs.c (grFindColor): New function for the auto-fitter
+	debugger.
+
+	* graph/gblender.c (gblender_set_gamma_table): Set
+	`gamma_ramp_inv[gmax]'.
+
+	* graph/gblender.h (GBLENDER_STAT_HIT, GBLENDER_LOOKUP): Move them
+	up in source file.
+
+	* graph/Jamfile (graph_sources), graph/rules.mk (GRAPH_OBJS): Add
+	`grfill'.
 
 2006-09-11  David Turner  <david@freetype.org>
 

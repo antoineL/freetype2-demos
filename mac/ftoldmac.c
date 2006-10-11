@@ -413,7 +413,7 @@ test_font_files( int     argc,
 
 
 void
-print_help()
+print_help_and_exit()
 {
   printf("\n" );
   printf(" ftoldmac  [pathname in HFS syntax]\n" );
@@ -440,6 +440,19 @@ print_help()
   printf("           old QuickDraw API cannot list available style suffixes,\n" );
   printf("           this option adds Bold and Italic suffixes automatically.\n" );
   printf("\n" );
+  printf("           available API:" );
+#if defined( HAVE_QUICKDRAW_TOOLBOX ) && ( HAVE_QUICKDRAW_TOOLBOX > 0 )
+  printf(" quickdraw_old" );
+#endif
+#if defined( HAVE_QUICKDRAW_CARBON ) && ( HAVE_QUICKDRAW_CARBON > 0 )
+  printf(" quickdraw" );
+#endif
+#if defined( HAVE_ATS ) && ( HAVE_ATS > 0 )
+  printf(" ats" );
+#endif
+  printf("\n" );
+  printf("\n" );
+  exit( 0 );
 }
 
 
@@ -487,8 +500,8 @@ verifyFMOutput( FMOutput*  fmout )
 FT_OldMac_Err
 resolveToolBoxQuickDrawFontName( const char*  font_name )
 {
-#if !defined( HAVE_QUICKDRAW_CARBON ) || ( QUICKDRAW_CARBON == 0 )
-  printf( "cannot check [%s] by Carbon QuickDraw\n", font_name );
+#if !defined( HAVE_QUICKDRAW_TOOLBOX ) || ( HAVE_QUICKDRAW_TOOLBOX == 0 )
+  printf( "cannot check [%s] by Toolbox QuickDraw\n", font_name );
   return FT_OldMac_Err_Unimplemented;
 #else
   Str255     familyName;
@@ -503,7 +516,7 @@ resolveToolBoxQuickDrawFontName( const char*  font_name )
   if ( 0 > familyID )
   {
     printf( "familyName %s is unresolvable\n", familyName + 1 );
-    return FT_OldMac_Err_Unresolvable;
+    return FT_OldMac_Err_UnresolvableFontName;
   }
   else if ( 0 == familyID )
     return FT_OldMac_Err_PseudoFontName;
@@ -540,6 +553,10 @@ void
 test_face_quickdraw( char*       face_name,
                      FT_Library  library    )
 {
+#if   ( !defined( HAVE_QUICKDRAW_CARBON )  || ( HAVE_QUICKDRAW_CARBON  == 0 ) )
+  printf( "cannot check [%s] by Carbon QuickDraw\n", font_name );
+  return FT_OldMac_Err_Unimplemented;
+#else
   FSSpec   spec;
   UInt8    font_file_path[1024];
   FT_Long  face_index; 
@@ -565,6 +582,7 @@ test_face_quickdraw( char*       face_name,
   num_opened_faces ++;
   dump_face_info( face );
   FT_Done_Face( face );
+#endif
 }
 
 
@@ -625,6 +643,10 @@ test_face( char*       face_name,
 void
 test_font_list_quickdraw_old( FT_Library  library )
 {
+#if !defined( HAVE_QUICKDRAW_TOOLBOX ) || ( HAVE_QUICKDRAW_TOOLBOX == 0 )
+  FT_UNUSED( library );
+  printf( "FreeType2 is configured without quickdraw_old (Toolbox QuickDraw)\n" );
+#else
   Str255  fmo_family_name;
   char    fmo_face_name[1024];
   int     i;
@@ -659,6 +681,7 @@ test_font_list_quickdraw_old( FT_Library  library )
       test_face( fmo_face_name, library );
     }
   }
+#endif
 }
 
 
@@ -685,9 +708,9 @@ make_style_suffix( char*        fm_style_name,
 void
 test_font_list_quickdraw( FT_Library  library )
 {
-#if !defined( HAVE_QUICKDRAW_CARBON ) || ( QUICKDRAW_CARBON == 0 )
+#if !defined( HAVE_QUICKDRAW_CARBON ) || ( HAVE_QUICKDRAW_CARBON == 0 )
   FT_UNUSED( library );
-  printf( "cannot get font list by Carbon QuickDraw\n" );
+  printf( "FreeType2 is configured without quickdraw (Carbon QuickDraw)\n" );
 #else
   FMFontFamilyIterator          fm_family_iter;
   FMFontFamily                  fm_family;
@@ -745,7 +768,7 @@ test_font_list_ats( FT_Library  library )
 {
 #if !defined( HAVE_ATS ) || ( HAVE_ATS == 0 )
   FT_UNUSED( library );
-  printf( "cannot get font list by ATS\n" );
+  printf( "FreeType2 is configured without ats (AppleTypeService)\n" );
 #else
   ATSFontIterator  ats_font_iter;
   ATSFontRef       ats_font_ref;
@@ -822,16 +845,13 @@ main( int     argc,
   force_scan_face  = FALSE;
 
   if ( 1 == argc )
-    print_help();
+    print_help_and_exit();
   else
   {
     for ( i = 1; i < argc; i++ ) 
     {
       if ( 0 == ft_strcmp( "--help", argv[i] ) )
-      {
-        print_help();
-        exit( 0 );
-      }
+        print_help_and_exit();
       else if ( 0 == ft_strncmp( "--font-listing-api=", argv[i], 19 ) )
         font_listing_api = argv[i] + 19;
       else if ( 0 == ft_strncmp( "--font-resolve-api=", argv[i], 19 ) )

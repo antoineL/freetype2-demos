@@ -1,5 +1,10 @@
 2006-10-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
+	* mac/ftoldmac.c: improve the conditionals in source to separate
+	Toolbox QuickDraw and Carbon QuickDraw.
+
+2006-10-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
 	* mac/Makefile: sync the change of Makefile on 2006-02-01
 
 2006-09-27  David Turner  <david@freetype.org>

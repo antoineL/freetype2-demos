@@ -1,3 +1,7 @@
+2006-02-28  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* mac/Makefile: sync the change of Makefile on 2006-02-01
+
 2006-09-27  David Turner  <david@freetype.org>
 
         * src/ftview.c: adding support for LCD color filtering

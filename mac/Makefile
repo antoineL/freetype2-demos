@@ -13,21 +13,11 @@ all: exes
 empty :=
 space := $(empty) $(empty)
 
-ifndef TOP_DIR
-  TOP_DIR := ../../freetype2
-endif
-
-ifndef TOP_DIR_2_MAC
-  ifdef TOP_DIR_2
-    TOP_DIR_2_MAC := $(TOP_DIR_2)/mac
-  else
-    TOP_DIR_2_MAC := .
-  endif
-endif
-
-ifndef TOP_DIR_2
-  TOP_DIR_2 := ..
-endif
+TOP_DIR       ?= ../../freetype2
+OBJ_DIR       ?= $(TOP_DIR)/objs
+TOP_DIR_2     ?= ..
+OBJ_DIR_2     ?= $(TOP_DIR_2)/obj
+TOP_DIR_2_MAC ?= $(TOP_DIR_2)/mac
 
 ifndef CONFIG_MK
   PROJECT   := freetype
@@ -49,11 +39,11 @@ else
   TOP_DIR   := $(shell cd $(TOP_DIR); pwd)
   TOP_DIR_2 := $(shell cd $(TOP_DIR_2); pwd)
   ifneq ($(have_makefile),)
-    BIN_DIR := $(TOP_DIR_2)/bin
-    OBJ_DIR := $(TOP_DIR_2)/obj
+    BIN_DIR_2 ?= $(TOP_DIR_2)/bin
+    OBJ_DIR_2 ?= $(TOP_DIR_2)/obj
   else
-    BIN_DIR := ..
-    OBJ_DIR := ..
+    BIN_DIR_2 ?= ..
+    OBJ_DIR_2 ?= ..
   endif
 
   GRAPH_DIR := $(TOP_DIR_2)/graph
@@ -81,7 +71,13 @@ else
   LINK_CMD  = $(subst /,$(SEP),$(OBJ_BUILD)/libtool) \
 		--mode=link $(CC) \
 		$(subst /,$(COMPILER_SEP),$(LDFLAGS))
+  ifeq ($(findstring CoreServices,$(LDFLAGS)),)
+    LINK_LIBS = $(subst /,$(COMPILER_SEP),$(FTLIB) $(EFENCE)) $(MATH) \
+		-Xlinker -framework -Xlinker CoreServices \
+		-Xlinker -framework -Xlinker ApplicationServices
+  else
   LINK_LIBS = $(subst /,$(COMPILER_SEP),$(FTLIB) $(EFENCE)) $(MATH)
+  endif
   LINK_COMMON = $(LINK_CMD) \
 		$(LINK_ITEMS) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ)) \
 		$(LINK_LIBS)
@@ -90,17 +86,17 @@ else
 
   E :=
   EXES := ftoldmac
-  exes: $(EXES:%=$(BIN_DIR)/%$E)
+  exes: $(EXES:%=$(BIN_DIR_2)/%$E)
 
-  $(BIN_DIR)/ftoldmac$E: $(OBJ_DIR)/ftoldmac.$(SO) $(FTLIB) $(COMMON_OBJ)
+  $(BIN_DIR_2)/ftoldmac$E: $(OBJ_DIR_2)/ftoldmac.$(SO) $(FTLIB) $(COMMON_OBJ)
 	$(LINK_COMMON)
 
-  $(OBJ_DIR)/ftoldmac.$(SO): $(TOP_DIR_2_MAC)/ftoldmac.c
-	$(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+  $(OBJ_DIR_2)/ftoldmac.$(SO): $(TOP_DIR_2_MAC)/ftoldmac.c
+	$(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
-  COMMON_OBJ := $(OBJ_DIR)/common.$(SO)
+  COMMON_OBJ := $(OBJ_DIR_2)/common.$(SO)
   $(COMMON_OBJ): $(SRC_DIR)/common.c
-	$(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+	$(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
   ################################################################
   # Targets to setup MPW 
@@ -109,9 +105,9 @@ else
   clean:
 	rm -f \
 		$(TOP_DIR_2)/ftoldmac.*.make \
-		$(OBJ_DIR)/*.NJ \
-		$(OBJ_DIR)/*.makeout \
-		$(OBJ_DIR)/*.o $(OBJ_DIR)/*.exe
+		$(OBJ_DIR_2)/*.NJ \
+		$(OBJ_DIR_2)/*.makeout \
+		$(OBJ_DIR_2)/*.o $(OBJ_DIR_2)/*.exe
 
   makefiles:
 	python $(TOP_DIR_2_MAC)/ascii2mpw.py \

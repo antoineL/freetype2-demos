@@ -40,8 +40,8 @@
 #endif
 
 
-extern int   _af_debug_disable_horz_hints;
-extern int   _af_debug_disable_vert_hints;
+int   _af_debug_disable_horz_hints;
+int   _af_debug_disable_vert_hints;
 
 typedef struct  status_
 {

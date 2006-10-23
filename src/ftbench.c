@@ -20,6 +20,7 @@
 #include FT_CACHE_CHARMAP_H
 #include FT_CACHE_IMAGE_H
 #include FT_CACHE_SMALL_BITMAPS_H
+#include FT_SYNTHESIS_H
 
 
 #ifdef UNIX
@@ -79,6 +80,7 @@ enum {
   FT_BENCH_CMAP,
   FT_BENCH_CMAP_ITER,
   FT_BENCH_NEW_FACE,
+  FT_BENCH_EMBOLDEN,
   N_FT_BENCH
 };
 
@@ -90,6 +92,7 @@ const char* bench_desc[] = {
   "Get glyph index",
   "Iterate CMap",
   "Open a new face",
+  "Embolden",
   NULL
 };
 
@@ -239,6 +242,30 @@ test_render( btimer_t*  timer,
     TIMER_START( timer );
     if ( !FT_Render_Glyph( face->glyph, render_mode ) )
       done++;
+    TIMER_STOP( timer );
+  }
+
+  return done;
+}
+
+int
+test_embolden( btimer_t*  timer,
+             FT_Face    face,
+             void*      user_data )
+{
+  int  i, done = 0;
+
+
+  FT_UNUSED( user_data );
+
+  for ( i = 0; i < face->num_glyphs; i++ )
+  {
+    if ( FT_Load_Glyph( face, i, load_flags ) )
+      continue;
+
+    TIMER_START( timer );
+    FT_GlyphSlot_Embolden ( face->glyph );
+    done++;
     TIMER_STOP( timer );
   }
 
@@ -791,6 +818,11 @@ main(int argc,
     case FT_BENCH_NEW_FACE:
       test.title = "New_Face";
       test.bench = test_new_face;
+      benchmark( face, &test, max_iter, max_time );
+      break;
+    case FT_BENCH_EMBOLDEN:
+      test.title = "Embolden";
+      test.bench = test_embolden;
       benchmark( face, &test, max_iter, max_time );
       break;
     }

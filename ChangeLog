@@ -1,10 +1,16 @@
 2006-10-23  Zhe Su  <zsu@novell.com>
 
-	* src/ftbench.c: adding a benchmark for the emboldening algorithm
+	Add a benchmark for the emboldening algorithm.
+
+	* src/ftbench.c: Include FT_SYNTHESIS_H.
+	(FT_BENCH_EMBOLDEN): New enumeration value.
+	(bench_desc): Add `Embolden'.
+	(test_embolden): New function.
+	(main): Add it.
 
 2006-10-23  David Turner   <david@freetype.org>
 
-	* src/ftgrid.c: make the file compile again :-)
+	* src/ftgrid.c: Make the file compile again.
 
 2006-10-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 

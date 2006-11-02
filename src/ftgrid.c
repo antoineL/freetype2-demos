@@ -40,8 +40,15 @@
 #endif
 
 
+int   _af_debug;
 int   _af_debug_disable_horz_hints;
 int   _af_debug_disable_vert_hints;
+int   _af_debug_disable_blue_hints;
+void* _af_debug_hints;
+
+extern void af_glyph_hints_dump_segment( void*  hints );
+extern void af_glyph_hints_dump_points( void*  hints );
+extern void af_glyph_hints_dump_edges( void*  hints );
 
 typedef struct  status_
 {
@@ -72,6 +79,7 @@ typedef struct  status_
 
   int          do_horz_hints;
   int          do_vert_hints;
+  int          do_blue_hints;
   int          do_outline;
   int          do_dots;
 
@@ -103,6 +111,7 @@ grid_status_init( GridStatus       status,
 
   status->do_horz_hints = 1;
   status->do_vert_hints = 1;
+  status->do_blue_hints = 1;
   status->do_dots       = 1;
   status->do_outline    = 1;
 
@@ -478,6 +487,9 @@ grid_status_draw_outline( GridStatus       status,
     grWriteln( "  Page up/dn : zoom in/out grid" );
     grWriteln( "  RETURN     : reset zoom and position" );
     grLn();
+    grWriteln( "  H          : toggle horizontal hinting" );
+    grWriteln( "  V          : toggle vertical hinting" );
+    grWriteln( "  B          : toggle blue zone hinting" );
     grWriteln( "  d          : toggle dots display" );
     grWriteln( "  o          : toggle outline display" );
     grWriteln( "  g          : increase gamma by 0.1" );
@@ -599,6 +611,8 @@ grid_status_draw_outline( GridStatus       status,
   {
     int  ret = 0;
 
+    status.header = NULL;
+
     switch ( event->key )
     {
     case grKeyEsc:
@@ -619,6 +633,19 @@ grid_status_draw_outline( GridStatus       status,
 
       FTDemo_Update_Current_Flags( handle );
       break;
+
+    case grKEY( '1' ):
+      af_glyph_hints_dump_edges( _af_debug_hints );
+      break;
+
+    case grKEY( '2' ):
+      af_glyph_hints_dump_segments( _af_debug_hints );
+      break;
+
+    case grKEY( '3' ):
+      af_glyph_hints_dump_points( _af_debug_hints );
+      break;
+
 
     case grKEY( 'g' ):
       event_gamma_change( 0.1 );
@@ -655,11 +682,24 @@ grid_status_draw_outline( GridStatus       status,
 
     case grKEY('H'):
       status.do_horz_hints = !status.do_horz_hints;
+      status.header = status.do_horz_hints ? "horizontal hinting enabled"
+                                           : "horizontal hinting disabled";
       break;
 
     case grKEY('V'):
       status.do_vert_hints = !status.do_vert_hints;
+      status.header        = status.do_vert_hints
+                           ? "vertical hinting enabled"
+                           : "vertical hinting disabled";
       break;
+
+    case grKEY('B'):
+      status.do_blue_hints = !status.do_blue_hints;
+      status.header        = status.do_blue_hints
+                           ? "blue zone hinting enabled"
+                           : "blue zone hinting disabled";
+      break;
+
 
     case grKeyLeft:     event_index_change( -1 ); break;
     case grKeyRight:    event_index_change( +1 ); break;
@@ -867,6 +907,8 @@ grid_status_draw_outline( GridStatus       status,
     event_font_change( 0 );
 
     grid_status_rescale_initial( &status, handle );
+
+    _af_debug = 1;
 
     for ( ;; )
     {

@@ -1,3 +1,31 @@
+2006-11-03  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftgrid.c: Fix external function declarations.
+	(event_help): Document `1', `2', and `3' keys.
+	(grid_status_init, grid_status_rescale_initial,
+	grid_status_draw_grid, grid_status_draw_outline, event_grid_reset):
+	s/status/st/, s/error/err/ where appropriate to avoid shadowed
+	variables.
+	(GridStatusRec): Add `const' to `header'.
+	Update all assignments.
+
+	* Makefile: Add ftgrid.
+
+2006-11-02  David Turner  <david@freetype.org>
+
+	Add `B' key to ftgrid for toggling blue zone hinting.
+	Add `1', `2', and `3' keys to dump hints for edges, segments, and
+	points, respectively.
+
+	* src/ftgrid.c: Add some externs.
+	(_af_debug, _af_debug_disable_blue_hints, _af_debug_hints): New
+	global variables.
+	(GridStatusRec): Add `do_blue_hints' variable.
+	(grid_status_init): Set do_blue_hints.
+	(event_help): Updated.
+	(Process_Event): Updated.
+	(main): Set _af_debug.
+
 2006-10-23  Zhe Su  <zsu@novell.com>
 
 	Add a benchmark for the emboldening algorithm.

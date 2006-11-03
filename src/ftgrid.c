@@ -6,7 +6,7 @@
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
-/*  FTGrid - a simple viewer to debug the auto-hitner                       */
+/*  FTGrid - a simple viewer to debug the auto-hinter                       */
 /*                                                                          */
 /*  Press F1 when running this program to have a list of key-bindings       */
 /*                                                                          */
@@ -46,7 +46,7 @@ int   _af_debug_disable_vert_hints;
 int   _af_debug_disable_blue_hints;
 void* _af_debug_hints;
 
-extern void af_glyph_hints_dump_segment( void*  hints );
+extern void af_glyph_hints_dump_segments( void*  hints );
 extern void af_glyph_hints_dump_points( void*  hints );
 extern void af_glyph_hints_dump_edges( void*  hints );
 
@@ -84,7 +84,7 @@ typedef struct  status_
   int          do_dots;
 
   double       gamma;
-  char*        header;
+  const char*  header;
   char         header_buffer[256];
 
 } GridStatusRec, *GridStatus;
@@ -92,43 +92,44 @@ typedef struct  status_
 static GridStatusRec  status;
 
 static void
-grid_status_init( GridStatus       status,
+grid_status_init( GridStatus       st,
                   FTDemo_Display*  display )
 {
-  status->scale         = 1.0;
-  status->x_origin      = display->bitmap->width/4;
-  status->y_origin      = display->bitmap->rows/4;
-  status->margin        = 0.05;
-  status->axis_color    = grFindColor( display->bitmap, 0, 0, 0, 255 );
-  status->grid_color    = grFindColor( display->bitmap, 192, 192, 192, 255 );
-  status->outline_color = grFindColor( display->bitmap, 255,   0,  0, 255 );
-  status->on_color      = grFindColor( display->bitmap, 64, 64, 255, 255 );
-  status->conic_color   = grFindColor( display->bitmap, 0, 128, 0, 255 );
-  status->cubic_color   = grFindColor( display->bitmap, 255, 64, 255, 255 );
-  status->disp_width    = display->bitmap->width;
-  status->disp_height   = display->bitmap->rows;
-  status->disp_bitmap   = display->bitmap;
+  st->scale         = 1.0;
+  st->x_origin      = display->bitmap->width / 4;
+  st->y_origin      = display->bitmap->rows / 4;
+  st->margin        = 0.05;
+  st->axis_color    = grFindColor( display->bitmap,   0,   0,   0, 255 );
+  st->grid_color    = grFindColor( display->bitmap, 192, 192, 192, 255 );
+  st->outline_color = grFindColor( display->bitmap, 255,   0,   0, 255 );
+  st->on_color      = grFindColor( display->bitmap,  64,  64, 255, 255 );
+  st->conic_color   = grFindColor( display->bitmap,   0, 128,   0, 255 );
+  st->cubic_color   = grFindColor( display->bitmap, 255,  64, 255, 255 );
+  st->disp_width    = display->bitmap->width;
+  st->disp_height   = display->bitmap->rows;
+  st->disp_bitmap   = display->bitmap;
 
-  status->do_horz_hints = 1;
-  status->do_vert_hints = 1;
-  status->do_blue_hints = 1;
-  status->do_dots       = 1;
-  status->do_outline    = 1;
+  st->do_horz_hints = 1;
+  st->do_vert_hints = 1;
+  st->do_blue_hints = 1;
+  st->do_dots       = 1;
+  st->do_outline    = 1;
 
-  status->Num   = 0;
-  status->gamma = 1.0;
-  status->header = "";
+  st->Num    = 0;
+  st->gamma  = 1.0;
+  st->header = "";
 }
 
 
 static void
-grid_status_rescale_initial( GridStatus      status,
+grid_status_rescale_initial( GridStatus      st,
                              FTDemo_Handle*  handle )
 {
   FT_Size   size;
-  FT_Error  error = FTDemo_Get_Size( handle, &size );
+  FT_Error  err = FTDemo_Get_Size( handle, &size );
 
-  if ( !error )
+
+  if ( !err )
   {
     FT_Face  face = size->face;
 
@@ -136,66 +137,74 @@ grid_status_rescale_initial( GridStatus      status,
     int  ymin = FT_MulFix( face->bbox.yMin, size->metrics.y_scale );
     int  xmax = FT_MulFix( face->bbox.xMax, size->metrics.x_scale );
     int  ymax = FT_MulFix( face->bbox.yMax, size->metrics.y_scale );
+
     double  x_scale, y_scale;
+
 
     xmin &= ~63;
     ymin &= ~63;
-    xmax  = (xmax + 63) & ~63;
-    ymax  = (ymax + 63) & ~63;
+    xmax  = ( xmax + 63 ) & ~63;
+    ymax  = ( ymax + 63 ) & ~63;
 
-    printf( "XXX x_ppem=%d y_ppem=%d width=%d height=%d\n", size->metrics.x_ppem, size->metrics.y_ppem, xmax-xmin, ymax-ymin );
+    printf( "XXX x_ppem=%d y_ppem=%d width=%d height=%d\n",
+            size->metrics.x_ppem, size->metrics.y_ppem,
+            xmax - xmin, ymax - ymin );
 
-    x_scale = status->disp_width *(1.0-2*status->margin)/(xmax - xmin);
-    y_scale = status->disp_height*(1.0-2*status->margin)/(ymax - ymin);
+    x_scale = st->disp_width  * ( 1.0 - 2 * st->margin ) / ( xmax - xmin );
+    y_scale = st->disp_height * ( 1.0 - 2 * st->margin ) / ( ymax - ymin );
 
     if ( x_scale <= y_scale )
-      status->scale = x_scale;
+      st->scale = x_scale;
     else
-      status->scale = y_scale;
+      st->scale = y_scale;
 
-    status->x_origin = status->disp_width*status->margin      - xmin*status->scale;
-    status->y_origin = status->disp_height*(1-status->margin) + ymin*status->scale;
+    st->x_origin = st->disp_width  * st->margin         - xmin * st->scale;
+    st->y_origin = st->disp_height * ( 1 - st->margin ) + ymin * st->scale;
   }
   else
   {
-    status->scale    = 1.;
-    status->x_origin = status->disp_width*status->margin;
-    status->y_origin = status->disp_height*status->margin;
+    st->scale    = 1.;
+    st->x_origin = st->disp_width  * st->margin;
+    st->y_origin = st->disp_height * st->margin;
   }
 
-  status->scale_0    = status->scale;
-  status->x_origin_0 = status->x_origin;
-  status->y_origin_0 = status->y_origin;
+  st->scale_0    = st->scale;
+  st->x_origin_0 = st->x_origin;
+  st->y_origin_0 = st->y_origin;
 }
 
 
 static void
-grid_status_draw_grid( GridStatus  status )
+grid_status_draw_grid( GridStatus  st )
 {
-  int     x_org   = status->x_origin;
-  int     y_org   = status->y_origin;
-  double  xy_incr = 64.*status->scale;
+  int     x_org   = st->x_origin;
+  int     y_org   = st->y_origin;
+  double  xy_incr = 64.0 * st->scale;
 
   if ( xy_incr >= 2. )
   {
     double  x2 = x_org;
     double  y2 = y_org;
 
-    for ( ; x2 < status->disp_width; x2 += xy_incr )
-      grFillVLine( status->disp_bitmap, (int)x2, 0, status->disp_height, status->grid_color );
+    for ( ; x2 < st->disp_width; x2 += xy_incr )
+      grFillVLine( st->disp_bitmap, (int)x2, 0,
+                   st->disp_height, st->grid_color );
 
     for ( x2 = x_org - xy_incr; (int)x2 >= 0; x2 -= xy_incr )
-      grFillVLine( status->disp_bitmap, (int)x2, 0, status->disp_height, status->grid_color );
+      grFillVLine( st->disp_bitmap, (int)x2, 0,
+                   st->disp_height, st->grid_color );
 
-    for ( ; y2 < status->disp_height; y2 += xy_incr )
-      grFillHLine( status->disp_bitmap, 0, (int)y2, status->disp_width, status->grid_color );
+    for ( ; y2 < st->disp_height; y2 += xy_incr )
+      grFillHLine( st->disp_bitmap, 0, (int)y2,
+                   st->disp_width, st->grid_color );
 
     for ( y2 = y_org - xy_incr; (int)y2 >= 0; y2 -= xy_incr )
-      grFillHLine( status->disp_bitmap, 0, (int)y2, status->disp_width, status->grid_color );
+      grFillHLine( st->disp_bitmap, 0, (int)y2,
+                   st->disp_width, st->grid_color );
   }
 
-  grFillVLine( status->disp_bitmap, x_org, 0, status->disp_height, status->axis_color );
-  grFillHLine( status->disp_bitmap, 0, y_org, status->disp_width,  status->axis_color );
+  grFillVLine( st->disp_bitmap, x_org, 0, st->disp_height, st->axis_color );
+  grFillHLine( st->disp_bitmap, 0, y_org, st->disp_width,  st->axis_color );
 }
 
 
@@ -354,16 +363,17 @@ circle_draw( FT_F26Dot6       center_x,
 
 
 static void
-grid_status_draw_outline( GridStatus       status,
+grid_status_draw_outline( GridStatus       st,
                           FTDemo_Handle*   handle,
                           FTDemo_Display*  display )
 {
   static FT_Stroker  stroker;
   FT_Size            size;
   FT_GlyphSlot       slot;
-  double             scale = 64.*status->scale;
-  int                ox    = status->x_origin;
-  int                oy    = status->y_origin;
+  double             scale = 64.0 * st->scale;
+  int                ox    = st->x_origin;
+  int                oy    = st->y_origin;
+
 
   if ( stroker == NULL )
   {
@@ -375,10 +385,10 @@ grid_status_draw_outline( GridStatus       status,
 
   FTDemo_Get_Size( handle, &size );
 
-  _af_debug_disable_horz_hints = !status->do_horz_hints;
-  _af_debug_disable_vert_hints = !status->do_vert_hints;
+  _af_debug_disable_horz_hints = !st->do_horz_hints;
+  _af_debug_disable_vert_hints = !st->do_vert_hints;
 
-  FT_Load_Glyph( size->face, status->Num,
+  FT_Load_Glyph( size->face, st->Num,
                  handle->image_type.flags | FT_LOAD_NO_BITMAP );
 
   slot = size->face->glyph;
@@ -388,39 +398,40 @@ grid_status_draw_outline( GridStatus       status,
     FT_Outline*  gimage = &slot->outline;
     int          nn;
 
+
     /* scale the outline */
     for (nn = 0; nn < gimage->n_points; nn++)
     {
       FT_Vector*  vec = &gimage->points[nn];
+
 
       vec->x = (FT_F26Dot6)( vec->x * scale );
       vec->y = (FT_F26Dot6)( vec->y * scale );
     }
 
     /* stroke then draw it */
-    if ( status->do_outline )
+    if ( st->do_outline )
     {
       FT_Get_Glyph( slot, &glyph );
       FT_Glyph_Stroke( &glyph, stroker, 1 );
 
-      FTDemo_Draw_Glyph_Color( handle, display, glyph, &ox, &oy, status->outline_color );
+      FTDemo_Draw_Glyph_Color( handle, display, glyph, &ox, &oy,
+                               st->outline_color );
       FT_Done_Glyph( glyph );
     }
 
     /* now draw the points */
-    if ( status->do_dots )
+    if ( st->do_dots )
     {
       for (nn = 0; nn < gimage->n_points; nn++)
-      {
-        circle_draw( status->x_origin*64 + gimage->points[nn].x,
-                    status->y_origin*64 - gimage->points[nn].y,
-                    128,
-                    handle,
-                    display,
-                    (gimage->tags[nn] & FT_CURVE_TAG_ON)
-                    ? status->on_color
-                    : status->conic_color );
-      }
+        circle_draw( st->x_origin * 64 + gimage->points[nn].x,
+                     st->y_origin * 64 - gimage->points[nn].y,
+                     128,
+                     handle,
+                     display,
+                     ( gimage->tags[nn] & FT_CURVE_TAG_ON )
+                       ? st->on_color
+                       : st->conic_color );
     }
   }
 }
@@ -499,6 +510,10 @@ grid_status_draw_outline( GridStatus       status,
     grWriteln( "  p          : previous font" );
     grWriteln( "  q / ESC    : exit program" );
     grLn();
+    grWriteln( "  1          : dump edge hints" );
+    grWriteln( "  2          : dump segment hints" );
+    grWriteln( "  3          : dump point hints" );
+    grLn();
     grWriteln( "press any key to exit this help screen" );
 
     grRefreshSurface( display->surface );
@@ -521,16 +536,16 @@ grid_status_draw_outline( GridStatus       status,
     sprintf( status.header_buffer, "gamma changed to %.1f%s",
              status.gamma, status.gamma == 0.0 ? " (sRGB mode)" : "" );
 
-    status.header = status.header_buffer;
+    status.header = (const char *)status.header_buffer;
   }
 
 
   static void
-  event_grid_reset( GridStatus  status )
+  event_grid_reset( GridStatus  st )
   {
-    status->x_origin = status->x_origin_0;
-    status->y_origin = status->y_origin_0;
-    status->scale    = status->scale_0;
+    st->x_origin = st->x_origin_0;
+    st->y_origin = st->y_origin_0;
+    st->scale    = st->scale_0;
   }
 
 
@@ -549,7 +564,7 @@ grid_status_draw_outline( GridStatus       status,
     sprintf( status.header_buffer, "zoom level %.2f %%\n",
              status.scale / status.scale_0 );
 
-    status.header = status.header_buffer;
+    status.header = (const char *)status.header_buffer;
   }
 
 
@@ -627,9 +642,8 @@ grid_status_draw_outline( GridStatus       status,
 
     case grKEY( 'a' ):
       handle->antialias = !handle->antialias;
-      status.header     = handle->antialias
-                           ? (char *)"anti-aliasing is now on"
-                           : (char *)"anti-aliasing is now off";
+      status.header     = handle->antialias ? "anti-aliasing is now on"
+                                            : "anti-aliasing is now off";
 
       FTDemo_Update_Current_Flags( handle );
       break;
@@ -661,9 +675,8 @@ grid_status_draw_outline( GridStatus       status,
 
     case grKEY( 'h' ):
       handle->hinted = !handle->hinted;
-      status.header  = handle->hinted
-                        ? (char *)"glyph hinting is now active"
-                        : (char *)"glyph hinting is now ignored";
+      status.header  = handle->hinted ? "glyph hinting is now active"
+                                      : "glyph hinting is now ignored";
 
       FTDemo_Update_Current_Flags( handle );
       break;
@@ -689,15 +702,15 @@ grid_status_draw_outline( GridStatus       status,
     case grKEY('V'):
       status.do_vert_hints = !status.do_vert_hints;
       status.header        = status.do_vert_hints
-                           ? "vertical hinting enabled"
-                           : "vertical hinting disabled";
+                             ? "vertical hinting enabled"
+                             : "vertical hinting disabled";
       break;
 
     case grKEY('B'):
       status.do_blue_hints = !status.do_blue_hints;
       status.header        = status.do_blue_hints
-                           ? "blue zone hinting enabled"
-                           : "blue zone hinting disabled";
+                             ? "blue zone hinting enabled"
+                             : "blue zone hinting disabled";
       break;
 
 
@@ -747,25 +760,31 @@ grid_status_draw_outline( GridStatus       status,
       switch ( error_code )
       {
       case FT_Err_Ok:
-        sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
-                 face->style_name, basename );
+        sprintf( status.header_buffer, "%s %s (file `%s')",
+                 face->family_name, face->style_name, basename );
         break;
+
       case FT_Err_Invalid_Pixel_Size:
-        sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid pixel size (file `%s')",
+                 basename );
         break;
+
       case FT_Err_Invalid_PPem:
-        sprintf( status.header_buffer, "Invalid ppem value (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid ppem value (file `%s')",
+                 basename );
         break;
+
       default:
-        sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
-                 (FT_UShort)error_code );
+        sprintf( status.header_buffer, "File `%s': error 0x%04x",
+                 basename, (FT_UShort)error_code );
         break;
       }
 
-      status.header = status.header_buffer;
+      status.header = (const char *)status.header_buffer;
     }
 
-    grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+    grWriteCellString( display->bitmap, 0, 0, status.header,
+                       display->fore_color );
 
     format = "at %d points, first glyph index = %d";
 
@@ -794,9 +813,9 @@ grid_status_draw_outline( GridStatus       status,
       }
     }
 
-    status.header = status.header_buffer;
-    grWriteCellString( display->bitmap, 0, HEADER_HEIGHT, status.header_buffer,
-                       display->fore_color );
+    status.header = (const char *)status.header_buffer;
+    grWriteCellString( display->bitmap, 0, HEADER_HEIGHT,
+                       status.header_buffer, display->fore_color );
 
     grRefreshSurface( display->surface );
   }

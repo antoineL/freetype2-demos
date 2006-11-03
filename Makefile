@@ -249,7 +249,7 @@ else
   EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
 
   # Comment out the next line if you don't have a graphics subsystem.
-  EXES += ftview ftmulti ftstring ftgamma
+  EXES += ftview ftmulti ftstring ftgamma ftgrid
 
   # ftvalid requires ftgxval.c and ftotval.c
   #
@@ -375,7 +375,18 @@ else
   # internal header files.
   #
   $(OBJ_DIR_2)/ftview.$(SO): $(SRC_DIR)/ftview.c \
-                           $(GRAPH_LIB)
+                             $(GRAPH_LIB)
+	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
+
+
+  ####################################################################
+  #
+  # Special rule to compile the `ftgrid' program as it includes
+  # internal header files.
+  #
+  $(OBJ_DIR_2)/ftgrid.$(SO): $(SRC_DIR)/ftgrid.c \
+                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
@@ -443,23 +454,27 @@ else
 
 
   $(BIN_DIR_2)/ftview$E: $(OBJ_DIR_2)/ftview.$(SO) $(FTLIB) \
-                       $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
-	  $(LINK_NEW)
-
-  $(BIN_DIR_2)/ftgamma$E: $(OBJ_DIR_2)/ftgamma.$(SO) $(FTLIB) \
-                        $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
-	  $(LINK_NEW)
-
-  $(BIN_DIR_2)/ftmulti$E: $(OBJ_DIR_2)/ftmulti.$(SO) $(FTLIB) \
-                        $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(LINK_GRAPH)
-
-  $(BIN_DIR_2)/ftstring$E: $(OBJ_DIR_2)/ftstring.$(SO) $(FTLIB) \
                          $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 
+  $(BIN_DIR_2)/ftgrid$E: $(OBJ_DIR_2)/ftgrid.$(SO) $(FTLIB) \
+                         $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
+
+  $(BIN_DIR_2)/ftgamma$E: $(OBJ_DIR_2)/ftgamma.$(SO) $(FTLIB) \
+                          $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
+
+  $(BIN_DIR_2)/ftmulti$E: $(OBJ_DIR_2)/ftmulti.$(SO) $(FTLIB) \
+                          $(GRAPH_LIB) $(COMMON_OBJ)
+	  $(LINK_GRAPH)
+
+  $(BIN_DIR_2)/ftstring$E: $(OBJ_DIR_2)/ftstring.$(SO) $(FTLIB) \
+                           $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
+
   $(BIN_DIR_2)/fttimer$E: $(OBJ_DIR_2)/fttimer.$(SO) $(FTLIB) \
-                        $(GRAPH_LIB) $(COMMON_OBJ)
+                          $(GRAPH_LIB) $(COMMON_OBJ)
 	  $(LINK_GRAPH)
 
 

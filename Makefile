@@ -486,11 +486,23 @@ endif
 # Not to be run by a normal user -- there are no attempts to make it
 # generic.
 
+# we check for `dist', not `distclean'
+ifneq ($(findstring distx,$(MAKECMDGOALS)x),)
+  FT_H := ../freetype2/include/freetype/freetype.h
+
+  major := $(shell sed -n 's/.*FREETYPE_MAJOR.*\([0-9]\+\)/\1/p' < $(FT_H))
+  minor := $(shell sed -n 's/.*FREETYPE_MINOR.*\([0-9]\+\)/\1/p' < $(FT_H))
+  patch := $(shell sed -n 's/.*FREETYPE_PATCH.*\([0-9]\+\)/\1/p' < $(FT_H))
+
+  version    := $(major).$(minor).$(patch)
+  winversion := $(major)$(minor)$(patch)
+endif
+
 dist:
 	-rm -rf tmp
-	rm -f ft2demos-2.2.1.tar.gz
-	rm -f ft2demos-2.2.1.tar.bz2
-	rm -f ftdmo221.zip
+	rm -f ft2demos-$(version).tar.gz
+	rm -f ft2demos-$(version).tar.bz2
+	rm -f ftdmo$(winversion).zip
 
 	for d in `find . -wholename '*/CVS' -prune \
 	                 -o -type f \
@@ -509,16 +521,16 @@ dist:
 	cd tmp ; \
 	$(MAKE) distclean
 
-	mv tmp ft2demos-2.2.1
+	mv tmp ft2demos-$(version)
 
-	tar cfh - ft2demos-2.2.1 \
-	| gzip -c > ft2demos-2.2.1.tar.gz
-	tar cfh - ft2demos-2.2.1 \
-	| bzip2 -c > ft2demos-2.2.1.tar.bz2
+	tar cfh - ft2demos-$(version) \
+	| gzip -c > ft2demos-$(version).tar.gz
+	tar cfh - ft2demos-$(version) \
+	| bzip2 -c > ft2demos-$(version).tar.bz2
 
 	@# Use CR/LF for zip files.
-	zip -lr ftdmo221.zip ft2demos-2.2.1
+	zip -lr ftdmo$(winversion).zip ft2demos-$(version)
 
-	rm -fr ft2demos-2.2.1
+	rm -fr ft2demos-$(version)
 
 # EOF

@@ -1,3 +1,7 @@
+2006-12-10  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile (dist): Extract version number from freetype.h.
+
 2006-11-15  David Turner  <david@freetype.org>
 
 	* graph/x11/rules.mk (X11_PATH): Check /usr also.

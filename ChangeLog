@@ -1,9 +1,7 @@
 2006-11-15  David Turner  <david@freetype.org>
 
-        * graph/x11/rules.mk: updating the X11 path detection rules
-        so they work when the headers and libraries are available from
-        /usr, instead of some fancy directory like /usr/X11R6 (which doesn't
-        exist on recent distros shipping with X.Org)
+	* graph/x11/rules.mk (X11_PATH): Check /usr also.
+	Search for `Xlib.h'.
 
 2006-11-03  Werner Lemberg  <wl@gnu.org>
 

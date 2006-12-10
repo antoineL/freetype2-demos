@@ -17,14 +17,14 @@
 #   X11R6
 #   X11R5
 #
-# Additionally, we directly check the following directories:
+# If no success, we directly check the directories
 #
 #   /usr
 #   /usr/X11R6
 #   /usr/local/X11R6
 #
-# to see it they contain an include/X11/Xlib.h, the Makefile assumes that
-# they will also contain a lib/X11/libX11.(a|so)
+# whether they contain `include/X11/Xlib.h'.  Note that the Makefile
+# silently assumes that they will also contain `lib/X11/libX11.(a|so)'.
 #
 # If the variable X11_PATH is set (to specify unusual locations of X11), no
 # other directory is searched.  More than one directory must be separated
@@ -52,8 +52,9 @@ ifndef X11_PATH
     X11_PATH := $(X11_PATH:%/bin=%)
   else
     X11_DIRS := /usr /usr/X11R6 /usr/local/X11R6
-    X11_PATH := $(foreach dir, $(X11_DIRS), $(wildcard $(dir)/include/X11/Xlib.h))
-    X11_PATH := $(X11_PATH:%/include/X11/Xlib.h=%)
+    X11_XLIB := include/X11/Xlib.h
+    X11_PATH := $(foreach dir,$(X11_DIRS),$(wildcard $(dir)/$(X11_XLIB)))
+    X11_PATH := $(X11_PATH:%/$(X11_XLIB)=%)
   endif
 endif
 

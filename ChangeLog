@@ -1,3 +1,8 @@
+2006-12-15  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* mac/ftoldmac.c: Fix conditional macros of FSSpec/FSRef and
+	QuickDraw/ATS functionalities.
+
 2006-12-10  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile (dist): Extract version number from freetype.h.

@@ -36,7 +36,54 @@
 #include FT_INTERNAL_OBJECTS_H
 #include FT_INTERNAL_DRIVER_H
 
+  /* FSSpec functions are deprecated since Mac OS X 10.4 */
+#ifndef HAVE_FSSPEC
+#if defined( __LP64__ ) && !TARGET_CPU_68K && !TARGET_CPU_PPC && !TARGET_CPU_PPC64
+#define HAVE_FSSPEC  0
+typedef void FSSpec;
+#else
+#define HAVE_FSSPEC  1
+#endif
+#endif
+
+  /* most FSRef functions were introduced since Mac OS 9 */
+#ifndef HAVE_FSREF
+#if TARGET_API_MAC_OSX
+#define HAVE_FSREF  1
+#else
+#define HAVE_FSREF  0
+typedef void FSRef;
+#endif
+#endif
+
+  /* QuickDraw is deprecated since Mac OS X 10.4 */
+#ifndef HAVE_QUICKDRAW_CARBON
+#if defined( __LP64__ ) && !TARGET_CPU_68K && !TARGET_CPU_PPC && !TARGET_CPU_PPC64
+#define HAVE_QUICKDRAW_CARBON  0
+#define HAVE_QUICKDRAW_TOOLBOX 0
+#elif TARGET_API_MAC_CARBON || TARGET_API_MAC_OSX
+#define HAVE_QUICKDRAW_CARBON  1
+#define HAVE_QUICKDRAW_TOOLBOX 1
+#elif TARGET_API_MAC_OS8
+#define HAVE_QUICKDRAW_CARBON  0
+#define HAVE_QUICKDRAW_TOOLBOX 1
+#endif
+#endif
+
+  /* AppleTypeService is available since Mac OS X */
+#ifndef HAVE_ATS
+#if TARGET_API_MAC_OSX
+#define HAVE_ATS  1
+#else
+#define HAVE_ATS  0
+#endif
+#endif
+
 #include FT_MAC_H
+
+#undef FT_GetFile_From_Mac_Name
+#undef FT_GetFile_From_Mac_ATS_Name
+#undef FT_New_Face_From_FSSpec
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -441,13 +488,13 @@ print_help_and_exit()
   printf("           this option adds Bold and Italic suffixes automatically.\n" );
   printf("\n" );
   printf("           available API:" );
-#if defined( HAVE_QUICKDRAW_TOOLBOX ) && ( HAVE_QUICKDRAW_TOOLBOX > 0 )
+#if HAVE_QUICKDRAW_TOOLBOX
   printf(" quickdraw_old" );
 #endif
-#if defined( HAVE_QUICKDRAW_CARBON ) && ( HAVE_QUICKDRAW_CARBON > 0 )
+#if HAVE_QUICKDRAW_CARBON
   printf(" quickdraw" );
 #endif
-#if defined( HAVE_ATS ) && ( HAVE_ATS > 0 )
+#if HAVE_ATS
   printf(" ats" );
 #endif
   printf("\n" );
@@ -500,7 +547,7 @@ verifyFMOutput( FMOutput*  fmout )
 FT_OldMac_Err
 resolveToolBoxQuickDrawFontName( const char*  font_name )
 {
-#if !defined( HAVE_QUICKDRAW_TOOLBOX ) || ( HAVE_QUICKDRAW_TOOLBOX == 0 )
+#if !HAVE_QUICKDRAW_TOOLBOX
   printf( "cannot check [%s] by Toolbox QuickDraw\n", font_name );
   return FT_OldMac_Err_Unimplemented;
 #else
@@ -553,9 +600,8 @@ void
 test_face_quickdraw( char*       face_name,
                      FT_Library  library    )
 {
-#if   ( !defined( HAVE_QUICKDRAW_CARBON )  || ( HAVE_QUICKDRAW_CARBON  == 0 ) )
-  printf( "cannot check [%s] by Carbon QuickDraw\n", font_name );
-  return FT_OldMac_Err_Unimplemented;
+#if !HAVE_QUICKDRAW_CARBON
+  printf( "cannot check [%s] by Carbon QuickDraw\n", face_name );
 #else
   FSSpec   spec;
   UInt8    font_file_path[1024];
@@ -590,14 +636,14 @@ void
 test_face_ats( char*       face_name,
                FT_Library  library    )
 {
-#if !defined( HAVE_ATS ) || ( HAVE_ATS == 0 )
+#if !HAVE_ATS
   FT_UNUSED( library );
   printf( "cannot check [%s] by ATS\n", face_name );
 #else
-  FSSpec   spec;
   UInt8    font_file_path[1024];
   FT_Long  face_index; 
   FT_Face  face;
+  FSSpec   spec;
 
 
   printf( "Lookup [%s]...", face_name );
@@ -608,7 +654,9 @@ test_face_ats( char*       face_name,
   }
 
   ftmac_FSpMakePath( &spec, font_file_path, 1024 );
+
   printf( "Font file found [%s], face #%d...", font_file_path, (int)face_index );
+
   if ( 0 != FT_New_Face_From_FSSpec( library, &spec, face_index, &face ) )
   {
     printf( "FreeType could not load font file\n" );
@@ -643,7 +691,7 @@ test_face( char*       face_name,
 void
 test_font_list_quickdraw_old( FT_Library  library )
 {
-#if !defined( HAVE_QUICKDRAW_TOOLBOX ) || ( HAVE_QUICKDRAW_TOOLBOX == 0 )
+#if !HAVE_QUICKDRAW_TOOLBOX
   FT_UNUSED( library );
   printf( "FreeType2 is configured without quickdraw_old (Toolbox QuickDraw)\n" );
 #else
@@ -708,7 +756,7 @@ make_style_suffix( char*        fm_style_name,
 void
 test_font_list_quickdraw( FT_Library  library )
 {
-#if !defined( HAVE_QUICKDRAW_CARBON ) || ( HAVE_QUICKDRAW_CARBON == 0 )
+#if !HAVE_QUICKDRAW_CARBON
   FT_UNUSED( library );
   printf( "FreeType2 is configured without quickdraw (Carbon QuickDraw)\n" );
 #else
@@ -766,7 +814,7 @@ get_quickdraw_font_instance:
 void
 test_font_list_ats( FT_Library  library )
 {
-#if !defined( HAVE_ATS ) || ( HAVE_ATS == 0 )
+#if !HAVE_ATS
   FT_UNUSED( library );
   printf( "FreeType2 is configured without ats (AppleTypeService)\n" );
 #else
@@ -774,6 +822,9 @@ test_font_list_ats( FT_Library  library )
   ATSFontRef       ats_font_ref;
   CFStringRef      ats_font_name;
   char             face_name[1024];
+#ifndef kATSOptionFlagsUnRestrictedScope
+#define kATSOptionFlagsUnRestrictedScope kATSOptionFlagsDefault
+#endif
 
 
   if ( noErr != ATSFontIteratorCreate( kATSFontContextGlobal,

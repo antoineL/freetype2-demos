@@ -7,6 +7,7 @@ ftmemchk
 ftmulti
 ftstring
 fttimer
+ftvalid
 ftview
 testname
 .libs

@@ -107,15 +107,17 @@
   static int is_ot_validator_implemented    ( FT_Library library );
   static int is_gx_validator_implemented    ( FT_Library library );
   static int is_ckern_validator_implemented ( FT_Library library );
-  static int run_ot_validator               ( FT_Face      face, 
+
+  static FT_Error run_ot_validator          ( FT_Face      face, 
 					      const char*  tables, 
 					      int          validation_level );
-  static int run_gx_validator               ( FT_Face      face, 
+  static FT_Error run_gx_validator          ( FT_Face      face, 
 					      const char*  tables, 
 					      int          validation_level );
-  static int run_ckern_validator            ( FT_Face      face, 
+  static FT_Error run_ckern_validator       ( FT_Face      face, 
 					      const char*  dialect_request, 
 					      int          validation_level );
+
   static int list_ot_tables                 ( FT_Face  face );
   static int list_gx_tables                 ( FT_Face  face );
   static int list_ckern_tables              ( FT_Face  face );
@@ -468,21 +470,26 @@
   {
     int  i;
     int  n_passes;
+    int  n_targets;
     
 
-    for ( i = 0, n_passes = 0; i < spec_count; i++ )
+    for ( i = 0, n_passes = 0, n_targets = 0; i < spec_count; i++ )
     {
-      if ( ( spec[i].validation_flag & validation_flags ) &&
-             data[i] != NULL                              )
+      if ( spec[i].validation_flag & validation_flags )
       {
-        printf( "[%s:%s] ", execname, validators[validator].symbol );
-        print_tag( stdout, spec[i].tag );
-        printf( "...pass\n" );
-        n_passes++;
+	n_targets++;
+	
+	if ( data[i] != NULL )
+	{
+	  printf( "[%s:%s] ", execname, validators[validator].symbol );
+	  print_tag( stdout, spec[i].tag );
+	  printf( "%s", "...pass\n" );
+	  n_passes++;
+	}
       }
     }
 
-    if ( n_passes == 0 )
+    if ( n_passes == 0 && n_targets != 0 )
     {
       printf( "[%s:%s] layout tables are invalid.\n",
               execname, validators[validator].symbol );
@@ -506,7 +513,7 @@
     return mod? 1: 0;
   }
 
-  static int
+  static FT_Error
   run_ot_validator( FT_Face      face,
                     const char*  tables,
                     int          validation_level )
@@ -536,7 +543,7 @@
     for ( i = 0; i < N_OT_TABLE_SPEC; i++ )
       FT_OpenType_Free( face, data[i] );
 
-    return (int)error;
+    return error;
   }
 
 
@@ -565,7 +572,7 @@
     return mod? 1: 0;
   }
 
-  static int
+  static FT_Error
   run_gx_validator( FT_Face      face, 
                     const char*  tables, 
                     int          validation_level )
@@ -595,7 +602,7 @@
     for ( i = 0; i < N_GX_TABLE_SPEC; i++ )
       FT_TrueTypeGX_Free( face, data[i] );
 
-    return (int)error;
+    return error;
   }
 
 
@@ -624,7 +631,7 @@
   }
 
 
-  static int
+  static FT_Error
   run_ckern_validator( FT_Face      face, 
                        const char*  dialect_request, 
                        int          validation_level )
@@ -672,7 +679,7 @@
     
     FT_ClassicKern_Free( face, data );
               
-    return (int)error;
+    return error;
   }
 
   static int
@@ -699,7 +706,7 @@
   
     char*  fontfile;
     int    option;
-    int    status;
+
 
     char*  tables;
     int    dump_table_list;
@@ -822,7 +829,7 @@
      */
     {
       FT_Face     face;
-
+      FT_Error    status;
 
       status = 0;
 
@@ -839,13 +846,13 @@
       if ( dump_table_list )
 	validators[validator].list_tables( face );
       else
-	validators[validator].run( face, tables, validation_level );
+	status = validators[validator].run( face, tables, validation_level );
       
       FT_Done_Face( face );
       FT_Done_FreeType( library );
-    }
 
-    return status;
+      return (int)status;
+    }
   }
 
 

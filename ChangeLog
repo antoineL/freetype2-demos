@@ -1,9 +1,10 @@
 2007-01-11  Masatake YAMATO  <jet@gyve.org>
 
-	* src/ftvalid.c (run_ot_validator, run_gx_validator, run_ckern_validator): 
-	Return FT_Error value instead of int value.
+	* src/ftvalid.c (run_ot_validator, run_gx_validator,
+	run_ckern_validator): Return FT_Error value instead of int value.
 	(main): Return value returned from validator's run method.
-	(report_result): Don't show "invalid" message if there is no target table.
+	(report_result): Don't show `invalid' message if there is no target
+	table.
 
 2006-12-15  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 

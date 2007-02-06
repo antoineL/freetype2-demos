@@ -1,3 +1,7 @@
+2007-02-06  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/ftstring.c (event_render_mode_change): Fix spelling.
+
 2007-01-31  Werner Lemberg  <wl@gnu.org>
 
 

@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2002, 2003, 2004, 2005, 2006 by                          */
+/*  Copyright 1996-2002, 2003, 2004, 2005, 2006, 2007 by                    */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */

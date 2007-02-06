@@ -47,7 +47,7 @@
 
   int         num_glyphs;
   FT_Glyph    glyphs[MAX_GLYPHS];
-  
+
   int         tab_glyphs;
   int         cur_glyph;
 
@@ -96,7 +96,7 @@
   LoadChar( int  idx )
   {
     FT_Glyph  glyph;
-    
+
 
     /* load the glyph in the glyph slot */
     error = FT_Load_Glyph( face, idx, FT_LOAD_DEFAULT ) ||
@@ -121,7 +121,7 @@
   {
     FT_Glyph  bitmap;
 
-    
+
     bitmap = glyphs[idx];
     if ( bitmap->format == FT_GLYPH_FORMAT_BITMAP )
       error = 0;  /* we already have a (embedded) bitmap */
@@ -135,7 +135,7 @@
       if ( !error )
         FT_Done_Glyph( bitmap );
     }
-      
+
     return error;
   }
 

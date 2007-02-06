@@ -405,7 +405,7 @@
                                     handle->image_type.face_id, &face );
     if ( error )
       PanicZ( "can't access font file" );
-      
+
     if ( !status.header )
     {
       basename = ft_basename( handle->current_font->filepathname );

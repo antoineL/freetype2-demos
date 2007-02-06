@@ -39,8 +39,8 @@
 
   static char*  execname;
 
-  typedef enum 
-  { 
+  typedef enum
+  {
     OT_VALIDATE = 0,
     GX_VALIDATE,
     CKERN_VALIDATE,
@@ -50,7 +50,7 @@
   } ValidatorType;
   static ValidatorType  validator;
 
-  
+
   typedef struct  TableSpecRec_
   {
     FT_UInt  tag;
@@ -60,7 +60,7 @@
 
 #define MAKE_TABLE_SPEC( x ) { TTAG_##x, FT_VALIDATE_##x }
 
-  static TableSpecRec  ot_table_spec[] = 
+  static TableSpecRec  ot_table_spec[] =
   {
     MAKE_TABLE_SPEC( BASE ),
     MAKE_TABLE_SPEC( GDEF ),
@@ -70,7 +70,7 @@
   };
 #define N_OT_TABLE_SPEC  ( sizeof ( ot_table_spec ) / sizeof ( TableSpecRec ) )
 
-  static TableSpecRec  gx_table_spec[] = 
+  static TableSpecRec  gx_table_spec[] =
   {
     MAKE_TABLE_SPEC( feat ),
     MAKE_TABLE_SPEC( mort ),
@@ -99,7 +99,7 @@
 				    int         validation_level );
     int         (* list_tables)   ( FT_Face     face );
 
-    TableSpec       table_spec;   
+    TableSpec       table_spec;
     unsigned int    n_table_spec;
 
   } ValidatorRec, *Validator;
@@ -108,14 +108,14 @@
   static int is_gx_validator_implemented    ( FT_Library library );
   static int is_ckern_validator_implemented ( FT_Library library );
 
-  static FT_Error run_ot_validator          ( FT_Face      face, 
-					      const char*  tables, 
+  static FT_Error run_ot_validator          ( FT_Face      face,
+					      const char*  tables,
 					      int          validation_level );
-  static FT_Error run_gx_validator          ( FT_Face      face, 
-					      const char*  tables, 
+  static FT_Error run_gx_validator          ( FT_Face      face,
+					      const char*  tables,
 					      int          validation_level );
-  static FT_Error run_ckern_validator       ( FT_Face      face, 
-					      const char*  dialect_request, 
+  static FT_Error run_ckern_validator       ( FT_Face      face,
+					      const char*  dialect_request,
 					      int          validation_level );
 
   static int list_ot_tables                 ( FT_Face  face );
@@ -127,9 +127,9 @@
     {
       OT_VALIDATE,
       "ot",
-      ( "FT_OpenType_Validate" 
-	"is disabled. replace FreeType2 with " 
-	"otvalid" 
+      ( "FT_OpenType_Validate"
+	"is disabled. replace FreeType2 with "
+	"otvalid"
 	"-enabled version\n" ),
       is_ot_validator_implemented,
       run_ot_validator,
@@ -141,8 +141,8 @@
       GX_VALIDATE,
       "gx",
       ( "FT_TrueTypeGX_Validate"
-	"is disabled. replace FreeType2 with " 
-	"gxvalid" 
+	"is disabled. replace FreeType2 with "
+	"gxvalid"
 	"-enabled version\n" ),
       is_gx_validator_implemented,
       run_gx_validator,
@@ -154,8 +154,8 @@
       CKERN_VALIDATE,
       "ckern",
       ( "FT_ClassicKern_Validate"
-	"is disabled. replace FreeType2 with " 
-	"gxvalid" 		/* NOTE: classic kern validator is in gxvalid. */
+	"is disabled. replace FreeType2 with "
+	"gxvalid"		/* NOTE: classic kern validator is in gxvalid. */
 	"-enabled version\n" ),
       is_ckern_validator_implemented,
       run_ckern_validator,
@@ -199,7 +199,7 @@
   }
 
 
-  /* To initialize the internal variable, call this 
+  /* To initialize the internal variable, call this
      funtion with FT_Library variable. Then call
      with NULL. The print messages is printed if
      call with NULL. */
@@ -252,7 +252,7 @@
       }
 
       fprintf( stderr, "\n" );
-      fprintf( stderr, "\n" );      
+      fprintf( stderr, "\n" );
     }
 
     fprintf( stderr, "  -T \"ms:apple\"             [ckern] select (a) classic kern dialect(s) for \n" );
@@ -327,7 +327,7 @@
       if ( tag == spec[i].tag )
         return spec[i].validation_flag;
     }
-    
+
     fprintf( stderr, "*** Wrong table name: " );
     print_tag( stderr, tag );
     fprintf( stderr, "\n" );
@@ -348,7 +348,7 @@
 
     unsigned int  i;
     char          tag[4];
-    
+
 
     validation_flags = 0;
 
@@ -358,7 +358,7 @@
       fprintf( stderr, "*** Wrong length of table names\n" );
       print_usage( NULL );
     }
-    
+
     for ( i = 0; i < len; i++ )
     {
       if ( ( ( i % 5 ) == 4 ) )
@@ -376,8 +376,8 @@
         validation_flags |= find_validation_flag( FT_MAKE_TAG( tag[0],
                                                                tag[1],
                                                                tag[2],
-                                                               tag[3] ), 
-                                                  spec, 
+                                                               tag[3] ),
+                                                  spec,
                                                   spec_count );
     }
 
@@ -395,10 +395,10 @@
     FT_UInt  validation_flags;
     int      i;
     FT_UInt  tag;
-    
+
 
     validation_flags = 0;
-    
+
     for ( i = 0; i < spec_count; i++ )
     {
       tag   = spec[i].tag;
@@ -431,7 +431,7 @@
   {
     int i;
     int n_print;
-    
+
 
     for ( i = 0, n_print = 0; i < spec_count; i++ )
     {
@@ -443,7 +443,7 @@
         n_print++;
       }
     }
-    
+
     fprintf( stream, "\n" );
 
     return !n_print;
@@ -471,14 +471,14 @@
     int  i;
     int  n_passes;
     int  n_targets;
-    
+
 
     for ( i = 0, n_passes = 0, n_targets = 0; i < spec_count; i++ )
     {
       if ( spec[i].validation_flag & validation_flags )
       {
 	n_targets++;
-	
+
 	if ( data[i] != NULL )
 	{
 	  printf( "[%s:%s] ", execname, validators[validator].symbol );
@@ -501,14 +501,14 @@
   }
 
 
-  /* 
+  /*
    * OpenType related funtions
    */
   static int
   is_ot_validator_implemented( FT_Library library )
   {
     FT_Module mod;
-    
+
     mod = FT_Get_Module( library, "otvalid" );
     return mod? 1: 0;
   }
@@ -522,7 +522,7 @@
     FT_Error      error;
     FT_Bytes      data[N_OT_TABLE_SPEC];
     unsigned int  i;
-    
+
 
     validation_flags  = validation_level;
     validation_flags |= make_table_specs( face, tables, ot_table_spec,
@@ -534,10 +534,10 @@
     report_header( validation_flags, ot_table_spec, N_OT_TABLE_SPEC );
 
     error = FT_OpenType_Validate(
-              face, 
-              validation_flags, 
+              face,
+              validation_flags,
               &data[0], &data[1], &data[2], &data[3], &data[4] );
-      
+
     report_result( data, validation_flags, ot_table_spec, N_OT_TABLE_SPEC );
 
     for ( i = 0; i < N_OT_TABLE_SPEC; i++ )
@@ -560,43 +560,43 @@
   }
 
 
-  /* 
+  /*
    * TrueTypeGX related funtions
    */
   static int
   is_gx_validator_implemented( FT_Library library )
   {
     FT_Module mod;
-    
+
     mod = FT_Get_Module( library, "gxvalid" );
     return mod? 1: 0;
   }
 
   static FT_Error
-  run_gx_validator( FT_Face      face, 
-                    const char*  tables, 
+  run_gx_validator( FT_Face      face,
+                    const char*  tables,
                     int          validation_level )
   {
     FT_UInt       validation_flags;
     FT_Error      error;
     FT_Bytes      data[N_GX_TABLE_SPEC];
     unsigned int  i;
-    
+
     validation_flags  = validation_level;
     validation_flags |= make_table_specs( face, tables, gx_table_spec,
                                           N_GX_TABLE_SPEC );
-    
+
     for ( i = 0; i < N_GX_TABLE_SPEC; i++ )
       data[i] = NULL;
 
     report_header( validation_flags, gx_table_spec, N_GX_TABLE_SPEC );
 
-    error = FT_TrueTypeGX_Validate( 
-              face, 
-              validation_flags, 
+    error = FT_TrueTypeGX_Validate(
+              face,
+              validation_flags,
               data,
               N_GX_TABLE_SPEC );
-      
+
     report_result( data, validation_flags, gx_table_spec, N_GX_TABLE_SPEC );
 
     for ( i = 0; i < N_GX_TABLE_SPEC; i++ )
@@ -616,7 +616,7 @@
     return print_tables( stdout, validation_flags, gx_table_spec,
                          N_GX_TABLE_SPEC );
   }
-  
+
 
   /*
    * Classic kern related funtions
@@ -632,22 +632,22 @@
 
 
   static FT_Error
-  run_ckern_validator( FT_Face      face, 
-                       const char*  dialect_request, 
+  run_ckern_validator( FT_Face      face,
+                       const char*  dialect_request,
                        int          validation_level )
   {
     FT_UInt    validation_flags;
     FT_Error   error;
-    FT_Bytes   data;  
+    FT_Bytes   data;
 
-    
+
     if ( dialect_request == NULL )
       dialect_request = "ms:apple";
 
-    
+
     validation_flags  = validation_level;
-    
-    if ( strcmp( dialect_request, "ms:apple" ) == 0 ||  
+
+    if ( strcmp( dialect_request, "ms:apple" ) == 0 ||
          strcmp( dialect_request, "apple:ms" ) == 0 )
       validation_flags |= FT_VALIDATE_MS | FT_VALIDATE_APPLE;
     else if ( strcmp( dialect_request, "ms" ) == 0 )
@@ -660,7 +660,7 @@
       print_usage( NULL );
     }
 
-    printf( "[%s:%s] validation targets: %s...", 
+    printf( "[%s:%s] validation targets: %s...",
             execname, validators[validator].symbol, dialect_request );
 
 
@@ -676,9 +676,9 @@
       printf( "fail\n" );
     else
       printf( "no kern\n" );
-    
+
     FT_ClassicKern_Free( face, data );
-              
+
     return error;
   }
 
@@ -691,19 +691,19 @@
     if ( error == 0 )
       printf( "ms:apple\n" );
     return 0;
-  }  
-  
+  }
+
   /*
    * Main driver
    */
 
   int
-  main( int     argc, 
+  main( int     argc,
         char**  argv )
   {
     FT_Library  library;
     FT_Error    error;
-  
+
     char*  fontfile;
     int    option;
 
@@ -743,7 +743,7 @@
 
       if ( option == -1 )
         break;
-    
+
       switch ( option )
       {
       case 't':
@@ -834,7 +834,7 @@
       status = 0;
 
       if ( !validators[validator].is_implemented( library ) )
-	panic( FT_Err_Unimplemented_Feature, 
+	panic( FT_Err_Unimplemented_Feature,
 	       validators[validator].unimplemented_message );
 
 
@@ -842,12 +842,12 @@
       error = FT_New_Face( library, fontfile, 0, &face );
       if ( error )
         panic( error, "Could not open face." );
-      
+
       if ( dump_table_list )
 	validators[validator].list_tables( face );
       else
 	status = validators[validator].run( face, tables, validation_level );
-      
+
       FT_Done_Face( face );
       FT_Done_FreeType( library );
 

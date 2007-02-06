@@ -279,7 +279,7 @@ else
   COMMON_OBJ := $(OBJ_DIR_2)/common.$(SO)
   $(COMMON_OBJ): $(SRC_DIR)/common.c
   ifdef DOSLIKE
-	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DEXPAND_WILDCARDS 
+	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DEXPAND_WILDCARDS
   else
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
   endif

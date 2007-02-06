@@ -5,7 +5,7 @@
 
 /*
  * blitting interface
- *   
+ *
  */
 
 typedef enum
@@ -15,7 +15,7 @@ typedef enum
   GBLENDER_SOURCE_HBGR,
   GBLENDER_SOURCE_VRGB,
   GBLENDER_SOURCE_VBGR,
-  
+
   GBLENDER_SOURCE_MAX
 
 } GBlenderSourceFormat;
@@ -28,9 +28,9 @@ typedef enum
   GBLENDER_TARGET_RGB24,
   GBLENDER_TARGET_RGB565,
   GBLENDER_TARGET_BGR565,
-  
+
   GBLENDER_TARGET_MAX
-  
+
 } GBlenderTargetFormat;
 
 typedef struct GBlenderBlitRec_*    GBlenderBlit;

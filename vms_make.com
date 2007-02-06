@@ -2,7 +2,7 @@ $!---------------vms_make.com for Freetype2 demos ------------------------------
 $! make Freetype2 under OpenVMS
 $!
 $! In case of problems with the build you might want to contact me at
-$! zinser@zinser.no-ip.info (preferred) or 
+$! zinser@zinser.no-ip.info (preferred) or
 $! zinser@sysdev.deutsche-boerse.com (Work)
 $!
 $!------------------------------------------------------------------------------
@@ -111,8 +111,8 @@ GRAPHOBJ = $(OBJDIR)grblit.obj,  \
 # C flags
 CFLAGS = $(CCOPT)$(INCLUDES)/obj=$(OBJDIR)
 
-ALL : ftchkwd.exe ftdump.exe ftlint.exe ftmemchk.exe ftmulti.exe ftview.exe \ 
-      ftstring.exe fttimer.exe ftbench.exe testname.exe 
+ALL : ftchkwd.exe ftdump.exe ftlint.exe ftmemchk.exe ftmulti.exe ftview.exe \
+      ftstring.exe fttimer.exe ftbench.exe testname.exe
 
 
 ftbench.exe    : $(OBJDIR)ftbench.obj,$(OBJDIR)common.obj
@@ -209,8 +209,8 @@ $!
 $! Version history
 $! 0.01 20040220 First version to receive a number
 $! 0.02 20040229 Echo current procedure name; use general error exit handler
-$!               Remove xpm hack -> Replaced by more general dnsrl handling 
-$! ---> Attention slightly changed version to take into account special 
+$!               Remove xpm hack -> Replaced by more general dnsrl handling
+$! ---> Attention slightly changed version to take into account special
 $!      Situation for Freetype2 demos
 $CHECK_CREATE_VMSLIB:
 $!
@@ -281,7 +281,7 @@ $   if ((f$search("freetype:freetype.h") .nes. "") .and. -
 $   then
 $     write sys$output "Will use local definition of freetype logical"
 $   else
-$     ft2elem = 0 
+$     ft2elem = 0
 $FT2_LOOP:
 $     ft2srcdir = f$element(ft2elem,",",libsrc)
 $     if f$search("''ft2srcdir'''testinc'") .nes. ""
@@ -307,7 +307,7 @@ $     else
 $       ft2elem = ft2elem + 1
 $       goto ft2_loop
 $     endif
-$   endif	 
+$   endif
 $ endif
 $ goto LIB_LOOP
 $END_LIB:

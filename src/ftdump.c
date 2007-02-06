@@ -84,7 +84,7 @@
   Print_Name( FT_Face  face )
   {
     const char*  ps_name;
-    
+
 
     printf( "font name entries\n" );
 
@@ -92,11 +92,11 @@
 
     printf( "   family:     %s\n", face->family_name );
     printf( "   style:      %s\n", face->style_name );
-    
+
     ps_name = FT_Get_Postscript_Name( face );
     if ( ps_name == NULL )
       ps_name = "UNAVAILABLE";
-    
+
     printf( "   postscript: %s\n", ps_name );
   }
 
@@ -145,7 +145,7 @@
 
     printf( "   glyph names:     %s\n",
             FT_HAS_GLYPH_NAMES( face ) ? (char *)"yes" : (char *)"no" );
-    
+
     if ( FT_IS_SCALABLE( face ) )
     {
       printf( "   EM size:         %d\n", face->units_per_EM );
@@ -607,7 +607,7 @@
     if ( debug )
     {
       char  temp[32];
-      
+
 
       sprintf( temp, "any=%d", trace_level );
       setenv( "FT2_DEBUG", temp );

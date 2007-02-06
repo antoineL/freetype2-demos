@@ -2,7 +2,7 @@
 #
 # Makefile for MacOS X to build MacOS-specific API test program,
 # Also targets to setup vanilla source for MPW are included.
-# This should be executed in this directory, as 
+# This should be executed in this directory, as
 # "cd ft2demos ; make -C mac".
 #
 # most part is taken from ft2demos/Makefile, for UNIX platform.
@@ -48,7 +48,7 @@ else
 
   GRAPH_DIR := $(TOP_DIR_2)/graph
   include $(GRAPH_DIR)/rules.mk
- 
+
   ifeq ($(TOP_DIR),..)
     SRC_DIR := src
   else
@@ -99,7 +99,7 @@ else
 	$(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
 
   ################################################################
-  # Targets to setup MPW 
+  # Targets to setup MPW
   #
 
   clean:

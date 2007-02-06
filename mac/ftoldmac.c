@@ -167,7 +167,7 @@ void
 dump_face_info( FT_Face  face )
 {
   printf( "\t\tface_index=%d, face_flags=0x%08x, num_glyphs=%d\n",
-              (int)face->face_index, 
+              (int)face->face_index,
               (unsigned int)(face->face_flags),
               (int)face->num_glyphs );
   printf( "\t\tnum_fixed_sizes=%d, style_flags=%d%d%d%d%d%d\n",
@@ -183,7 +183,7 @@ dump_face_info( FT_Face  face )
           face->family_name, face->style_name );
 }
 
- 
+
 void
 crawlFontFile( char*  font_file_path )
 {
@@ -218,7 +218,7 @@ crawlFontFile( char*  font_file_path )
   num_opened_fonts ++;
   printf( "\tFont file has %d face\n", (int)face->num_faces );
 
-  
+
   j = face->num_faces + max_face_number;
   for ( i = 0; i < j; i++ )
   {
@@ -605,7 +605,7 @@ test_face_quickdraw( char*       face_name,
 #else
   FSSpec   spec;
   UInt8    font_file_path[1024];
-  FT_Long  face_index; 
+  FT_Long  face_index;
   FT_Face  face;
 
 
@@ -641,7 +641,7 @@ test_face_ats( char*       face_name,
   printf( "cannot check [%s] by ATS\n", face_name );
 #else
   UInt8    font_file_path[1024];
-  FT_Long  face_index; 
+  FT_Long  face_index;
   FT_Face  face;
   FSSpec   spec;
 
@@ -681,7 +681,7 @@ test_face( char*       face_name,
   else if ( 0 == ft_strcmp( font_resolve_api, "ats" ) )
     test_face_ats( face_name, library );
   else
-  { 
+  {
     printf( "invalid api name to resolve [%s]\n", font_resolve_api );
     exit( -1 );
   }
@@ -777,7 +777,7 @@ test_font_list_quickdraw( FT_Library  library )
                                         kFMUseGlobalScopeOption,
                                         &fm_family_iter ) )
     return;
-  
+
 get_quickdraw_font_family:
   if ( 0 == FMGetNextFontFamily( &fm_family_iter, &fm_family ) )
   {
@@ -868,7 +868,7 @@ test_system_font_list()
   else if ( 0 == ft_strcmp( font_listing_api, "ats" ) )
     test_font_list_ats( library );
   else
-  { 
+  {
     printf( "invalid api name to list [%s]\n", font_listing_api );
     exit( -1 );
   }
@@ -899,7 +899,7 @@ main( int     argc,
     print_help_and_exit();
   else
   {
-    for ( i = 1; i < argc; i++ ) 
+    for ( i = 1; i < argc; i++ )
     {
       if ( 0 == ft_strcmp( "--help", argv[i] ) )
         print_help_and_exit();

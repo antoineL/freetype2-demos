@@ -2,7 +2,7 @@
 
 /*  Author:  David Turner  <david@freetype.org>
  *
- *  this filtering code is explicitely placed in the public domain !!
+ *  this filtering code is explicitly placed in the public domain !!
  */
 #include <stdlib.h>
 #include <memory.h>
@@ -14,7 +14,7 @@
  *   less how the laptop's hardware works:
  *
  *   when in color mode, the screen uses the following colored pixels
- *   arrangement, where each pixel is square and can have its luminousity
+ *   arrangement, where each pixel is square and can have its luminosity
  *   set between 0 and 255:
  *
  *     R G B R G B ....
@@ -297,7 +297,7 @@ swizzle_line_rgb24( unsigned char**  lines,
  * will be much darker (due to all the zeroes).
  *
  * moreover, on an typical LCD screen, this creates very visible
- * black diagonals. On a CRT, somes thinner diagonals are also visible, but
+ * black diagonals. On a CRT, some thinner diagonals are also visible, but
  * this is mostly due to the fact that the human eye is much more sensitive
  * to green than red and blue
  */

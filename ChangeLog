@@ -113,9 +113,9 @@
 
 	* src/ftcommon.h (FT_Demo_Draw_Glyph_Color): New declaration.
 
-	* src/ftgrid.c: New file, implemeting an auto-fitter debugger.  This
-	is a very preliminary version.  It only compiles with Jam at the
-	moment, and you must have AF_DEBUG defined in your
+	* src/ftgrid.c: New file, implementing an auto-fitter debugger.
+	This is a very preliminary version.  It only compiles with Jam at
+	the moment, and you must have AF_DEBUG defined in your
 	`src/autofit/aftypes.h' file to be able to link it.
 
 	* src/Jamfile (GRAPHIC_PROGRAMS): Add ftgrid.
@@ -376,7 +376,7 @@
 	(FTDemo_String_Set_Kerning, FTDemo_String_Set_Vertical): Removed.
 	(string_load): Rewritten.
 	(string_render_prepare): New function.
-	(FTDemo_String_Draw): Rewritten to have more flexiblity.  For
+	(FTDemo_String_Draw): Rewritten to have more flexibility.  For
 	example, we can now draw the string twice with different kerning
 	modes without reloading the glyphs.
 

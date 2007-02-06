@@ -77,7 +77,7 @@ Render_GammaGrid( grBitmap*  bitmap )
   memset( bitmap->buffer, 255, pitch*bitmap->rows );
 #else
  /* fill the background with a simple pattern corresponding to 50%
-  * linear gray from a reasonnable viewing distance
+  * linear gray from a reasonable viewing distance
   */
   {
     int             nx, ny;

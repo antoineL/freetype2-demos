@@ -223,7 +223,7 @@ $   write sys$output "Exiting..."
 $   goto err_exit
 $ endif
 $!
-$! Init symbols used to hold CPP definitons and include path
+$! Init symbols used to hold CPP definitions and include path
 $!
 $ libdefs = ""
 $ libincs = ""

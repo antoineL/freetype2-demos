@@ -396,7 +396,7 @@
   *    the device chain returned by this function. For example, if an
   *    X11 device was compiled in the library, it will be part of
   *    the returned device chain only if a connection to the display
-  *    could be establisged
+  *    could be established
   *
   *    If no driver could be initialised, this function returns NULL.
   *

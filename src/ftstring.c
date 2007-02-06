@@ -228,7 +228,7 @@
       break;
 
     case RENDER_MODE_KERNCMP:
-      status.header = (char *)"Kerning comparision";
+      status.header = (char *)"Kerning comparison";
       break;
     }
   }

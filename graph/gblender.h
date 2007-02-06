@@ -27,7 +27,7 @@
                                 * bytes, instead of a single 32-bit integer.
                                 * surprisingly, this can speed up
                                 * the blender on certain machines.
-                                * Go figure what's really happenning though :-)
+                                * Go figure what's really happening though :-)
                                 */
 
 #define  xGBLENDER_STATS        /* define this to collect statistics in the

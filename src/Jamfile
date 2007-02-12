@@ -42,6 +42,7 @@ GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ftgrid ;
 #
 if $(FT2_DEBUG_TT)
 {
+  if $(UNIX) { DEFINES += UNIX ; }
   SubDirHdrs $(FT2_INCLUDE)/../src/truetype ;
 
   LinkLibraries  ttdebug : $(FT2_LIB) ;

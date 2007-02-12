@@ -264,7 +264,7 @@ test_embolden( btimer_t*  timer,
       continue;
 
     TIMER_START( timer );
-    FT_GlyphSlot_Embolden ( face->glyph );
+    /*FT_GlyphSlot_Embolden ( face->glyph );*/
     done++;
     TIMER_STOP( timer );
   }
@@ -711,7 +711,7 @@ main(int argc,
   filename = *argv;
 
   if ( get_face( &face ) )
-    return 1;
+    goto Exit;
 
   if ( FT_IS_SCALABLE( face ) )
   {
@@ -828,6 +828,7 @@ main(int argc,
     }
   }
 
+Exit:
   /* The following is a bit subtle: When we call FTC_Manager_Done, this
    * normally destroys all FT_Face objects that the cache might have created
    * by calling the face requester.

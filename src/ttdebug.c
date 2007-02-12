@@ -46,10 +46,10 @@ FT_Error        error;
 
 TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
-  typedef FT_Byte ByteStr[2];
-  typedef FT_Byte WordStr[4];
-  typedef FT_Byte LongStr[8];
-  typedef FT_Byte DebugStr[128];
+  typedef char    ByteStr[2];
+  typedef char    WordStr[4];
+  typedef char    LongStr[8];
+  typedef char    DebugStr[128];
 
   static  DebugStr tempStr;
 
@@ -752,7 +752,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
     op = exec->code[ exec->IP ];
 
-    sprintf( tempStr, "%04lx: %02hx  %s", exec->IP, op, OpStr[op] );
+    sprintf( tempStr, "%04lx: %02hx  %s", (long)exec->IP, op, OpStr[op] );
 
     if ( op == 0x40 )
     {
@@ -826,7 +826,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
   {
     FT_Int    A, diff, key;
     FT_Long   next_IP;
-    FT_Char   ch, oldch = '\0', *temp;
+    FT_String ch, oldch = '\0', *temp;
 
     FT_Error  error = 0;
 
@@ -993,6 +993,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
           printf( "rounding   %s\n", round_str[exc->GS.round_state] );
           printf( "min dist   %04lx\n", exc->GS.minimum_distance );
           printf( "cvt_cutin  %04lx\n", exc->GS.control_value_cutin );
+          printf( "RP 0,1,2   %4x %4x %4x\n", exc->GS.rp0, exc->GS.rp1, exc->GS.rp2 );
           break;
 
         /* Show points table */
@@ -1239,7 +1240,7 @@ int    glyph_size;
 
     if (glyph_index < 0)
     {
-      exec = TT_New_Context( face );
+      exec = TT_New_Context( (TT_Driver)face->root.driver );
       size->debug   = 1;
       size->context = exec;
 

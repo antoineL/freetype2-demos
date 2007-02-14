@@ -752,7 +752,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
     op = exec->code[ exec->IP ];
 
-    sprintf( tempStr, "%04lx: %02hx  %s", (long)exec->IP, op, OpStr[op] );
+    sprintf( tempStr, "%s", OpStr[op] );
 
     if ( op == 0x40 )
     {
@@ -803,6 +803,11 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
                                   exec->code[ exec->IP+i*2+2 ] );
         strncat( tempStr, s, 8 );
       }
+    }
+    else if ( op == 0x39 )  /* IP */
+    {
+        sprintf( s, " rp1=%d, rp2=%d", exec->GS.rp1, exec->GS.rp2 );
+        strncat( tempStr, s, 31 );
     }
 
     return (FT_String*)tempStr;
@@ -914,6 +919,11 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
           args = CUR.top - 1;
           pop  = Pop_Push_Count[CUR.opcode] >> 4;
           col  = 48;
+
+          /* special case for IP */
+          if (CUR.opcode == 0x39)
+              pop = exc->GS.loop;
+
           for ( n = 6; n > 0; n-- )
           {
             if ( pop == 0 )
@@ -1000,9 +1010,10 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
         case 'p':
           for ( A = 0; A < exc->pts.n_points; A++ )
           {
-            printf( "%02hx  ", A );
-            printf( "%08lx,%08lx - ", pts.org[A].x, pts.org[A].y );
-            printf( "%08lx,%08lx\n",  pts.cur[A].x, pts.cur[A].y );
+            printf( "%3hd  ", A );
+            printf( "(%6d,%6d) - ", pts.orus[A].x, pts.orus[A].y );
+            printf( "(%8ld,%8ld) - ", pts.org[A].x, pts.org[A].y );
+            printf( "(%8ld,%8ld)\n",  pts.cur[A].x, pts.cur[A].y );
           }
           printf(( "\n" ));
           break;
@@ -1072,43 +1083,44 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
         if ( diff )
         {
-          printf( "%02hx  ", A );
+          printf( "%3hd  ", A );
+          printf( "%6d,%6d  ", pts.orus[A].x, pts.orus[A].y );
 
           if ( diff & 16 ) temp = "(%01hx)"; else temp = " %01hx ";
           printf( temp, old_tag_to_new(save.tags[A]) );
 
-          if ( diff & 1 ) temp = "(%08lx)"; else temp = " %08lx ";
+          if ( diff & 1 ) temp = "(%8ld)"; else temp = " %8ld ";
           printf( temp, save.org[A].x );
 
-          if ( diff & 2 ) temp = "(%08lx)"; else temp = " %08lx ";
+          if ( diff & 2 ) temp = "(%8ld)"; else temp = " %8ld ";
           printf( temp, save.org[A].y );
 
-          if ( diff & 4 ) temp = "(%08lx)"; else temp = " %08lx ";
+          if ( diff & 4 ) temp = "(%8ld)"; else temp = " %8ld ";
           printf( temp, save.cur[A].x );
 
-          if ( diff & 8 ) temp = "(%08lx)"; else temp = " %08lx ";
+          if ( diff & 8 ) temp = "(%8ld)"; else temp = " %8ld ";
           printf( temp, save.cur[A].y );
 
           printf( "\n" );
 
-          printf( "%02hx  ", A );
+          printf( "                    " );
 
-          if ( diff & 16 ) temp = "[%01hx]"; else temp = " %01hx ";
+          if ( diff & 16 ) temp = "[%01hx]"; else temp = "  ";
           printf( temp, old_tag_to_new(pts.tags[A]) );
 
-          if ( diff & 1 ) temp = "[%08lx]"; else temp = " %08lx ";
+          if ( diff & 1 ) temp = "[%8ld]"; else temp = "          ";
           printf( temp, pts.org[A].x );
 
-          if ( diff & 2 ) temp = "[%08lx]"; else temp = " %08lx ";
+          if ( diff & 2 ) temp = "[%8ld]"; else temp = "          ";
           printf( temp, pts.org[A].y );
 
-          if ( diff & 4 ) temp = "[%08lx]"; else temp = " %08lx ";
+          if ( diff & 4 ) temp = "[%8ld]"; else temp = "          ";
           printf( temp, pts.cur[A].x );
 
-          if ( diff & 8 ) temp = "[%08lx]"; else temp = " %08lx ";
+          if ( diff & 8 ) temp = "[%8ld]"; else temp = "          ";
           printf( temp, pts.cur[A].y );
 
-          printf( "\n\n" );
+          printf( "\n" );
         }
       }
     } while ( TRUE );

@@ -1,3 +1,8 @@
+2007-02-14  David Turner  <david@freetype.org>
+
+	* src/ttdebug.c: another refresh of the debugger. Minor improvements
+	to be able to display more useful information during debugging
+
 2007-02-12  David Turner  <david@freetype.org>
 
 	* src/ttdebug.c: refresh the TrueType debugger code

@@ -293,7 +293,7 @@
     fprintf( stderr, "           otvmodule otvcommon otvbase otvgdef otvgpos otvgsub otvjstf\n" );
     fprintf( stderr, "           Available components for gx validator:\n" );
     fprintf( stderr, "           gxvmodule gxvcommon gxvfeat gxvmort gxvmorx gxvbsln gxvjust\n");
-    fprintf( stderr, "           gxvkern gxvobpd gxvtrak gxvprop gxvlcar\n");
+    fprintf( stderr, "           gxvkern gxvopbd gxvtrak gxvprop gxvlcar\n");
     fprintf( stderr, "\n" );
     fprintf( stderr, "           Only gxvkern is available for ckern validator.\n" );
     fprintf( stderr, "\n" );

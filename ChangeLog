@@ -1,3 +1,7 @@
+2007-03-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/ftvalid.c (print_usage): Fix a typo in the help message.
+
 2007-03-09  Werner Lemberg  <wl@gnu.org>
 
 

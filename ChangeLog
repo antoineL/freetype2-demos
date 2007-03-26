@@ -1,3 +1,10 @@
+2007-03-26  David Turner  <david@freetype.org>
+
+	* src/ftdiff.c: adding a new proofind program that displays text
+	in three columns: bytecode-hinted, auto-hinted with rsb/lsb delta
+	adjustments, and unhinted/subpixel-positioned. For comparison
+	purposes
+
 2007-03-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	* src/ftvalid.c (print_usage): Fix a typo in the help message.

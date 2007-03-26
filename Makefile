@@ -249,7 +249,7 @@ else
   EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
 
   # Comment out the next line if you don't have a graphics subsystem.
-  EXES += ftview ftmulti ftstring ftgamma ftgrid
+  EXES += ftview ftmulti ftstring ftgamma ftgrid ftdiff
 
   # ftvalid requires ftgxval.c and ftotval.c
   #
@@ -323,7 +323,12 @@ else
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-  $(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
+  $(OBJ_DIR_2)/ftdiff.$(SO): $(SRC_DIR)/ftdiff.c \
+                            $(GRAPH_LIB)
+	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
+
+$(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
@@ -378,7 +383,6 @@ else
                              $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<) $DFT2_BUILD_LIBRARY
-
 
   ####################################################################
   #
@@ -462,6 +466,10 @@ else
 	  $(LINK_NEW)
 
   $(BIN_DIR_2)/ftgamma$E: $(OBJ_DIR_2)/ftgamma.$(SO) $(FTLIB) \
+                          $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+	  $(LINK_NEW)
+
+  $(BIN_DIR_2)/ftdiff$E: $(OBJ_DIR_2)/ftdiff.$(SO) $(FTLIB) \
                           $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 

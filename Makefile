@@ -319,22 +319,22 @@ else
   # $(GRAPH_LIB) directly.
 
   $(OBJ_DIR_2)/ftgamma.$(SO): $(SRC_DIR)/ftgamma.c \
-                            $(GRAPH_LIB)
+                              $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
   $(OBJ_DIR_2)/ftdiff.$(SO): $(SRC_DIR)/ftdiff.c \
-                            $(GRAPH_LIB)
+                             $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
-$(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
-                            $(GRAPH_LIB)
+  $(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
+                              $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
   $(OBJ_DIR_2)/ftstring.$(SO): $(SRC_DIR)/ftstring.c \
-                             $(GRAPH_LIB)
+                               $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
@@ -470,7 +470,7 @@ $(OBJ_DIR_2)/ftmulti.$(SO): $(SRC_DIR)/ftmulti.c \
 	  $(LINK_NEW)
 
   $(BIN_DIR_2)/ftdiff$E: $(OBJ_DIR_2)/ftdiff.$(SO) $(FTLIB) \
-                          $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
+                         $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
 
   $(BIN_DIR_2)/ftmulti$E: $(OBJ_DIR_2)/ftmulti.$(SO) $(FTLIB) \

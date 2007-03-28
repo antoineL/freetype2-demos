@@ -1,9 +1,18 @@
+2007-03-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdiff.c: Remove many compiler warnings.
+	Fix some typos.
+	Improve and fix help texts.
+	Formatting.
+
 2007-03-26  David Turner  <david@freetype.org>
 
-	* src/ftdiff.c: adding a new proofind program that displays text
-	in three columns: bytecode-hinted, auto-hinted with rsb/lsb delta
-	adjustments, and unhinted/subpixel-positioned. For comparison
-	purposes
+	* src/ftdiff.c: New proofing program that displays text in three
+	columns: bytecode-hinted, auto-hinted with rsb/lsb delta
+	adjustments, and unhinted/subpixel-positioned.  For comparison
+	purposes.
+
+	* Makefile, Jamfile: Add ftdiff.
 
 2007-03-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 

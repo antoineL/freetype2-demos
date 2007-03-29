@@ -17,6 +17,7 @@
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 #include FT_CACHE_H
+#include FT_LCD_FILTER_H
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +41,9 @@
   typedef enum  _DisplayMode
   {
     DISPLAY_MODE_MONO = 0,
-    DISPLAY_MODE_GRAY
-  
+    DISPLAY_MODE_GRAY,
+    DISPLAY_MODE_LCD
+
   } DisplayMode;
 
   typedef void
@@ -93,14 +95,21 @@
 
   typedef enum  _RenderMode
   {
+    RENDER_MODE_UNHINTED,
     RENDER_MODE_AUTOHINT,
+    RENDER_MODE_AUTOHINT_LIGHT,
     RENDER_MODE_BYTECODE,
-    RENDER_MODE_WINDOWS,
-    RENDER_MODE_AUTOHINT_NOADJUST,
-    RENDER_MODE_UNHINTED
+    RENDER_MODE_MAX
 
   } RenderMode;
 
+  static const char* const  render_mode_names[RENDER_MODE_MAX] =
+  {
+      "unhinted",
+      "autohint",
+      "light autohint",
+      "bytecode hinted"
+  };
 
   /** RENDER STATE **/
 
@@ -112,6 +121,10 @@
     float                 char_size;
     int                   need_rescale;
     int                   use_kerning;
+    int                   use_deltas;
+    int                   use_lcd_filter;
+    FT_LcdFilter          lcd_filter;
+    RenderMode            hint_mode[3];
     const char*           filepath;
     const char*           filename;
     FT_Face               face;
@@ -140,6 +153,14 @@
     state->resolution   = 72;
     state->char_size    = 16;
     state->display      = display[0];
+
+    state->use_kerning    = 1;
+    state->use_deltas     = 1;
+    state->use_lcd_filter = 1;
+    state->lcd_filter     = FT_LCD_FILTER_DEFAULT;
+    state->hint_mode[0]   = RENDER_MODE_BYTECODE;
+    state->hint_mode[1]   = RENDER_MODE_AUTOHINT;
+    state->hint_mode[2]   = RENDER_MODE_UNHINTED;
 
     if ( FT_Init_FreeType( &state->library ) != 0 )
       panic( "could not initialize FreeType library. Check your code\n" );
@@ -284,11 +305,11 @@
 
 
   /** RENDERING **/
- 
+
   static void
   render_state_draw( RenderState           state,
                      const unsigned char*  text,
-                     RenderMode            rmode,
+                     int                   index,
                      int                   x,
                      int                   y,
                      int                   width,
@@ -304,6 +325,7 @@
     FT_UInt               prev_glyph     = 0;
     FT_Pos                prev_rsb_delta = 0;
     FT_Pos                x_origin       = x << 6;
+    RenderMode            rmode          = state->hint_mode[index];
 
 
     if ( !face )
@@ -311,12 +333,17 @@
 
     _render_state_rescale( state );
 
+    if (state->use_lcd_filter)
+        FT_Library_SetLcdFilter( face->glyph->library, state->lcd_filter );
+
     y          += state->size->metrics.ascender / 64;
     line_height = state->size->metrics.height / 64;
 
-    if ( rmode == RENDER_MODE_AUTOHINT          ||
-         rmode == RENDER_MODE_AUTOHINT_NOADJUST )
+    if ( rmode == RENDER_MODE_AUTOHINT )
       load_flags = FT_LOAD_FORCE_AUTOHINT;
+
+    if ( rmode == RENDER_MODE_AUTOHINT_LIGHT )
+      load_flags = FT_LOAD_TARGET_LIGHT;
 
     if ( rmode == RENDER_MODE_UNHINTED )
       load_flags |= FT_LOAD_NO_HINTING;
@@ -328,7 +355,6 @@
       FT_GlyphSlot  slot = face->glyph;
       FT_Bitmap*    map  = &slot->bitmap;
       int           xmax;
-      DisplayMode   mode;
 
 
       /* handle newlines */
@@ -375,8 +401,7 @@
         x_origin += vec.x;
       }
 
-      if ( rmode != RENDER_MODE_AUTOHINT_NOADJUST &&
-           rmode != RENDER_MODE_UNHINTED          )
+      if ( state->use_deltas )
       {
         if ( prev_rsb_delta - face->glyph->lsb_delta >= 32 )
           x_origin -= 64;
@@ -385,6 +410,7 @@
       }
       prev_rsb_delta = face->glyph->rsb_delta;
 
+      /* implement sub-pixel positining for un-hinted mode */
       if ( rmode == RENDER_MODE_UNHINTED           &&
            slot->format == FT_GLYPH_FORMAT_OUTLINE )
       {
@@ -393,9 +419,21 @@
 
         FT_Outline_Translate( &slot->outline, shift, 0 );
       }
-      FT_Render_Glyph( slot, FT_RENDER_MODE_NORMAL );
 
-      xmax = ( ( x_origin + 63 ) >> 6 ) + slot->bitmap_left + map->width;
+      if (slot->format == FT_GLYPH_FORMAT_OUTLINE)
+      {
+        FT_BBox  cbox;
+
+        FT_Outline_Get_CBox( &slot->outline, &cbox );
+        xmax = (x_origin + cbox.xMax + 63) >> 6;
+
+        FT_Render_Glyph( slot, state->use_lcd_filter ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_NORMAL );
+      }
+      else
+      {
+        xmax = (x_origin >> 6) + slot->bitmap_left + slot->bitmap.width;
+      }
+
       if ( xmax >= right )
       {
         x  = left;
@@ -407,16 +445,20 @@
         prev_rsb_delta = 0;
       }
 
-      mode = DISPLAY_MODE_MONO;
-      if ( slot->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY )
-        mode = DISPLAY_MODE_GRAY;
+      {
+        DisplayMode  mode = DISPLAY_MODE_MONO;
 
-      state->display.disp_draw( state->display.disp, mode,
-                                (x_origin >> 6) + slot->bitmap_left,
-                                y - slot->bitmap_top,
-                                map->width, map->rows,
-                                map->pitch, map->buffer );
+        if ( slot->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY )
+          mode = DISPLAY_MODE_GRAY;
+        else if ( slot->bitmap.pixel_mode == FT_PIXEL_MODE_LCD )
+          mode = DISPLAY_MODE_LCD;
 
+        state->display.disp_draw( state->display.disp, mode,
+                                  (x_origin >> 6) + slot->bitmap_left,
+                                  y - slot->bitmap_top,
+                                  map->width, map->rows,
+                                  map->pitch, map->buffer );
+      }
       if ( rmode == RENDER_MODE_UNHINTED )
         x_origin += slot->linearHoriAdvance >> 10;
       else
@@ -530,7 +572,7 @@
 
     display->bitmap  = NULL;
     display->surface = NULL;
-  
+
     grDoneDevices();
   }
 
@@ -558,7 +600,9 @@
 
     if ( mode == DISPLAY_MODE_GRAY )
       glyph.mode = gr_pixel_mode_gray;
-    
+    else if ( mode == DISPLAY_MODE_LCD )
+      glyph.mode = gr_pixel_mode_lcd;
+
     grBlitGlyphToBitmap( display->bitmap, &glyph,
                          x, y, display->fore_color );
   }
@@ -607,6 +651,13 @@
     grWriteln( "  g          : increase gamma by 0.1" );
     grWriteln( "  v          : decrease gamma by 0.1" );
     grLn();
+    grWriteln( "  k          : toggle kerning" );
+    grWriteln( "  K          : toggle lsb/rsb deltas" );
+    grWriteln( "  l          : toggle LCD filtering" );
+    grWriteln( "  L          : change LCD filter type" );
+    grWriteln( "  1          : change left hinting mode" );
+    grWriteln( "  2          : change center hinting mode" );
+    grWriteln( "  3          : change right hinting mode" );
     grWriteln( "  Up         : increase pointsize by 0.5 unit" );
     grWriteln( "  Down       : decrease pointsize by 0.5 unit" );
     grWriteln( "  Page Up    : increase pointsize by 5 units" );
@@ -669,6 +720,58 @@
 
     case grKeyF1:
       event_help( state );
+      break;
+
+    case grKEY( 'k' ):
+      state->use_kerning = !state->use_kerning;
+      state->message     = state->use_kerning ? "using kerning" : "ignoring kerning";
+      break;
+
+    case grKEY( 'K' ):
+      state->use_deltas = !state->use_deltas;
+      state->message    = state->use_deltas ? "using rsb/lsb deltas"
+                                            : "ignoring rsb/lsb deltas";
+      break;
+
+    case grKEY( 'L' ):
+      switch (state->lcd_filter)
+      {
+          case FT_LCD_FILTER_NONE:
+              state->lcd_filter = FT_LCD_FILTER_DEFAULT;
+              state->message    = "using default LCD filter";
+              break;
+
+          case FT_LCD_FILTER_DEFAULT:
+              state->lcd_filter = FT_LCD_FILTER_LIGHT;
+              state->message    = "using light LCD filter";
+              break;
+
+          case FT_LCD_FILTER_LIGHT:
+              state->lcd_filter = FT_LCD_FILTER_LEGACY;
+              state->message    = "using legacy LCD filter";
+              break;
+
+          case FT_LCD_FILTER_LEGACY:
+              state->lcd_filter = FT_LCD_FILTER_NONE;
+              state->message    = "using no LCD filter";
+              break;
+      }
+      break;
+
+    case grKEY( '1' ):
+    case grKEY( '2' ):
+    case grKEY( '3' ):
+      {
+        int  index = event->key - grKEY('1');
+        state->hint_mode[index] = (state->hint_mode[index] + 1) % RENDER_MODE_MAX;
+        state->message          = state->message0;
+        sprintf( state->message0, "column %d is %s", index+1, render_mode_names[state->hint_mode[index]]);
+      }
+      break;
+
+    case grKEY( 'l' ):
+      state->use_lcd_filter = !state->use_lcd_filter;
+      state->message        = state->use_lcd_filter ? "using lcd filter" : "using gray rendering";
       break;
 
     case grKEY( 'n' ):
@@ -870,11 +973,11 @@
 
       adisplay_clear( adisplay );
 
-      render_state_draw( state, text, RENDER_MODE_BYTECODE,
+      render_state_draw( state, text, 0,
                          10,                10, DIM_X / 3 - 15, DIM_Y - 40 );
-      render_state_draw( state, text, RENDER_MODE_AUTOHINT,
+      render_state_draw( state, text, 1,
                          DIM_X     / 3 + 5, 10, DIM_X / 3 - 15, DIM_Y - 40 );
-      render_state_draw( state, text, RENDER_MODE_UNHINTED,
+      render_state_draw( state, text, 2,
                          DIM_X * 2 / 3 + 5, 10, DIM_X / 3 - 15, DIM_Y - 40 );
 
       write_message( state );
@@ -887,7 +990,7 @@
     render_state_done( state );
     adisplay_done( adisplay );
     exit( 0 );  /* for safety reasons */
-    
+
     return 0;   /* never reached */
   }
 

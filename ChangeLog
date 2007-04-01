@@ -1,7 +1,41 @@
+2007-04-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdiff.c: Remove compiler warnings.
+	Formatting.
+
 2007-03-30  David Turner  <david@freetype.org>
 
-	* src/ftdiff.c: change interface keys to allow you to change
-	settings for a single column only. Press F1 for details
+	Change interface keys to allow you to change settings for a single
+	column only.  Press F1 for details.
+
+	* src/ftdiff.c: Include FT_LCD_FILTER_H.
+	(DisplayMode): Add DISPLAY_MODE_LCD.
+
+	(Display_textFunc): New function pointer.
+	(DisplayRec): Add it.
+
+	(RenderMode): Replace it with...
+	(HintMode): This.  Update all users.
+
+	(render_mode_names): New array.
+
+	(ColumnStateRec): New struct.
+	(RenderStateRec): Use it.
+	(render_state_init): Initialize it.
+
+	(render_state_draw): Pass index as argument.
+	Use ColumnStateRec.
+	Implement sub-pixel positioning for unhinted mode.
+	Add column footers, showing current rendering state.
+
+	(adisplay_draw_glyph): Handle DISPLAY_MODE_LCD.
+	(adisplay_draw_text): New function.
+
+	(event_help): Updated.
+	(process_event): Add many keys to control rendering modes in more
+	detail.
+
+	(main): Updated.
 
 2007-03-28  Werner Lemberg  <wl@gnu.org>
 

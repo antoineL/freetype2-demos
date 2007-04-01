@@ -57,10 +57,11 @@
                        void*        buffer );
 
   typedef void
-      (*Display_textFunc)( void*        disp,
-                           int          x,
-                           int          y,
-                           const char*  msg );
+  (*Display_textFunc)( void*        disp,
+                       int          x,
+                       int          y,
+                       const char*  msg );
+
 
   typedef struct  _DisplayRec
   {
@@ -120,14 +121,14 @@
 
   /** RENDER STATE **/
 
-  typedef struct ColumnStateRec_
+  typedef struct  _ColumnStateRec
   {
-      int           use_kerning;
-      int           use_deltas;
-      int           use_lcd_filter;
-      FT_LcdFilter  lcd_filter;
-      HintMode      hint_mode;
-      DisplayMode   disp_mode;
+    int           use_kerning;
+    int           use_deltas;
+    int           use_lcd_filter;
+    FT_LcdFilter  lcd_filter;
+    HintMode      hint_mode;
+    DisplayMode   disp_mode;
 
   } ColumnStateRec, *ColumnState;
 
@@ -330,13 +331,13 @@
   static void
   render_state_draw( RenderState           state,
                      const unsigned char*  text,
-                     int                   index,
+                     int                   idx,
                      int                   x,
                      int                   y,
                      int                   width,
                      int                   height )
   {
-    ColumnState           column         = &state->columns[index];
+    ColumnState           column         = &state->columns[idx];
     const unsigned char*  p              = text;
     long                  load_flags     = FT_LOAD_DEFAULT;
     FT_Face               face           = state->face;
@@ -355,8 +356,8 @@
 
     _render_state_rescale( state );
 
-    if (column->use_lcd_filter)
-        FT_Library_SetLcdFilter( face->glyph->library, column->lcd_filter );
+    if ( column->use_lcd_filter )
+      FT_Library_SetLcdFilter( face->glyph->library, column->lcd_filter );
 
     y          += state->size->metrics.ascender / 64;
     line_height = state->size->metrics.height / 64;
@@ -442,19 +443,20 @@
         FT_Outline_Translate( &slot->outline, shift, 0 );
       }
 
-      if (slot->format == FT_GLYPH_FORMAT_OUTLINE)
+      if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )
       {
         FT_BBox  cbox;
 
-        FT_Outline_Get_CBox( &slot->outline, &cbox );
-        xmax = (x_origin + cbox.xMax + 63) >> 6;
 
-        FT_Render_Glyph( slot, column->use_lcd_filter ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_NORMAL );
+        FT_Outline_Get_CBox( &slot->outline, &cbox );
+        xmax = ( x_origin + cbox.xMax + 63 ) >> 6;
+
+        FT_Render_Glyph( slot,
+                         column->use_lcd_filter ? FT_RENDER_MODE_LCD
+                                                : FT_RENDER_MODE_NORMAL );
       }
       else
-      {
-        xmax = (x_origin >> 6) + slot->bitmap_left + slot->bitmap.width;
-      }
+        xmax = ( x_origin >> 6 ) + slot->bitmap_left + slot->bitmap.width;
 
       if ( xmax >= right )
       {
@@ -470,13 +472,14 @@
       {
         DisplayMode  mode = DISPLAY_MODE_MONO;
 
+
         if ( slot->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY )
           mode = DISPLAY_MODE_GRAY;
         else if ( slot->bitmap.pixel_mode == FT_PIXEL_MODE_LCD )
           mode = DISPLAY_MODE_LCD;
 
         state->display.disp_draw( state->display.disp, mode,
-                                  (x_origin >> 6) + slot->bitmap_left,
+                                  ( x_origin >> 6 ) + slot->bitmap_left,
                                   y - slot->bitmap_top,
                                   map->width, map->rows,
                                   map->pitch, map->buffer );
@@ -486,7 +489,7 @@
       else
         x_origin += slot->advance.x;
 
-      prev_glyph   = gindex;
+      prev_glyph = gindex;
     }
 
     /* display footer on this column */
@@ -495,17 +498,25 @@
       const char  *msg;
       char         temp[64];
 
+
       msg = render_mode_names[column->hint_mode];
       state->display.disp_text( disp, left, bottom + 5, msg );
 
-      if (!column->use_lcd_filter)
+      if ( !column->use_lcd_filter )
         msg = "gray rendering";
-      else switch (column->lcd_filter)
+      else switch ( column->lcd_filter )
       {
-        case FT_LCD_FILTER_NONE:    msg = "lcd without filtering"; break;
-        case FT_LCD_FILTER_DEFAULT: msg = "default lcd filter"; break;
-        case FT_LCD_FILTER_LIGHT:   msg = "light lcd filter"; break;
-        default:                    msg = "legacy lcd filter";
+      case FT_LCD_FILTER_NONE:
+        msg = "lcd without filtering";
+        break;
+      case FT_LCD_FILTER_DEFAULT:
+        msg = "default lcd filter";
+        break;
+      case FT_LCD_FILTER_LIGHT:
+        msg = "light lcd filter";
+        break;
+      default:
+        msg = "legacy lcd filter";
       }
       state->display.disp_text( disp, left, bottom + 15, msg );
 
@@ -515,7 +526,7 @@
       msg = column->use_kerning ? "use kerning" : "no kerning";
       state->display.disp_text( disp, left, bottom + 25, temp );
 
-      if (state->col == index)
+      if ( state->col == idx )
         state->display.disp_text( disp, left, bottom + 35, "**************" );
     }
   }
@@ -659,6 +670,7 @@
                          x, y, display->fore_color );
   }
 
+
   static void
   adisplay_draw_text( void*        _display,
                       int          x,
@@ -666,6 +678,7 @@
                       const char*  msg )
   {
     ADisplay  adisplay = _display;
+
 
     grWriteCellString( adisplay->bitmap, x, y, msg,
                        adisplay->fore_color );
@@ -771,7 +784,7 @@
   process_event( RenderState  state,
                  grEvent*     event )
   {
-    int  ret = 0;
+    int          ret    = 0;
     ColumnState  column = &state->columns[state->col];
 
 
@@ -787,81 +800,89 @@
       break;
 
     case grKeyLeft:
-      if (--state->col < 0)
+      if ( --state->col < 0 )
         state->col = 2;
       state->message = state->message0;
-      sprintf(state->message0, "column %d selected", state->col+1);
+      sprintf( state->message0, "column %d selected", state->col + 1 );
       break;
 
     case grKeyRight:
-      if (++state->col > 2)
+      if ( ++state->col > 2 )
         state->col = 0;
       state->message = state->message0;
-      sprintf(state->message0, "column %d selected", state->col+1);
+      sprintf( state->message0, "column %d selected", state->col + 1 );
       break;
 
     case grKEY( 'k' ):
       column->use_kerning = !column->use_kerning;
-      state->message     = column->use_kerning ? "using kerning" : "ignoring kerning";
+      state->message      = column->use_kerning
+                              ? (char *)"using kerning"
+                              : (char *)"ignoring kerning";
       break;
 
     case grKEY( 'd' ):
       column->use_deltas = !column->use_deltas;
-      state->message    = column->use_deltas ? "using rsb/lsb deltas"
-                                             : "ignoring rsb/lsb deltas";
+      state->message     = column->use_deltas
+                             ? (char *)"using rsb/lsb deltas"
+                             : (char *)"ignoring rsb/lsb deltas";
       break;
 
     case grKEY( 'l' ):
-      switch (column->lcd_filter)
+      switch ( column->lcd_filter )
       {
-          case FT_LCD_FILTER_NONE:
-              column->lcd_filter = FT_LCD_FILTER_DEFAULT;
-              state->message    = "using default LCD filter";
-              break;
+      case FT_LCD_FILTER_NONE:
+        column->lcd_filter = FT_LCD_FILTER_DEFAULT;
+        state->message     = (char *)"using default LCD filter";
+        break;
 
-          case FT_LCD_FILTER_DEFAULT:
-              column->lcd_filter = FT_LCD_FILTER_LIGHT;
-              state->message    = "using light LCD filter";
-              break;
+      case FT_LCD_FILTER_DEFAULT:
+        column->lcd_filter = FT_LCD_FILTER_LIGHT;
+        state->message     = (char *)"using light LCD filter";
+        break;
 
-          case FT_LCD_FILTER_LIGHT:
-              column->lcd_filter = FT_LCD_FILTER_LEGACY;
-              state->message    = "using legacy LCD filter";
-              break;
+      case FT_LCD_FILTER_LIGHT:
+        column->lcd_filter = FT_LCD_FILTER_LEGACY;
+        state->message     = (char *)"using legacy LCD filter";
+        break;
 
-          case FT_LCD_FILTER_LEGACY:
-              column->lcd_filter = FT_LCD_FILTER_NONE;
-              state->message    = "using no LCD filter";
-              break;
+      case FT_LCD_FILTER_LEGACY:
+        column->lcd_filter = FT_LCD_FILTER_NONE;
+        state->message     = (char *)"using no LCD filter";
+        break;
+
+      default:  /* to satisfy picky compilers */
+        break;
       }
       break;
 
     case grKEY( '1' ):
-      state->col = 0;
-      state->message = "column 1 selected";
+      state->col     = 0;
+      state->message = (char *)"column 1 selected";
       break;
 
     case grKEY( '2' ):
-      state->col = 1;
-      state->message = "column 2 selected";
+      state->col     = 1;
+      state->message = (char *)"column 2 selected";
       break;
 
     case grKEY( '3' ):
-      state->col = 2;
-      state->message = "column 3 selected";
+      state->col     = 2;
+      state->message = (char *)"column 3 selected";
       break;
 
     case grKEY( 'h' ):
-      column->hint_mode = (column->hint_mode + 1) % HINT_MODE_MAX;
+      column->hint_mode = ( column->hint_mode + 1 ) % HINT_MODE_MAX;
       state->message    = state->message0;
-      sprintf( state->message0, "column %d is %s", state->col+1, render_mode_names[column->hint_mode]);
+      sprintf( state->message0, "column %d is %s",
+               state->col + 1, render_mode_names[column->hint_mode] );
       break;
 
     case grKEY( 'r' ):
       column->use_lcd_filter = !column->use_lcd_filter;
-      state->message = state->message0;
-      sprintf( state->message0, "column %d is using %s", state->col+1, 
-               column->use_lcd_filter ? "lcd filtering" : "gray rendering" );
+      state->message         = state->message0;
+      sprintf( state->message0, "column %d is using %s",
+               state->col + 1, column->use_lcd_filter ? "lcd filtering"
+                                                      : "gray rendering" );
       break;
 
     case grKEY( 'n' ):

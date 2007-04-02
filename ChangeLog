@@ -4,6 +4,10 @@
 	the call to grNewSurface() failed. Reported by Sébastien Leix
 	(s.leix@sdi.fr)
 
+	* graph/win32/grwin32.c (gr_win32_surface_init): fix the Win32 window
+	size computations to properly adjust to border thickness and other
+	extras. Fix by Sébastien Leix (s.leix@sdi.fr)
+
 2007-04-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdiff.c: Remove compiler warnings.

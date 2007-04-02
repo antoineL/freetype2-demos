@@ -410,19 +410,28 @@ gr_win32_surface_init( grWin32Surface*  surface,
   surface->window_width  = bitmap->width;
   surface->window_height = bitmap->rows;
 
-  surface->window = CreateWindow(
-        /* LPCSTR lpszClassName;    */ "FreeTypeTestGraphicDriver",
-        /* LPCSTR lpszWindowName;   */ "FreeType Test Graphic Driver",
-        /* DWORD dwStyle;           */  WS_OVERLAPPED | WS_SYSMENU,
-        /* int x;                   */  CW_USEDEFAULT,
-        /* int y;                   */  CW_USEDEFAULT,
-        /* int nWidth;              */  bitmap->width + 2*GetSystemMetrics(SM_CXBORDER),
-        /* int nHeight;             */  bitmap->rows  + GetSystemMetrics(SM_CYBORDER)
-                                              + GetSystemMetrics(SM_CYCAPTION),
-        /* HWND hwndParent;         */  HWND_DESKTOP,
-        /* HMENU hmenu;             */  0,
-        /* HINSTANCE hinst;         */  GetModuleHandle( NULL ),
-        /* void FAR* lpvParam;      */  surface );
+  {
+    RECT  WndRect;
+
+    WndRect.left   = 0;
+    WndRect.top    = 0;
+    WndRect.right  = bitmap->width;
+    WndRect.bottom = bitmap->rows;
+    AdjustWindowRect(&WndRect, WS_SYSMENU | WS_CAPTION, FALSE);
+
+    surface->window = CreateWindow(
+            /* LPCSTR lpszClassName;    */ "FreeTypeTestGraphicDriver",
+            /* LPCSTR lpszWindowName;   */ "FreeType Test Graphic Driver",
+            /* DWORD dwStyle;           */  WS_OVERLAPPED | WS_SYSMENU,
+            /* int x;                   */  CW_USEDEFAULT,
+            /* int y;                   */  CW_USEDEFAULT,
+            /* int nWidth;              */  WndRect.right - WndRect.left,
+            /* int nHeight;             */  WndRect.bottom - WndRect.top,
+            /* HWND hwndParent;         */  HWND_DESKTOP,
+            /* HMENU hmenu;             */  0,
+            /* HINSTANCE hinst;         */  GetModuleHandle( NULL ),
+            /* void FAR* lpvParam;      */  surface );
+  }
 
   if ( surface->window == 0 )
     return  0;

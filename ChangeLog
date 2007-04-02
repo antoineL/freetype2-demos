@@ -11,6 +11,10 @@
 	* src/ftdiff.c (render_state_draw): fixed small bug that prevent unhinted
 	rendering from working as expected with embedded bitmaps
 
+	* src/ftdiff.c (render_state_set_files, render_state_set_file): allow to
+	used any face in a multi-face font file
+
+
 2007-04-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdiff.c: Remove compiler warnings.

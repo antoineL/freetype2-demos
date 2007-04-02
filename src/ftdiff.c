@@ -22,6 +22,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+  static void usage( void )
+  {
+    fprintf( stderr,
+             "ftdiff: a simple program to proof several text hinting modes\n"
+                     "usage:   ftdiff [options] fontfile [fontfile2 ...]\n\n"
+                     "   options:   -r NNN      : change resolution in dpi (default is 72)\n"
+                     "              -s NNN      : change character size in points (default is 16)\n"
+                     "              -f TEXTFILE : change displayed text\n\n" );
+    exit( 1 );
+  }
+
+
 
   static void panic( const char*  fmt,
                      ... )
@@ -132,6 +144,13 @@
 
   } ColumnStateRec, *ColumnState;
 
+  typedef struct  _FontFaceRec_
+  {
+      const char*   filepath;
+      int           index;
+
+  } FontFaceRec, *FontFace;
+
   typedef struct  _RenderStateRec
   {
     FT_Library            library;
@@ -141,13 +160,14 @@
     int                   need_rescale;
     int                   col;
     ColumnStateRec        columns[3];
+    FontFace              faces;
+    int                   num_faces;
+    int                   face_index;
     const char*           filepath;
     const char*           filename;
     FT_Face               face;
     FT_Size               size;
     char**                files;
-    int                   file_index;
-    int                   file_count;
     char*                 message;
     DisplayRec            display;
     char                  filepath0[1024];
@@ -249,15 +269,51 @@
   render_state_set_files( RenderState  state,
                           char**       files )
   {
-    int  count = 0;
-
+    FontFace  faces     = NULL;
+    int       num_faces = 0;
+    int       max_faces = 0;
 
     state->files = files;
     for ( ; files[0] != NULL; files++ )
-      count++;
+    {
+      FT_Face   face;
+      FT_Error  error = FT_New_Face( state->library, files[0], -1, &face );
+      int       count;
 
-    state->file_count = count;
-    state->file_index = 0;
+      if (error)
+      {
+        fprintf( stderr, "ftdiff: could not open font file '%s'\n", files[0] );
+        continue;
+      }
+
+      for ( count = 0; count < (int)face->num_faces; count++ )
+      {
+        if ( num_faces >= max_faces )
+        {
+          max_faces += (max_faces >> 1) + 8;
+          faces = realloc( faces, max_faces*sizeof(faces[0]) );
+          if (faces == NULL)
+            panic("ftdiff: not enough memory\n");
+        }
+
+        faces[num_faces].filepath = files[0];
+        faces[num_faces].index    = count;
+        num_faces++;
+      }
+
+      FT_Done_Face( face );
+    }
+
+    state->faces     = faces;
+    state->num_faces = num_faces;
+
+    if (num_faces == 0)
+    {
+      fprintf(stderr, "ftdiff: no input font files !\n" );
+      usage();
+    }
+
+    state->face_index = 0;
   }
 
 
@@ -265,19 +321,19 @@
   render_state_set_file( RenderState  state,
                          int          idx )
   {
-    char*  filepath;
+    const char*  filepath;
 
 
     if ( idx < 0 )
-      idx = state->file_count - 1;
-    else if ( idx >= state->file_count )
+      idx = state->num_faces - 1;
+    else if ( idx >= state->num_faces )
       idx = 0;
 
-    if ( idx >= state->file_count )
+    if ( idx >= state->num_faces )
       return -2;
 
-    state->file_index = idx;
-    filepath = state->files[idx];
+    state->face_index = idx;
+    filepath = state->faces[idx].filepath;
 
     if ( state->face )
     {
@@ -292,7 +348,7 @@
       FT_Error  error;
 
 
-      error = FT_New_Face( state->library, filepath, 0, &state->face );
+      error = FT_New_Face( state->library, filepath, state->faces[idx].index, &state->face );
       if ( error )
         return -1;
 
@@ -883,11 +939,11 @@
       break;
 
     case grKEY( 'n' ):
-      render_state_set_file( state, state->file_index + 1 );
+      render_state_set_file( state, state->face_index + 1 );
       break;
 
     case grKEY( 'p' ):
-      render_state_set_file( state, state->file_index - 1 );
+      render_state_set_file( state, state->face_index - 1 );
       break;
 
     case grKEY( 'g' ):
@@ -922,18 +978,6 @@
   }
 
 
-  static void usage( void )
-  {
-    fprintf( stderr,
-      "ftdiff: a simple program to proof several text hinting modes\n"
-      "usage:   ftdiff [options] fontfile [fontfile2 ...]\n\n"
-      "   options:   -r NNN      : change resolution in dpi (default is 72)\n"
-      "              -s NNN      : change character size in points (default is 16)\n"
-      "              -f TEXTFILE : change displayed text\n\n" );
-    exit( 1 );
-  }
-
-
   static char*
   get_option_arg( char*   option,
                   char** *pargv,
@@ -964,9 +1008,25 @@
 
     if ( state->message == NULL )
     {
+      FontFace  face = &state->faces[state->face_index];
+      int       index, total;
+
+      index = face->index;
+      total = 1;
+      while ( total + state->face_index < state->num_faces && face[total].filepath == face[0].filepath)
+          total++;
+
+      total += index;
+
       state->message = state->message0;
-      sprintf( state->message0, "%s @ %5.1fpt",
-               state->filename, state->char_size );
+      if (total > 1)
+        sprintf( state->message0, "%s %d/%d @ %5.1fpt",
+                 state->filename, index+1, total,
+                 state->char_size );
+      else
+        sprintf( state->message0, "%s @ %5.1fpt",
+                 state->filename,
+                 state->char_size );
     }
 
     grWriteCellString( adisplay->bitmap, 0, DIM_Y - 10, state->message,

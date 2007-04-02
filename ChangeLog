@@ -8,6 +8,9 @@
 	size computations to properly adjust to border thickness and other
 	extras. Fix by Sébastien Leix (s.leix@sdi.fr)
 
+	* src/ftdiff.c (render_state_draw): fixed small bug that prevent unhinted
+	rendering from working as expected with embedded bitmaps
+
 2007-04-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdiff.c: Remove compiler warnings.

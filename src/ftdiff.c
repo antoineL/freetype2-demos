@@ -369,7 +369,7 @@
       load_flags = FT_LOAD_TARGET_LIGHT;
 
     if ( rmode == HINT_MODE_UNHINTED )
-      load_flags |= FT_LOAD_NO_HINTING;
+      load_flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP;
 
     for ( ; *p; p++ )
     {

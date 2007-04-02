@@ -580,10 +580,7 @@
     surface = grNewSurface( 0, &bit );
 
     if ( !surface )
-    {
-      free( display );
       return -1;
-    }
 
     display->surface = surface;
     display->bitmap  = &surface->bitmap;
@@ -1061,7 +1058,11 @@
     }
 
     /* Initialize display */
-    adisplay_init( adisplay, gr_pixel_mode_rgb24 );
+    if ( adisplay_init( adisplay, gr_pixel_mode_rgb24 ) < 0 )
+    {
+        fprintf(stderr, "could not initialize display ! Aborting.\n" );
+        exit(1);
+    }
     display->disp      = adisplay;
     display->disp_draw = adisplay_draw_glyph;
     display->disp_text = adisplay_draw_text;

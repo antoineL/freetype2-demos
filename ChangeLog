@@ -1,3 +1,9 @@
+2007-04-02  David Turner  <david@freetype.org>
+
+	* src/ftdiff.c (adisplay_init): fixed small bug that occured when
+	the call to grNewSurface() failed. Reported by Sébastien Leix
+	(s.leix@sdi.fr)
+
 2007-04-01  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdiff.c: Remove compiler warnings.

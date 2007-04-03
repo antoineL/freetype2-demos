@@ -1,19 +1,31 @@
+2007-04-03  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftdiff.c (usage): Make message similar to other ftdemo
+	programs.
+
 2007-04-02  David Turner  <david@freetype.org>
 
-	* src/ftdiff.c (adisplay_init): fixed small bug that occured when
-	the call to grNewSurface() failed. Reported by Sébastien Leix
-	(s.leix@sdi.fr)
+	* graph/win32/grwin32.c (gr_win32_surface_init): Fix the Win32
+	window size computations to properly adjust border thickness and
+	other extras.  Fix by SÃ©bastien Leix <s.leix@sdi.fr>.
 
-	* graph/win32/grwin32.c (gr_win32_surface_init): fix the Win32 window
-	size computations to properly adjust to border thickness and other
-	extras. Fix by Sébastien Leix (s.leix@sdi.fr)
+	* src/ftdiff.c (render_state_draw): Fix small bug that prevented
+	unhinted rendering from working as expected with embedded bitmaps.
 
-	* src/ftdiff.c (render_state_draw): fixed small bug that prevent unhinted
-	rendering from working as expected with embedded bitmaps
+	(adisplay_init): Fix small bug that occurred when the
+	call to grNewSurface() failed.  Reported by SÃ©bastien Leix
+	<s.leix@sdi.fr>.
 
-	* src/ftdiff.c (render_state_set_files, render_state_set_file): allow to
-	used any face in a multi-face font file
+	(usage): Move up in file.
 
+	(FontFaceRec): New structure.
+	(RenderStateRec): Integrate it.
+	Update all users.
+
+	(render_state_set_files, render_state_set_file): Handle all faces in
+	a multi-face font file.
+
+	(write_message): Handle multi-face font files.
 
 2007-04-01  Werner Lemberg  <wl@gnu.org>
 

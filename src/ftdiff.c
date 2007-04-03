@@ -22,21 +22,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-  static void usage( void )
+
+  static void
+  usage( void )
   {
     fprintf( stderr,
-             "ftdiff: a simple program to proof several text hinting modes\n"
-                     "usage:   ftdiff [options] fontfile [fontfile2 ...]\n\n"
-                     "   options:   -r NNN      : change resolution in dpi (default is 72)\n"
-                     "              -s NNN      : change character size in points (default is 16)\n"
-                     "              -f TEXTFILE : change displayed text\n\n" );
+      "ftdiff: a simple program to proof several text hinting modes\n"
+      "-----------------------------------------------------------\n"
+      "\n"
+      "Usage: ftdiff [options] fontfile [fontfile2 ...]\n"
+      "\n"
+      "  -r R         use resolution R dpi (default: 72 dpi)\n"
+      "  -s S         set character size to S points (default: 16 pt)\n"
+      "  -f TEXTFILE  change displayed text, using text in TEXTFILE\n"
+      "\n" );
     exit( 1 );
   }
 
 
 
-  static void panic( const char*  fmt,
-                     ... )
+  static void
+  panic( const char*  fmt,
+         ... )
   {
     va_list  args;
 
@@ -144,10 +151,10 @@
 
   } ColumnStateRec, *ColumnState;
 
-  typedef struct  _FontFaceRec_
+  typedef struct  _FontFaceRec
   {
-      const char*   filepath;
-      int           index;
+    const char*  filepath;
+    int          index;
 
   } FontFaceRec, *FontFace;
 
@@ -273,6 +280,7 @@
     int       num_faces = 0;
     int       max_faces = 0;
 
+
     state->files = files;
     for ( ; files[0] != NULL; files++ )
     {
@@ -280,9 +288,11 @@
       FT_Error  error = FT_New_Face( state->library, files[0], -1, &face );
       int       count;
 
-      if (error)
+
+      if ( error )
       {
-        fprintf( stderr, "ftdiff: could not open font file '%s'\n", files[0] );
+        fprintf( stderr,
+                 "ftdiff: could not open font file `%s'\n", files[0] );
         continue;
       }
 
@@ -290,9 +300,9 @@
       {
         if ( num_faces >= max_faces )
         {
-          max_faces += (max_faces >> 1) + 8;
-          faces = realloc( faces, max_faces*sizeof(faces[0]) );
-          if (faces == NULL)
+          max_faces += ( max_faces >> 1 ) + 8;
+          faces = realloc( faces, max_faces * sizeof ( faces[0] ) );
+          if ( faces == NULL )
             panic("ftdiff: not enough memory\n");
         }
 
@@ -307,9 +317,9 @@
     state->faces     = faces;
     state->num_faces = num_faces;
 
-    if (num_faces == 0)
+    if ( num_faces == 0 )
     {
-      fprintf(stderr, "ftdiff: no input font files !\n" );
+      fprintf( stderr, "ftdiff: no input font files!\n" );
       usage();
     }
 
@@ -348,7 +358,8 @@
       FT_Error  error;
 
 
-      error = FT_New_Face( state->library, filepath, state->faces[idx].index, &state->face );
+      error = FT_New_Face( state->library, filepath,
+                           state->faces[idx].index, &state->face );
       if ( error )
         return -1;
 
@@ -1009,19 +1020,21 @@
     if ( state->message == NULL )
     {
       FontFace  face = &state->faces[state->face_index];
-      int       index, total;
+      int       idx, total;
 
-      index = face->index;
+
+      idx   = face->index;
       total = 1;
-      while ( total + state->face_index < state->num_faces && face[total].filepath == face[0].filepath)
-          total++;
+      while ( total + state->face_index < state->num_faces &&
+              face[total].filepath == face[0].filepath     )
+        total++;
 
-      total += index;
+      total += idx;
 
       state->message = state->message0;
-      if (total > 1)
+      if ( total > 1 )
         sprintf( state->message0, "%s %d/%d @ %5.1fpt",
-                 state->filename, index+1, total,
+                 state->filename, idx + 1, total,
                  state->char_size );
       else
         sprintf( state->message0, "%s @ %5.1fpt",
@@ -1120,8 +1133,8 @@
     /* Initialize display */
     if ( adisplay_init( adisplay, gr_pixel_mode_rgb24 ) < 0 )
     {
-        fprintf(stderr, "could not initialize display ! Aborting.\n" );
-        exit(1);
+      fprintf( stderr, "could not initialize display!  Aborting.\n" );
+      exit( 1 );
     }
     display->disp      = adisplay;
     display->disp_draw = adisplay_draw_glyph;

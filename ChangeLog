@@ -1,3 +1,14 @@
+2007-04-04  Werner Lemberg  <wl@gnu.org>
+
+
+	* Version 2.3.3 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-3'.
+
+	* README: Updated.
+
 2007-04-03  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftdiff.c (usage): Make message similar to other ftdemo

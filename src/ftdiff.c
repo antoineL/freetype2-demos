@@ -860,6 +860,7 @@
       break;
 
     case grKeyF1:
+    case grKEY( '?' ):
       event_help( state );
       break;
 

@@ -1,5 +1,14 @@
 2007-04-09  Werner Lemberg  <wl@gnu.org>
 
+
+	* Version 2.3.4 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-4'.
+
+	* README: Updated.
+
 	* src/ftdiff.c (process_event): Handle `?' key.
 
 2007-04-04  Werner Lemberg  <wl@gnu.org>

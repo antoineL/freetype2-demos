@@ -308,6 +308,9 @@ else
   $(OBJ_DIR_2)/ftmemchk.$(SO): $(SRC_DIR)/ftmemchk.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
+  $(OBJ_DIR_2)/fttimer.$(SO): $(SRC_DIR)/fttimer.c
+	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+
   $(OBJ_DIR_2)/fttry.$(SO): $(SRC_DIR)/fttry.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
@@ -335,10 +338,6 @@ else
 
   $(OBJ_DIR_2)/ftstring.$(SO): $(SRC_DIR)/ftstring.c \
                                $(GRAPH_LIB)
-	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
-                     $T$(subst /,$(COMPILER_SEP),$@ $<)
-
-  $(OBJ_DIR_2)/fttimer.$(SO): $(SRC_DIR)/fttimer.c $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
 
@@ -441,6 +440,9 @@ else
   $(BIN_DIR_2)/ftdump$E: $(OBJ_DIR_2)/ftdump.$(SO) $(FTLIB)
 	  $(LINK_COMMON)
 
+  $(BIN_DIR_2)/fttimer$E: $(OBJ_DIR_2)/fttimer.$(SO) $(FTLIB) $(COMMON_OBJ)
+	  $(LINK_COMMON)
+
   $(BIN_DIR_2)/fttry$E: $(OBJ_DIR_2)/fttry.$(SO) $(FTLIB)
 	  $(LINK)
 
@@ -480,10 +482,6 @@ else
   $(BIN_DIR_2)/ftstring$E: $(OBJ_DIR_2)/ftstring.$(SO) $(FTLIB) \
                            $(GRAPH_LIB) $(COMMON_OBJ) $(FTCOMMON_OBJ)
 	  $(LINK_NEW)
-
-  $(BIN_DIR_2)/fttimer$E: $(OBJ_DIR_2)/fttimer.$(SO) $(FTLIB) \
-                          $(GRAPH_LIB) $(COMMON_OBJ)
-	  $(LINK_GRAPH)
 
 
 endif

@@ -2,6 +2,7 @@
 
 	* Makefile: Fix rules for fttimer which doesn't use graphical
 	output.
+	Fix rule for ftdump to make it work with parallel builds.
 
 2007-04-09  Werner Lemberg  <wl@gnu.org>
 

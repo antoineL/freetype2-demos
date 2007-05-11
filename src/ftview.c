@@ -70,7 +70,7 @@
     int          render_mode;
     FT_Encoding  encoding;
     int          res;
-    int          ptsize;            /* current point size */
+    int          ptsize;            /* current point size, 26.6 format */
     int          lcd_mode;
     double       gamma;
 
@@ -84,7 +84,7 @@
     int          Fail;
     int          preload;
 
-  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0, 0, 0, 0, 0, 0, NULL };
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0, 0, 0, 0, 0, 0, NULL, { 0 }, 0, 0 };
 
 
   static FTDemo_Display*  display;
@@ -151,7 +151,7 @@
         gindex = FTDemo_Get_Index( handle, i );
 
       error = FT_Load_Glyph( size->face, gindex,
-                             handle->image_type.flags | FT_LOAD_NO_BITMAP );
+                             handle->load_flags | FT_LOAD_NO_BITMAP );
       slot = size->face->glyph;
 
       if ( !error && slot->format == FT_GLYPH_FORMAT_OUTLINE )
@@ -231,7 +231,7 @@ Next:
       else
         gindex = FTDemo_Get_Index( handle, i );
 
-      error = FT_Load_Glyph( face, gindex, handle->image_type.flags );
+      error = FT_Load_Glyph( face, gindex, handle->load_flags );
       if ( !error )
       {
         FT_GlyphSlot_Embolden( face->glyph );
@@ -390,11 +390,11 @@ Next:
 
     {
       error = FTC_Manager_LookupFace( handle->cache_manager,
-                                      handle->image_type.face_id, &face );
+                                      handle->scaler.face_id, &face );
       if ( error )
       {
         /* can't access the font file. do not render anything */
-        fprintf( stderr, "can't access font file %p\n", handle->image_type.face_id );
+        fprintf( stderr, "can't access font file %p\n", handle->scaler.face_id );
         return 0;
       }
 
@@ -620,12 +620,12 @@ Next:
   {
     status.ptsize += delta;
 
-    if ( status.ptsize < 1 )
-      status.ptsize = 1;
-    else if ( status.ptsize > MAXPTSIZE )
-      status.ptsize = MAXPTSIZE;
+    if ( status.ptsize < 64*1 )
+      status.ptsize = 1*64;
+    else if ( status.ptsize > MAXPTSIZE*64 )
+      status.ptsize = MAXPTSIZE*64;
 
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
   }
 
 
@@ -829,10 +829,10 @@ Next:
       event_font_change( -1 );
       break;
 
-    case grKeyUp:       event_size_change(   1 ); break;
-    case grKeyDown:     event_size_change(  -1 ); break;
-    case grKeyPageUp:   event_size_change(  10 ); break;
-    case grKeyPageDown: event_size_change( -10 ); break;
+    case grKeyUp:       event_size_change(   32 ); break;
+    case grKeyDown:     event_size_change(  -32 ); break;
+    case grKeyPageUp:   event_size_change(  640 ); break;
+    case grKeyPageDown: event_size_change( -640 ); break;
 
     case grKeyLeft:  event_index_change(    -1 ); break;
     case grKeyRight: event_index_change(     1 ); break;
@@ -860,7 +860,7 @@ Next:
 
 
     error = FTC_Manager_LookupFace( handle->cache_manager,
-                                    handle->image_type.face_id, &face );
+                                    handle->scaler.face_id, &face );
     if ( error )
       Fatal( "can't access font file" );
 
@@ -892,10 +892,10 @@ Next:
     grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
 
     format = ( status.encoding != FT_ENCODING_NONE )
-             ? "at %d points, first char code = 0x%x"
-             : "at %d points, first glyph index = %d";
+             ? "at %g points, first char code = 0x%x"
+             : "at %g points, first glyph index = %d";
 
-    snprintf( status.header_buffer, 256, format, status.ptsize, status.Num );
+    snprintf( status.header_buffer, 256, format, status.ptsize/64.0, status.Num );
 
     if ( FT_HAS_GLYPH_NAMES( face ) )
     {
@@ -1032,9 +1032,9 @@ Next:
     if ( *argc <= 1 )
       usage( execname );
 
-    status.ptsize = atoi( *argv[0] );
+    status.ptsize = atof( *argv[0] ) * 64.0;
     if ( status.ptsize == 0 )
-      status.ptsize = 64;
+      status.ptsize = 64*10;
 
     (*argc)--;
     (*argv)++;

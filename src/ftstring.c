@@ -132,7 +132,7 @@
     status.font_index += delta;
 
     FTDemo_Set_Current_Font( handle, handle->fonts[status.font_index] );
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 
     FTDemo_String_Set( handle, (unsigned char*)Text );
@@ -201,12 +201,12 @@
   {
     status.ptsize += delta;
 
-    if ( status.ptsize < 1 )
-      status.ptsize = 1;
-    else if ( status.ptsize > MAXPTSIZE )
-      status.ptsize = MAXPTSIZE;
+    if ( status.ptsize < 1*64 )
+      status.ptsize = 1*64;
+    else if ( status.ptsize > MAXPTSIZE*64 )
+      status.ptsize = MAXPTSIZE*64;
 
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
   }
 
 
@@ -358,10 +358,10 @@
       event_font_change( -1 );
       break;
 
-    case grKeyUp:       event_size_change(   1 ); break;
-    case grKeyDown:     event_size_change(  -1 ); break;
-    case grKeyPageUp:   event_size_change(  10 ); break;
-    case grKeyPageDown: event_size_change( -10 ); break;
+    case grKeyUp:       event_size_change(   64 ); break;
+    case grKeyDown:     event_size_change(  -64 ); break;
+    case grKeyPageUp:   event_size_change(  640); break;
+    case grKeyPageDown: event_size_change( -640 ); break;
 
     case grKeyLeft:  event_angle_change(    -3 ); break;
     case grKeyRight: event_angle_change(     3 ); break;
@@ -402,7 +402,7 @@
 
 
     error = FTC_Manager_LookupFace( handle->cache_manager,
-                                    handle->image_type.face_id, &face );
+                                    handle->scaler.face_id, &face );
     if ( error )
       PanicZ( "can't access font file" );
 
@@ -436,8 +436,8 @@
     grWriteCellString( display->bitmap, 0, 0,
                        status.header, display->fore_color );
 
-    sprintf( status.header_buffer, "at %d points, angle = %d",
-             status.ptsize, status.angle );
+    sprintf( status.header_buffer, "at %g points, angle = %d",
+             status.ptsize/64.0, status.angle );
     grWriteCellString( display->bitmap, 0, CELLSTRING_HEIGHT,
                        status.header_buffer, display->fore_color );
 
@@ -511,7 +511,7 @@
     if ( *argc <= 1 )
       usage( execname );
 
-    status.ptsize = atoi( *argv[0] );
+    status.ptsize = (int)(atof( *argv[0] ) * 64.0);
     if ( status.ptsize == 0 )
       status.ptsize = 64;
 

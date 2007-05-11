@@ -1,3 +1,11 @@
+2007-05-11  David Turner  <david@freetype.org>
+
+	* src/ftcommon.h, src/ftcommon.c, src/ftview.c, src/ftgrid.c,
+	src/ftstring.c: adapt test programs to use the new
+	FTC_ImageCache_LookupScaler and FTC_SBitCache_LookupScaler
+	functions. This allows you to specify fractional pixel/point
+	sizes on the command line (e.g. ftview 13.5 ~/fonts/*)
+
 2007-05-09  Ryan Hill  <dirtyepic@gentoo.org>
 
 	* Makefile: Fix rules for fttimer which doesn't use graphical

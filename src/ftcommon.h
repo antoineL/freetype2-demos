@@ -171,7 +171,8 @@
 
     /* use FTDemo_Set_Current_XXX to set the following two fields */
     PFont             current_font;      /* selected font */
-    FTC_ImageTypeRec  image_type;
+    FTC_ScalerRec     scaler;
+    FT_ULong          load_flags;
 
     /* call FTDemo_Update_Current_Flags after setting any of the following fields */
     int               hinted;            /* is glyph hinting active?    */
@@ -225,6 +226,11 @@
   FTDemo_Set_Current_Pointsize( FTDemo_Handle*  handle,
                                 int             point_size,
                                 int             res );
+
+  void
+  FTDemo_Set_Current_Charsize( FTDemo_Handle*  handle,
+                               int             point_size,
+                               int             res );
 
   void
   FTDemo_Update_Current_Flags( FTDemo_Handle*  handle );

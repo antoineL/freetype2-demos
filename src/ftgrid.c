@@ -389,7 +389,7 @@ grid_status_draw_outline( GridStatus       st,
   _af_debug_disable_vert_hints = !st->do_vert_hints;
 
   FT_Load_Glyph( size->face, st->Num,
-                 handle->image_type.flags | FT_LOAD_NO_BITMAP );
+                 handle->load_flags | FT_LOAD_NO_BITMAP );
 
   slot = size->face->glyph;
   if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )
@@ -573,12 +573,12 @@ grid_status_draw_outline( GridStatus       st,
   {
     status.ptsize += delta;
 
-    if ( status.ptsize < 1 )
-      status.ptsize = 1;
-    else if ( status.ptsize > MAXPTSIZE )
-      status.ptsize = MAXPTSIZE;
+    if ( status.ptsize < 1*64 )
+      status.ptsize = 1*64;
+    else if ( status.ptsize > MAXPTSIZE*64 )
+      status.ptsize = MAXPTSIZE*64;
 
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
   }
 
 
@@ -611,7 +611,7 @@ grid_status_draw_outline( GridStatus       st,
     status.font_index += delta;
 
     FTDemo_Set_Current_Font( handle, handle->fonts[status.font_index] );
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 
     num_indices = handle->current_font->num_indices;
@@ -749,7 +749,7 @@ grid_status_draw_outline( GridStatus       st,
 
 
     error = FTC_Manager_LookupFace( handle->cache_manager,
-                                    handle->image_type.face_id, &face );
+                                    handle->scaler.face_id, &face );
     if ( error )
       Fatal( "can't access font file" );
 
@@ -786,9 +786,9 @@ grid_status_draw_outline( GridStatus       st,
     grWriteCellString( display->bitmap, 0, 0, status.header,
                        display->fore_color );
 
-    format = "at %d points, first glyph index = %d";
+    format = "at %g points, first glyph index = %d";
 
-    snprintf( status.header_buffer, 256, format, status.ptsize, status.Num );
+    snprintf( status.header_buffer, 256, format, status.ptsize/64., status.Num );
 
     if ( FT_HAS_GLYPH_NAMES( face ) )
     {
@@ -880,9 +880,9 @@ grid_status_draw_outline( GridStatus       st,
     if ( *argc <= 1 )
       usage( execname );
 
-    status.ptsize = atoi( *argv[0] );
+    status.ptsize = (int)(atof( *argv[0] ) * 64.0);
     if ( status.ptsize == 0 )
-      status.ptsize = 64;
+      status.ptsize = 64*10;
 
     if ( status.res <= 0 )
       status.res = 72;
@@ -919,8 +919,8 @@ grid_status_draw_outline( GridStatus       st,
     if ( handle->num_fonts == 0 )
       Fatal( "could not find/open any font file" );
 
-    printf( "ptsize =%d \n", status.ptsize );
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    printf( "ptsize =%g \n", status.ptsize/64.0 );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 
     event_font_change( 0 );

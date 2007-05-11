@@ -521,7 +521,7 @@
                            PFont           font )
   {
     handle->current_font = font;
-    handle->image_type.face_id = (FTC_FaceID)font;
+    handle->scaler.face_id = (FTC_FaceID)font;
 
     handle->string_reload = 1;
   }
@@ -534,10 +534,30 @@
     if ( pixel_size > 0xFFFF )
       pixel_size = 0xFFFF;
 
-    handle->image_type.width  = (FT_UShort)pixel_size;
-    handle->image_type.height = (FT_UShort)pixel_size;
+    handle->scaler.width  = (FT_UInt) pixel_size;
+    handle->scaler.height = (FT_UInt) pixel_size;
+    handle->scaler.pixel  = 1;
+    handle->scaler.x_res  = 0;
+    handle->scaler.y_res  = 0;
 
     handle->string_reload = 1;
+  }
+
+  void
+  FTDemo_Set_Current_Charsize( FTDemo_Handle*  handle,
+                               int             char_size,
+                               int             resolution )
+  {
+      if ( char_size > 0xFFFFF )
+          char_size = 0xFFFFF;
+
+      handle->scaler.width  = (FT_UInt) char_size;
+      handle->scaler.height = (FT_UInt) char_size;
+      handle->scaler.pixel  = 0;
+      handle->scaler.x_res  = (FT_UInt) resolution;
+      handle->scaler.y_res  = (FT_UInt) resolution;
+
+      handle->string_reload = 1;
   }
 
   void
@@ -605,8 +625,8 @@
     else
       flags |= FT_LOAD_NO_HINTING;
 
-    handle->image_type.flags = flags;
-    handle->string_reload    = 1;
+    handle->load_flags    = flags;
+    handle->string_reload = 1;
   }
 
 
@@ -614,7 +634,7 @@
   FTDemo_Get_Index( FTDemo_Handle*  handle,
                     FT_UInt32       charcode )
   {
-    FTC_FaceID  face_id = handle->image_type.face_id;
+    FTC_FaceID  face_id = handle->scaler.face_id;
     PFont       font    = handle->current_font;
 
 
@@ -627,16 +647,10 @@
   FTDemo_Get_Size( FTDemo_Handle*  handle,
                    FT_Size*        asize )
   {
-    FTC_ScalerRec  scaler;
     FT_Size        size;
 
 
-    scaler.face_id = handle->image_type.face_id;
-    scaler.width   = handle->image_type.width;
-    scaler.height  = handle->image_type.height;
-    scaler.pixel   = 1;
-
-    error = FTC_Manager_LookupSize( handle->cache_manager, &scaler, &size );
+    error = FTC_Manager_LookupSize( handle->cache_manager, &handle->scaler, &size );
 
     if ( !error )
       *asize = size;
@@ -757,25 +771,33 @@
                           FT_Glyph*       aglyf )
   {
     int   cached_bitmap = 1;
+    int   width, height;
 
     *aglyf = NULL;
 
     /* use the SBits cache to store small glyph bitmaps; this is a lot */
     /* more memory-efficient                                           */
     /*                                                                 */
-    if ( handle->use_sbits_cache        &&
-         handle->image_type.width  < 48 &&
-         handle->image_type.height < 48 )
+
+    width  = handle->scaler.width;
+    height = handle->scaler.height;
+    if ( handle->use_sbits_cache && !handle->scaler.pixel ) {
+        width  = (( width * handle->scaler.x_res + 36 ) / 72)  >> 6;
+        height = (( height * handle->scaler.y_res + 36 ) / 72) >> 6;
+    }
+
+    if ( handle->use_sbits_cache && width < 48 && height < 48 )
     {
       FTC_SBit   sbit;
       FT_Bitmap  source;
 
 
-      error = FTC_SBitCache_Lookup( handle->sbits_cache,
-                                    &handle->image_type,
-                                    Index,
-                                    &sbit,
-                                    NULL );
+      error = FTC_SBitCache_LookupScaler( handle->sbits_cache,
+                                          &handle->scaler,
+                                          handle->load_flags,
+                                          Index,
+                                          &sbit,
+                                          NULL );
       if ( error )
         goto Exit;
 
@@ -848,11 +870,12 @@
     {
       FT_Glyph   glyf;
 
-      error = FTC_ImageCache_Lookup( handle->image_cache,
-                                     &handle->image_type,
-                                     Index,
-                                     &glyf,
-                                     NULL );
+      error = FTC_ImageCache_LookupScaler( handle->image_cache,
+                                           &handle->scaler,
+                                           handle->load_flags,
+                                           Index,
+                                           &glyf,
+                                           NULL );
 
       if ( !error )
         error = FTDemo_Glyph_To_Bitmap( handle, glyf, target, left, top,
@@ -1088,7 +1111,7 @@
 
       /* load the glyph and get the image */
       if ( !FT_Load_Glyph( face, glyph->glyph_index,
-                           handle->image_type.flags )  &&
+                           handle->load_flags )  &&
            !FT_Get_Glyph( face->glyph, &glyph->image ) )
       {
         FT_Glyph_Metrics*  metrics = &face->glyph->metrics;

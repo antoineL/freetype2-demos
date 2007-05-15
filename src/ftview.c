@@ -690,7 +690,7 @@ Next:
     status.font_index += delta;
 
     FTDemo_Set_Current_Font( handle, handle->fonts[status.font_index] );
-    FTDemo_Set_Current_Pointsize( handle, status.ptsize, status.res );
+    FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 
     num_indices = handle->current_font->num_indices;

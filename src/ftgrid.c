@@ -716,8 +716,8 @@ grid_status_draw_outline( GridStatus       st,
 
     case grKeyLeft:     event_index_change( -1 ); break;
     case grKeyRight:    event_index_change( +1 ); break;
-    case grKeyUp:       event_size_change( +1 ); break;
-    case grKeyDown:     event_size_change( -1 ); break;
+    case grKeyUp:       event_size_change( +32 ); break;
+    case grKeyDown:     event_size_change( -32 ); break;
 
     case grKEY( ' ' ):  event_grid_reset( &status );
                         status.do_horz_hints = 1;

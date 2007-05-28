@@ -19,6 +19,7 @@
 #include "ftcommon.h"
 #include "common.h"
 #include <math.h>
+#include <stdio.h>
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -394,7 +395,7 @@ Next:
       if ( error )
       {
         /* can't access the font file. do not render anything */
-        fprintf( stderr, "can't access font file %p\n", handle->scaler.face_id );
+        fprintf( stderr, "can't access font file %p\n", (void*)handle->scaler.face_id );
         return 0;
       }
 
@@ -405,23 +406,23 @@ Next:
 
         max_size = 0;
         for ( i = 0; i < face->num_fixed_sizes; i++ )
-          if ( face->available_sizes[i].height >= max_size )
-            max_size = face->available_sizes[i].height;
+          if ( face->available_sizes[i].height >= max_size/64 )
+            max_size = face->available_sizes[i].height*64;
       }
     }
 
     start_x = 4;
     start_y = 2 * HEADER_HEIGHT;
 
-    for ( pt_size = first_size; pt_size < max_size; pt_size++ )
+    for ( pt_size = first_size; pt_size < max_size; pt_size += 64 )
     {
       sprintf( (char*)text,
-                "%d: the quick brown fox jumps over the lazy dog "
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size );
+                "%g: the quick brown fox jumps over the lazy dog "
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size/64.0 );
 
       p = text;
 
-      FTDemo_Set_Current_Pointsize( handle, pt_size, status.res );
+      FTDemo_Set_Current_Charsize( handle, pt_size, status.res );
 
       error = FTDemo_Get_Size( handle, &size );
       if ( error )
@@ -458,7 +459,7 @@ Next:
       }
     }
 
-    FTDemo_Set_Current_Pointsize( handle, first_size, status.res );
+    FTDemo_Set_Current_Charsize( handle, first_size, status.res );
 
     return FT_Err_Ok;
   }
@@ -829,8 +830,8 @@ Next:
       event_font_change( -1 );
       break;
 
-    case grKeyUp:       event_size_change(   32 ); break;
-    case grKeyDown:     event_size_change(  -32 ); break;
+    case grKeyUp:       event_size_change(   64 ); break;
+    case grKeyDown:     event_size_change(  -64 ); break;
     case grKeyPageUp:   event_size_change(  640 ); break;
     case grKeyPageDown: event_size_change( -640 ); break;
 

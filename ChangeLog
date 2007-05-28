@@ -1,3 +1,9 @@
+2007-05-28  David Turner  <david@freetype.org>
+
+	* src/ftcommon.h: fix compilation warning
+
+	* src/ftview.c: fix size bugs in waterfall mode
+
 2007-05-11  David Turner  <david@freetype.org>
 
 	* src/ftcommon.h, src/ftcommon.c, src/ftview.c, src/ftgrid.c,

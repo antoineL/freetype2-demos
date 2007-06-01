@@ -770,10 +770,12 @@
                           int*            y_advance,
                           FT_Glyph*       aglyf )
   {
-    int   cached_bitmap = 1;
-    int   width, height;
+    int  cached_bitmap = 1;
+    int  width, height;
 
-    *aglyf = NULL;
+
+    *aglyf     = NULL;
+    *x_advance = 0;
 
     /* use the SBits cache to store small glyph bitmaps; this is a lot */
     /* more memory-efficient                                           */

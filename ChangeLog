@@ -1,3 +1,7 @@
+2007-06-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.c (FTDemo_Index_To_Bitmap): Initialize `*x_advance'.
+
 2007-05-28  David Turner  <david@freetype.org>
 
 	* src/ftcommon.h: fix compilation warning

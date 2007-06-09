@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006 by                          */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007 by                    */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -488,8 +488,15 @@ grid_status_draw_outline( GridStatus       st,
     grWriteln( "  F1 or ?    : display this help screen" );
     grLn();
     grWriteln( "  a          : toggle anti-aliasing" );
-    grWriteln( "  left/right : change glyph index" );
+    grWriteln( "  left/right : decrement/increment glyph index" );
     grWriteln( "  up/down    : change character size" );
+    grLn();
+    grWriteln( "  F7         : decrement index by 10" );
+    grWriteln( "  F8         : increment index by 10" );
+    grWriteln( "  F9         : decrement index by 100" );
+    grWriteln( "  F10        : increment index by 100" );
+    grWriteln( "  F11        : decrement index by 1000" );
+    grWriteln( "  F12        : increment index by 1000" );
     grLn();
     grWriteln( "  i          : move grid up" );
     grWriteln( "  j          : move grid left" );
@@ -716,6 +723,13 @@ grid_status_draw_outline( GridStatus       st,
 
     case grKeyLeft:     event_index_change( -1 ); break;
     case grKeyRight:    event_index_change( +1 ); break;
+    case grKeyF7:       event_index_change(   -10 ); break;
+    case grKeyF8:       event_index_change(    10 ); break;
+    case grKeyF9:       event_index_change(  -100 ); break;
+    case grKeyF10:      event_index_change(   100 ); break;
+    case grKeyF11:      event_index_change( -1000 ); break;
+    case grKeyF12:      event_index_change(  1000 ); break;
+
     case grKeyUp:       event_size_change( +32 ); break;
     case grKeyDown:     event_size_change( -32 ); break;
 
@@ -911,7 +925,7 @@ grid_status_draw_outline( GridStatus       st,
     parse_cmdline( &argc, &argv );
 
     /* Initialize engine */
-    handle = FTDemo_New( FT_ENCODING_UNICODE );
+    handle = FTDemo_New( FT_ENCODING_NONE );
 
     for ( ; argc > 0; argc--, argv++ )
       FTDemo_Install_Font( handle, argv[0] );

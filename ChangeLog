@@ -1,3 +1,9 @@
+2007-06-10  David Turner  <david@freetype.org>
+
+	* src/ftpatentcheck.c src/Jamfile, Makefile: adding the new
+	ftpatentcheck program, that can be used to perform a call of
+	FT_Face_CheckTrueTypePatents call on font files
+
 2007-06-09  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftgrid.c (Process_Event): Assign usual actions to keys F7-F12.

@@ -246,7 +246,7 @@ else
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd
+  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd ftpatentcheck
 
   # Comment out the next line if you don't have a graphics subsystem.
   EXES += ftview ftmulti ftstring ftgamma ftgrid ftdiff
@@ -297,6 +297,9 @@ else
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
   $(OBJ_DIR_2)/ftbench.$(SO): $(SRC_DIR)/ftbench.c
+	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
+
+  $(OBJ_DIR_2)/ftpatentcheck.$(SO): $(SRC_DIR)/ftpatentcheck.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) $(EXTRAFLAGS)
 
   $(OBJ_DIR_2)/ftchkwd.$(SO): $(SRC_DIR)/ftchkwd.c
@@ -423,6 +426,9 @@ else
 	  $(LINK_COMMON)
 
   $(BIN_DIR_2)/ftbench$E: $(OBJ_DIR_2)/ftbench.$(SO) $(FTLIB) $(COMMON_OBJ)
+	  $(LINK_COMMON)
+
+  $(BIN_DIR_2)/ftpatentcheck$E: $(OBJ_DIR_2)/ftpatentcheck.$(SO) $(FTLIB) $(COMMON_OBJ)
 	  $(LINK_COMMON)
 
   $(BIN_DIR_2)/ftchkwd$E: $(OBJ_DIR_2)/ftchkwd.$(SO) $(FTLIB) $(COMMON_OBJ)

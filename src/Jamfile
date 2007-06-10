@@ -18,7 +18,7 @@ if $(UNIX)
   LINKLIBS += -lm ;
 }
 
-PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ftvalid ;
+PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ftvalid ftpatentcheck ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ftgrid ftdiff ;
 {
   local  t ;

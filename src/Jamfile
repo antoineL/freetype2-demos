@@ -1,4 +1,4 @@
-# FreeType 2 src Jamfile (c) 2001, 2003, 2004, 2005 David Turner
+# FreeType 2 src Jamfile (c) 2001, 2003, 2004, 2005, 2007 David Turner
 #
 
 SubDir  FT2DEMO_TOP src ;
@@ -18,7 +18,7 @@ if $(UNIX)
   LINKLIBS += -lm ;
 }
 
-PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ftvalid ftpatentcheck ;
+PROGRAMS = ftbench ftlint ftdump fttimer ftchkwd ftvalid ftpatchk ;
 GRAPHIC_PROGRAMS = ftview ftmulti ftstring ftgamma ftgrid ftdiff ;
 {
   local  t ;

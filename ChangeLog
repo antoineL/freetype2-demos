@@ -1,8 +1,18 @@
+2007-06-16  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftpatentcheck.c: Renamed to...
+	* src/ftpatchk.c: This.
+	Minor fixes.
+
+	* src/Jamfile (PROGRAMS), Makefile: Updated.
+
 2007-06-10  David Turner  <david@freetype.org>
 
-	* src/ftpatentcheck.c src/Jamfile, Makefile: adding the new
-	ftpatentcheck program, that can be used to perform a call of
-	FT_Face_CheckTrueTypePatents call on font files
+	Add the new `ftpatentcheck' program; it is a simple wrapper of the
+	new FT_Face_CheckTrueTypePatents function.
+
+	* src/ftpatentcheck.c: New file.
+	* src/Jamfile (PROGRAMS), Makefile: Updated.
 
 2007-06-09  Werner Lemberg  <wl@gnu.org>
 

@@ -1,3 +1,7 @@
+2007-06-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c (usage): Make it more readable.
+
 2007-06-16  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftpatentcheck.c: Renamed to...

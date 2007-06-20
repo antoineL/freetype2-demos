@@ -1,10 +1,13 @@
 ftbench
 ftchkwd
+ftdiff
 ftdump
 ftgamma
+ftgrid
 ftlint
 ftmemchk
 ftmulti
+ftpatchk
 ftstring
 fttimer
 ftvalid

@@ -1,3 +1,14 @@
+2007-07-02  Werner Lemberg  <wl@gnu.org>
+
+
+	* Version 2.3.5 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-5'.
+
+	* README: Updated.
+
 2007-06-19  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (usage): Make it more readable.

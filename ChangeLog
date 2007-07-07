@@ -1,3 +1,15 @@
+2007-07-07  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c (parse_cmdline): Remove C++ compiler warning.
+
+	* src/ftcommon.c (my_file_requester), src/ftgrid.c
+	(grid_status_draw_grid, ft_outline_draw, ft_outline_new_circle,
+	grid_status_draw_outline, _af_debug_hints), src/ftdiff.c
+	(_render_state_rescale, render_state_set_files,
+	render_state_set_file, adisplay_draw_glyph, adisplay_draw_text,
+	event_help, event_change_gamma, process_event, write_message, main):
+	Fix compilation with C++ compiler.
+
 2007-07-02  Werner Lemberg  <wl@gnu.org>
 
 

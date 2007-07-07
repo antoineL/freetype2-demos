@@ -265,7 +265,8 @@
   {
     if ( state->need_rescale && state->size )
     {
-      FT_Set_Char_Size( state->face, 0, state->char_size * 64,
+      FT_Set_Char_Size( state->face, 0,
+                        (FT_F26Dot6)( state->char_size * 64.0 ),
                         0, state->resolution );
       state->need_rescale = 0;
     }
@@ -301,7 +302,8 @@
         if ( num_faces >= max_faces )
         {
           max_faces += ( max_faces >> 1 ) + 8;
-          faces = realloc( faces, max_faces * sizeof ( faces[0] ) );
+          faces = (FontFace)realloc( faces,
+                                     max_faces * sizeof ( faces[0] ) );
           if ( faces == NULL )
             panic("ftdiff: not enough memory\n");
         }
@@ -370,7 +372,7 @@
 
         if ( len + 1 > sizeof ( state->filepath0 ) )
         {
-          state->filepath = malloc( len + 1 );
+          state->filepath = (const char*)malloc( len + 1 );
           if ( state->filepath == NULL )
           {
             state->filepath = state->filepath0;
@@ -714,14 +716,14 @@
                        int          pitch,
                        void*        buffer )
   {
-    ADisplay  display = _display;
+    ADisplay  display = (ADisplay)_display;
     grBitmap  glyph;
 
 
     glyph.width  = width;
     glyph.rows   = height;
     glyph.pitch  = pitch;
-    glyph.buffer = buffer;
+    glyph.buffer = (unsigned char*)buffer;
     glyph.grays  = 256;
     glyph.mode   = gr_pixel_mode_mono;
 
@@ -741,7 +743,7 @@
                       int          y,
                       const char*  msg )
   {
-    ADisplay  adisplay = _display;
+    ADisplay  adisplay = (ADisplay)_display;
 
 
     grWriteCellString( adisplay->bitmap, x, y, msg,
@@ -766,7 +768,7 @@
   static void
   event_help( RenderState  state )
   {
-    ADisplay  display = state->display.disp;
+    ADisplay  display = (ADisplay)state->display.disp;
     grEvent   dummy_event;
 
 
@@ -814,7 +816,7 @@
   event_change_gamma( RenderState  state,
                       double       delta )
   {
-    ADisplay  display = state->display.disp;
+    ADisplay  display = (ADisplay)state->display.disp;
 
 
     adisplay_change_gamma( display, delta );
@@ -936,8 +938,9 @@
       break;
 
     case grKEY( 'h' ):
-      column->hint_mode = ( column->hint_mode + 1 ) % HINT_MODE_MAX;
-      state->message    = state->message0;
+      column->hint_mode =
+        (HintMode)( ( column->hint_mode + 1 ) % HINT_MODE_MAX );
+      state->message = state->message0;
       sprintf( state->message0, "column %d is %s",
                state->col + 1, render_mode_names[column->hint_mode] );
       break;
@@ -1015,7 +1018,7 @@
   static void
   write_message( RenderState  state )
   {
-    ADisplay  adisplay = state->display.disp;
+    ADisplay  adisplay = (ADisplay)state->display.disp;
 
 
     if ( state->message == NULL )
@@ -1114,7 +1117,7 @@
         tsize = ftell( tfile );
 
         fseek( tfile, 0, SEEK_SET );
-        text = malloc( tsize + 1 );
+        text = (unsigned char*)malloc( tsize + 1 );
 
         if ( text != NULL )
         {

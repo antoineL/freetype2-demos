@@ -40,15 +40,21 @@
 #endif
 
 
-int   _af_debug;
-int   _af_debug_disable_horz_hints;
-int   _af_debug_disable_vert_hints;
-int   _af_debug_disable_blue_hints;
-void* _af_debug_hints;
+/* these variables, structures and declarations  are for  */
+/* communication with the debugger in the autofit module; */
+/* normal programs don't need this                        */
+struct  AF_GlyphHintsRec_;
+typedef struct AF_GlyphHintsRec_*  AF_GlyphHints;
 
-extern void af_glyph_hints_dump_segments( void*  hints );
-extern void af_glyph_hints_dump_points( void*  hints );
-extern void af_glyph_hints_dump_edges( void*  hints );
+int            _af_debug;
+int            _af_debug_disable_horz_hints;
+int            _af_debug_disable_vert_hints;
+int            _af_debug_disable_blue_hints;
+AF_GlyphHints  _af_debug_hints;
+
+extern void af_glyph_hints_dump_segments( AF_GlyphHints  hints );
+extern void af_glyph_hints_dump_points( AF_GlyphHints  hints );
+extern void af_glyph_hints_dump_edges( AF_GlyphHints  hints );
 
 typedef struct  status_
 {
@@ -177,8 +183,8 @@ grid_status_rescale_initial( GridStatus      st,
 static void
 grid_status_draw_grid( GridStatus  st )
 {
-  int     x_org   = st->x_origin;
-  int     y_org   = st->y_origin;
+  int     x_org   = (int)st->x_origin;
+  int     y_org   = (int)st->y_origin;
   double  xy_incr = 64.0 * st->scale;
 
   if ( xy_incr >= 2. )
@@ -295,7 +301,7 @@ ft_outline_draw( FT_Outline*      outline,
   bitm.pitch      = bitm.width;
   bitm.num_grays  = 256;
   bitm.pixel_mode = FT_PIXEL_MODE_GRAY;
-  bitm.buffer     = calloc( bitm.pitch, bitm.rows );
+  bitm.buffer     = (unsigned char*)calloc( bitm.pitch, bitm.rows );
 
   FT_Outline_Translate( &transformed, -cbox.xMin, -cbox.yMin );
   FT_Outline_Get_Bitmap( handle->library, &transformed, &bitm );
@@ -318,7 +324,7 @@ ft_outline_new_circle( FT_Outline*     outline,
 {
   char*       tag;
   FT_Vector*  vec;
-  FT_F26Dot6  disp = radius*0.6781;
+  FT_F26Dot6  disp = (FT_F26Dot6)( radius * 0.6781 );
 
   FT_Outline_New( handle->library, 12, 1, outline );
   outline->n_points   = 12;
@@ -371,8 +377,8 @@ grid_status_draw_outline( GridStatus       st,
   FT_Size            size;
   FT_GlyphSlot       slot;
   double             scale = 64.0 * st->scale;
-  int                ox    = st->x_origin;
-  int                oy    = st->y_origin;
+  int                ox    = (int)st->x_origin;
+  int                oy    = (int)st->y_origin;
 
 
   if ( stroker == NULL )
@@ -424,8 +430,8 @@ grid_status_draw_outline( GridStatus       st,
     if ( st->do_dots )
     {
       for (nn = 0; nn < gimage->n_points; nn++)
-        circle_draw( st->x_origin * 64 + gimage->points[nn].x,
-                     st->y_origin * 64 - gimage->points[nn].y,
+        circle_draw( (FT_F26Dot6)( st->x_origin * 64 + gimage->points[nn].x ),
+                     (FT_F26Dot6)( st->y_origin * 64 - gimage->points[nn].y ),
                      128,
                      handle,
                      display,

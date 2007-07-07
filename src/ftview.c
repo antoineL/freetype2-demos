@@ -1043,9 +1043,9 @@ Next:
     if ( *argc <= 1 )
       usage( execname );
 
-    status.ptsize = atof( *argv[0] ) * 64.0;
+    status.ptsize = (int)( atof( *argv[0] ) * 64.0 );
     if ( status.ptsize == 0 )
-      status.ptsize = 64*10;
+      status.ptsize = 64 * 10;
 
     (*argc)--;
     (*argv)++;

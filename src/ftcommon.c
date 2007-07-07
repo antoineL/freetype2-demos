@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006 by                                                 */
+/*  Copyright 2005, 2006, 2007 by                                           */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -209,8 +209,11 @@
     FT_UNUSED( request_data );
 
     if ( font->file_address != NULL )
-      error = FT_New_Memory_Face( lib, font->file_address, font->file_size,
-                                  font->face_index, aface );
+      error = FT_New_Memory_Face( lib,
+                                  (const FT_Byte*)font->file_address,
+                                  font->file_size,
+                                  font->face_index,
+                                  aface );
     else
       error = FT_New_Face( lib,
                            font->filepathname,

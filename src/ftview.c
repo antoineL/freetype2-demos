@@ -60,6 +60,7 @@
   {
     RENDER_MODE_ALL = 0,
     RENDER_MODE_EMBOLDEN,
+    RENDER_MODE_SLANTED,
     RENDER_MODE_STROKE,
     RENDER_MODE_TEXT,
     RENDER_MODE_WATERFALL,
@@ -202,6 +203,95 @@ Next:
 
 
   static FT_Error
+  Render_Slanted( int  num_indices,
+                  int  first_index )
+  {
+    int      start_x, start_y, step_x, step_y, x, y;
+    int      i;
+    FT_Size  size;
+
+
+    error = FTDemo_Get_Size( handle, &size );
+
+    if ( error )
+    {
+      /* probably a non-existent bitmap font size */
+      return error;
+    }
+
+    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+
+    i = first_index;
+
+    while ( i < num_indices )
+    {
+      int      gindex;
+      FT_Face  face = size->face;
+
+
+      if ( handle->encoding == FT_ENCODING_NONE )
+        gindex = i;
+      else
+        gindex = FTDemo_Get_Index( handle, i );
+
+      error = FT_Load_Glyph( face, gindex, handle->load_flags );
+      if ( !error )
+      {
+        FT_Matrix    shear;
+        FT_Outline*  outline;
+
+
+        /***************************************************************/
+        /*                                                             */
+        /*  2*2 affine transformation matrix, 16.16 fixed float format */
+        /*                                                             */
+        /*  Shear matrix:                                              */
+        /*                                                             */
+        /*         | x' |     | 1  k |   | x |          x' = x + ky    */
+        /*         |    |  =  |      | * |   |   <==>                  */
+        /*         | y' |     | 0  1 |   | y |          y' = y         */
+        /*                                                             */
+        /*        outline'     shear    outline                        */
+        /*                                                             */
+        /*  Shear angle is 12 degrees, so:                             */
+        /*                                                             */
+        /*         k = tan(12) = 0.2126                                */
+        /*                                                             */
+        /***************************************************************/
+
+        shear.xx = 1 << 16;
+        shear.xy = (FT_Fixed)( 0.2126f * ( 1 << 16 ) );
+        shear.yx = 0;
+        shear.yy = 1 << 16;
+
+        outline = &(face->glyph)->outline;
+
+        FT_Outline_Transform( outline, &shear );
+
+        error = FTDemo_Draw_Slot( handle, display, face->glyph, &x, &y );
+
+        if ( error )
+          status.Fail++;
+        else if ( X_TOO_LONG( x, size, display ) )
+        {
+          x  = start_x;
+          y += step_y;
+
+          if ( Y_TOO_LONG( y, size, display ) )
+            break;
+        }
+      }
+      else
+        status.Fail++;
+
+      i++;
+    }
+
+    return error;
+  }
+
+
+  static FT_Error
   Render_Embolden( int  num_indices,
                    int  first_index )
   {
@@ -226,6 +316,7 @@ Next:
     {
       int           gindex;
       FT_Face       face = size->face;
+
 
       if ( handle->encoding == FT_ENCODING_NONE )
         gindex = i;
@@ -502,7 +593,7 @@ Next:
     grLn();
     grWriteln( "  L          : cycle through LCD modes" );
     grWriteln( "  space      : toggle rendering mode" );
-    grWriteln( "  1-5        : select rendering mode" );
+    grWriteln( "  1-6        : select rendering mode" );
     grLn();
     grWriteln( "  G          : show gamma ramp" );
     grWriteln( "  g          : increase gamma by 0.1" );
@@ -664,6 +755,9 @@ Next:
       break;
     case RENDER_MODE_EMBOLDEN:
       status.header = (char *)"rendering emboldened text";
+      break;
+    case RENDER_MODE_SLANTED:
+      status.header = (char *)"rendering slanted text";
       break;
     case RENDER_MODE_STROKE:
       status.header = (char *)"rendering stroked text";
@@ -1125,6 +1219,10 @@ Next:
 
       case RENDER_MODE_EMBOLDEN:
         error = Render_Embolden( handle->current_font->num_indices, status.Num );
+        break;
+
+      case RENDER_MODE_SLANTED:
+        error = Render_Slanted( handle->current_font->num_indices, status.Num );
         break;
 
       case RENDER_MODE_STROKE:

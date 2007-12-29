@@ -67,6 +67,7 @@
     MAKE_TABLE_SPEC( GPOS ),
     MAKE_TABLE_SPEC( GSUB ),
     MAKE_TABLE_SPEC( JSTF ),
+    MAKE_TABLE_SPEC( MATH ),
   };
 #define N_OT_TABLE_SPEC  ( sizeof ( ot_table_spec ) / sizeof ( TableSpecRec ) )
 
@@ -222,17 +223,21 @@
     fprintf( stderr, "\n" );
     fprintf( stderr, "Usage: %s [options] fontfile\n", execname );
     fprintf( stderr, "\n" );
-    fprintf( stderr, "  -t validator              select validator. \n");
-    fprintf( stderr, "                            Available validators: ");
+    fprintf( stderr, "  -f index                  Select font index (default: 0).\n" );
+    fprintf( stderr, "\n" );
+    fprintf( stderr, "  -t validator              Select validator.\n" );
+    fprintf( stderr, "                            Available validators: " );
     for ( i = 0; i < LAST_VALIDATE; i++ )
     {
       v = &validators[i];
-      fprintf( stderr, "\"%s\"%s ", v->symbol, v->is_implemented( library )? "": "(NOT IMPLEMENTED)");
+      fprintf( stderr, "\"%s\"%s ",
+               v->symbol, v->is_implemented( library )? ""
+                                                      : "(NOT IMPLEMENTED)" );
     }
     fprintf( stderr, "\n");
 
     fprintf( stderr, "\n" );
-    fprintf( stderr, "  -T \"sfnt:tabl:enam:es  \"  select snft table names to be \n" );
+    fprintf( stderr, "  -T \"sfnt:tabl:enam:es  \"  Select snft table names to be\n" );
     fprintf( stderr, "                            validated. `:' is for separating table names.\n" );
     fprintf( stderr, "\n" );
 
@@ -255,10 +260,10 @@
       fprintf( stderr, "\n" );
     }
 
-    fprintf( stderr, "  -T \"ms:apple\"             [ckern] select (a) classic kern dialect(s) for \n" );
+    fprintf( stderr, "  -T \"ms:apple\"             [ckern] Select (a) classic kern dialect(s) for\n" );
     fprintf( stderr, "                            validation. `:' is for separating dialect names.\n" );
     fprintf( stderr, "                            If more than one dialects is specified, all\n" );
-    fprintf( stderr, "                            dialects are accepted when validating. \n" );
+    fprintf( stderr, "                            dialects are accepted when validating.\n" );
 
     fprintf( stderr, "\n" );
     fprintf( stderr, "                            Supported dialects in ckern validator are:\n" );
@@ -266,16 +271,16 @@
 
     fprintf( stderr, "\n" );
     fprintf( stderr, "\n" );
-    fprintf( stderr, "  -L                        list the layout related SFNT tables\n" );
+    fprintf( stderr, "  -L                        List the layout related SFNT tables\n" );
     fprintf( stderr, "                            available in the font file. Choice of\n" );
     fprintf( stderr, "                            validator with -t option affects on the\n" );
     fprintf( stderr, "                            listing.\n" );
     fprintf( stderr, "\n" );
     fprintf( stderr, "                            ckern is applicable to kern table. -L lists\n");
-    fprintf( stderr, "                            dialects supported in ckern validator only if \n" );
+    fprintf( stderr, "                            dialects supported in ckern validator only if\n" );
     fprintf( stderr, "                            kern table is available in the font file.\n" );
     fprintf( stderr, "\n" );
-    fprintf( stderr, "  -v validation_level       validation level. \n" );
+    fprintf( stderr, "  -v validation_level       Validation level.\n" );
     fprintf( stderr, "                            validation_level = 0...2\n" );
     fprintf( stderr, "                            (0: default, 1: tight, 2: paranoid)\n" );
 
@@ -493,9 +498,9 @@
     {
       printf( "[%s:%s] layout tables are invalid.\n",
               execname, validators[validator].symbol );
-      printf( "[%s:%s] set FT2_DEBUG environment variable to \n",
+      printf( "[%s:%s] set FT2_DEBUG environment variable to\n",
               execname, validators[validator].symbol );
-      printf( "[%s:%s] know the validation detail. \n",
+      printf( "[%s:%s] know the validation detail.\n",
               execname, validators[validator].symbol );
     }
   }
@@ -715,6 +720,7 @@
 #if 0
     int  trace_level;
 #endif  /* 0 */
+    int  font_index = 0;
 
     execname = ft_basename( argv[0] );
 
@@ -739,7 +745,7 @@
 
     while ( 1 )
     {
-      option = getopt( argc, argv, "t:T:Lv:l:" );
+      option = getopt( argc, argv, "t:T:Lv:l:f:" );
 
       if ( option == -1 )
         break;
@@ -783,6 +789,10 @@
                            validation_level );
           print_usage( NULL );
         }
+        break;
+
+      case 'f':
+        font_index = atoi( optarg );
         break;
 
       default:
@@ -839,7 +849,7 @@
 
 
       /* TODO: Multiple faces in a font file? */
-      error = FT_New_Face( library, fontfile, 0, &face );
+      error = FT_New_Face( library, fontfile, font_index, &face );
       if ( error )
         panic( error, "Could not open face." );
 

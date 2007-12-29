@@ -1,3 +1,17 @@
+2007-12-29  Allan Yang, Jian Hua - SH  <Allan.Yang@fmc.fujitsu.com>
+	    Werner Lemberg  <wl@gnu.org>
+
+	* src/ftview.c: Implement slanting.
+
+2007-08-08  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftvalid.c (print_usage): Add option `-f'.
+
+2007-08-08  George Williams  <gww@silcom.com>
+
+	* src/ftvalid.c (ot_table_spec): Handle `MATH' table also.
+	(main): Add option `-f' to select font index.
+
 2007-07-07  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftview.c (parse_cmdline): Remove C++ compiler warning.

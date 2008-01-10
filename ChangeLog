@@ -1,3 +1,7 @@
+2008-01-10  Allan Yang, Jian Hua - SH  <Allan.Yang@fmc.fujitsu.com>
+
+	* graph/grfill.c: Include <stdlib.h>.
+
 2007-12-29  Allan Yang, Jian Hua - SH  <Allan.Yang@fmc.fujitsu.com>
 	    Werner Lemberg  <wl@gnu.org>
 

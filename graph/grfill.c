@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <stdlib.h>
 #include <memory.h>
 
 static void

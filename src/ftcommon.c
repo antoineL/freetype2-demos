@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006, 2007 by                                           */
+/*  Copyright 2005, 2006, 2007, 2008 by                                     */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -1241,11 +1241,11 @@
 
       extent.x += prev_advance->x;
       extent.y += prev_advance->y;
-
-      /*store the extent in the last slot */
-      i = handle->string_length - 1;
-      advances[i] = extent;
     }
+
+    /* store the extent in the last slot */
+    i = handle->string_length - 1;
+    advances[i] = extent;
 
     return FT_Err_Ok;
   }

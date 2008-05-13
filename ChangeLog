@@ -1,3 +1,8 @@
+2008-05-13  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftcommon.c (string_render_prepare): Always set extent in last
+	slot.
+
 2008-01-10  Allan Yang, Jian Hua - SH  <Allan.Yang@fmc.fujitsu.com>
 
 	* graph/grfill.c: Include <stdlib.h>.

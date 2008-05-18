@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2007 by                                                       */
+/*  Copyright 2007, 2008 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -132,10 +132,10 @@
 
   static const char* const  render_mode_names[HINT_MODE_MAX] =
   {
-      "unhinted",
-      "autohint",
-      "light autohint",
-      "bytecode hinted"
+    "unhinted",
+    "auto hinter",
+    "light auto hinter",
+    "native hinter"
   };
 
   /** RENDER STATE **/

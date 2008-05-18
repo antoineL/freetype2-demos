@@ -1,3 +1,7 @@
+2008-05-18  Wermer Lemberg  <wl@gnu.org>
+
+	* src/ftdiff.c (render_mode_names): Use better strings.
+
 2008-05-13  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftcommon.c (string_render_prepare): Always set extent in last

@@ -1,3 +1,14 @@
+2008-12-05  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftbench.c: Remove #if FT_ADVANCES_H ... conditionals.
+
+2008-09-02  David Turner  <david@freetype.org>
+
+	* src/ftbench.c: Include FT_ADVANCES_H.
+	(FT_BENCH_LOAD_ADVANCES): New enumeration value.
+	(test_load_advances): New function.
+	(main) <FT_BENCH_LOAD_ADVANCES>: New case.
+
 2008-06-29  Werner Lemberg  <wl@gnu.org>
 
 

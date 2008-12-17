@@ -21,10 +21,7 @@
 #include FT_CACHE_IMAGE_H
 #include FT_CACHE_SMALL_BITMAPS_H
 #include FT_SYNTHESIS_H
-
-#ifdef FT_ADVANCES_H
 #include FT_ADVANCES_H
-#endif
 
 #ifdef UNIX
 #include <sys/time.h>
@@ -77,9 +74,7 @@ FTC_ImageTypeRec  font_type;
 
 enum {
   FT_BENCH_LOAD_GLYPH,
-#ifdef FT_ADVANCES_H
   FT_BENCH_LOAD_ADVANCES,
-#endif
   FT_BENCH_RENDER,
   FT_BENCH_GET_GLYPH,
   FT_BENCH_GET_CBOX,
@@ -230,7 +225,6 @@ test_load( btimer_t*  timer,
 }
 
 
-#ifdef FT_ADVANCES_H
 int
 test_load_advances( btimer_t*  timer,
                     FT_Face    face,
@@ -240,7 +234,8 @@ test_load_advances( btimer_t*  timer,
   FT_Fixed*  advances;
   FT_ULong   flags = *((FT_ULong*)user_data);
 
-  advances = calloc( sizeof(FT_Fixed), face->num_glyphs );
+
+  advances = calloc( sizeof ( FT_Fixed ), face->num_glyphs );
 
   TIMER_START( timer );
 
@@ -249,11 +244,10 @@ test_load_advances( btimer_t*  timer,
 
   TIMER_STOP( timer );
 
-  free(advances);
+  free( advances );
 
   return done;
 }
-#endif /* FT_ADVANCES_H */
 
 
 int
@@ -799,7 +793,6 @@ main(int argc,
         benchmark( face, &test, max_iter, max_time );
       }
       break;
-#ifdef FT_ADVANCES_H
     case FT_BENCH_LOAD_ADVANCES:
       test.user_data = &flags;
 
@@ -813,8 +806,6 @@ main(int argc,
       flags       = FT_LOAD_TARGET_LIGHT;
       benchmark( face, &test, max_iter, max_time );
       break;
-#endif /* FT_ADVANCES_H */
-
     case FT_BENCH_RENDER:
       test.title = "Render";
       test.bench = test_render;

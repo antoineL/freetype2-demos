@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2007, 2008 by                                                 */
+/*  Copyright 2007, 2008, 2009 by                                           */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -145,6 +145,7 @@
     int           use_kerning;
     int           use_deltas;
     int           use_lcd_filter;
+    int           use_global_advance_width;
     FT_LcdFilter  lcd_filter;
     HintMode      hint_mode;
     DisplayMode   disp_mode;
@@ -197,16 +198,17 @@
     state->char_size    = 16;
     state->display      = display[0];
 
-    state->columns[0].use_kerning    = 1;
-    state->columns[0].use_deltas     = 1;
-    state->columns[0].use_lcd_filter = 1;
-    state->columns[0].lcd_filter     = FT_LCD_FILTER_DEFAULT;
-    state->columns[0].hint_mode      = HINT_MODE_BYTECODE;
+    state->columns[0].use_kerning              = 1;
+    state->columns[0].use_deltas               = 1;
+    state->columns[0].use_lcd_filter           = 1;
+    state->columns[0].use_global_advance_width = 1;
+    state->columns[0].lcd_filter               = FT_LCD_FILTER_DEFAULT;
+    state->columns[0].hint_mode                = HINT_MODE_BYTECODE;
 
-    state->columns[1] = state->columns[0];
+    state->columns[1]           = state->columns[0];
     state->columns[1].hint_mode = HINT_MODE_AUTOHINT;
 
-    state->columns[2] = state->columns[0];
+    state->columns[2]           = state->columns[0];
     state->columns[2].hint_mode = HINT_MODE_UNHINTED;
 
     state->col = 2;
@@ -440,6 +442,9 @@
     if ( rmode == HINT_MODE_UNHINTED )
       load_flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP;
 
+    if ( !column->use_global_advance_width )
+      load_flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
+
     for ( ; *p; p++ )
     {
       FT_UInt       gindex;
@@ -589,10 +594,13 @@
       }
       state->display.disp_text( disp, left, bottom + 15, msg );
 
-      sprintf(temp, "%s / %s",
-              column->use_kerning ? "kerning" : "no kerning",
-              column->use_deltas  ? "deltas"  : "no deltas" );
-      msg = column->use_kerning ? "use kerning" : "no kerning";
+      sprintf(temp, "%s %s %s",
+              column->use_kerning ? "+kern"
+                                  : "-kern",
+              column->use_deltas ? "+delta"
+                                 : "-delta",
+              column->use_global_advance_width ? "+advance"
+                                               : "-advance" );
       state->display.disp_text( disp, left, bottom + 25, temp );
 
       if ( state->col == idx )
@@ -795,11 +803,12 @@
     grWriteln( "  v          : decrease gamma by 0.1" );
     grLn();
     grWriteln( "  1-3        : change currently selected column" );
-    grWriteln( "  k          : toggle kerning" );
+    grWriteln( "  a          : toggle `ignore global advance width flag" );
     grWriteln( "  d          : toggle lsb/rsb deltas" );
     grWriteln( "  h          : toggle hinting mode" );
-    grWriteln( "  r          : toggle rendering mode" );
+    grWriteln( "  k          : toggle kerning" );
     grWriteln( "  l          : change LCD filter type" );
+    grWriteln( "  r          : toggle rendering mode" );
     grWriteln( "  Up         : increase pointsize by 0.5 unit" );
     grWriteln( "  Down       : decrease pointsize by 0.5 unit" );
     grWriteln( "  Page Up    : increase pointsize by 5 units" );
@@ -880,11 +889,43 @@
       sprintf( state->message0, "column %d selected", state->col + 1 );
       break;
 
-    case grKEY( 'k' ):
-      column->use_kerning = !column->use_kerning;
-      state->message      = column->use_kerning
-                              ? (char *)"using kerning"
-                              : (char *)"ignoring kerning";
+    case grKeyUp:
+      event_change_size( state, +0.5 );
+      break;
+
+    case grKeyDown:
+      event_change_size( state, -0.5 );
+      break;
+
+    case grKeyPageUp:
+      event_change_size( state, +5. );
+      break;
+
+    case grKeyPageDown:
+      event_change_size( state, -5. );
+      break;
+
+    case grKEY( '1' ):
+      state->col     = 0;
+      state->message = (char *)"column 1 selected";
+      break;
+
+    case grKEY( '2' ):
+      state->col     = 1;
+      state->message = (char *)"column 2 selected";
+      break;
+
+    case grKEY( '3' ):
+      state->col     = 2;
+      state->message = (char *)"column 3 selected";
+      break;
+
+    case grKEY( 'a' ):
+      column->use_global_advance_width
+                     = !column->use_global_advance_width;
+      state->message = column->use_global_advance_width
+                         ? (char *)"using global advance width"
+                         : (char *)"ignoring global advance width";
       break;
 
     case grKEY( 'd' ):
@@ -892,6 +933,25 @@
       state->message     = column->use_deltas
                              ? (char *)"using rsb/lsb deltas"
                              : (char *)"ignoring rsb/lsb deltas";
+      break;
+
+    case grKEY( 'g' ):
+      event_change_gamma( state, +0.1 );
+      break;
+
+    case grKEY( 'h' ):
+      column->hint_mode =
+        (HintMode)( ( column->hint_mode + 1 ) % HINT_MODE_MAX );
+      state->message = state->message0;
+      sprintf( state->message0, "column %d is %s",
+               state->col + 1, render_mode_names[column->hint_mode] );
+      break;
+
+    case grKEY( 'k' ):
+      column->use_kerning = !column->use_kerning;
+      state->message      = column->use_kerning
+                              ? (char *)"using kerning"
+                              : (char *)"ignoring kerning";
       break;
 
     case grKEY( 'l' ):
@@ -922,27 +982,12 @@
       }
       break;
 
-    case grKEY( '1' ):
-      state->col     = 0;
-      state->message = (char *)"column 1 selected";
+    case grKEY( 'n' ):
+      render_state_set_file( state, state->face_index + 1 );
       break;
 
-    case grKEY( '2' ):
-      state->col     = 1;
-      state->message = (char *)"column 2 selected";
-      break;
-
-    case grKEY( '3' ):
-      state->col     = 2;
-      state->message = (char *)"column 3 selected";
-      break;
-
-    case grKEY( 'h' ):
-      column->hint_mode =
-        (HintMode)( ( column->hint_mode + 1 ) % HINT_MODE_MAX );
-      state->message = state->message0;
-      sprintf( state->message0, "column %d is %s",
-               state->col + 1, render_mode_names[column->hint_mode] );
+    case grKEY( 'p' ):
+      render_state_set_file( state, state->face_index - 1 );
       break;
 
     case grKEY( 'r' ):
@@ -953,36 +998,8 @@
                                                       : "gray rendering" );
       break;
 
-    case grKEY( 'n' ):
-      render_state_set_file( state, state->face_index + 1 );
-      break;
-
-    case grKEY( 'p' ):
-      render_state_set_file( state, state->face_index - 1 );
-      break;
-
-    case grKEY( 'g' ):
-      event_change_gamma( state, +0.1 );
-      break;
-
     case grKEY( 'v' ):
       event_change_gamma( state, -0.1 );
-      break;
-
-    case grKeyUp:
-      event_change_size( state, +0.5 );
-      break;
-
-    case grKeyDown:
-      event_change_size( state, -0.5 );
-      break;
-
-    case grKeyPageUp:
-      event_change_size( state, +5. );
-      break;
-
-    case grKeyPageDown:
-      event_change_size( state, -5. );
       break;
 
     default:

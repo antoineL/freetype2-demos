@@ -1,3 +1,17 @@
+2009-01-07  Werner Lemberg  <wl@gnu.org>
+
+	ftdiff: Add `a' key to toggle global advance width.
+
+	* src/ftdiff.c (ColumnStateRec): Add `use_global_advance_width'
+	field.
+	(render_state_init): Updated.
+	(render_state_draw): Control FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH.
+	Update screen output.
+	(event_help): Document `a' key.
+	Sort output.
+	(process_keys): Handle `a' key.
+	Sort entries in `case' block.
+
 2008-12-05  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftbench.c: Remove #if FT_ADVANCES_H ... conditionals.

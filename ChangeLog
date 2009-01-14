@@ -1,3 +1,14 @@
+2009-01-14  Werner Lemberg  <wl@gnu.org>
+
+
+	* Version 2.3.8 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-8'.
+
+	* README: Updated.
+
 2009-01-07  Werner Lemberg  <wl@gnu.org>
 
 	ftdiff: Add `a' key to toggle global advance width.

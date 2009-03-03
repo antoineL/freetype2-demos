@@ -409,7 +409,8 @@ Next:
     int      i;
     FT_Size  size;
 
-    const unsigned char*  p;
+    const char*  p;
+    const char*  pEnd;
 
 
     num_indices = num_indices;  /* pacify compiler */
@@ -425,20 +426,25 @@ Next:
 
     i = first_index;
 
-    p = Text;
+    p    = (const char*)Text;
+    pEnd = p + strlen((const char*)Text);
 
-    while ( i > 0 && *p )
+    while ( i > 0 )
     {
-      p++;
+      utf8_next(&p, pEnd);
       i--;
     }
 
-    while ( *p && num_indices != 0 )
+    while ( num_indices != 0 )
     {
       FT_UInt  gindex;
+      int      ch;
 
+      ch = utf8_next(&p, pEnd);
+      if (ch < 0)
+        break;
 
-      gindex = FTDemo_Get_Index( handle, *p );
+      gindex = FTDemo_Get_Index( handle, ch );
 
       error = FTDemo_Draw_Index( handle, display, gindex, &x, &y );
       if ( error )
@@ -457,8 +463,6 @@ Next:
             break;
         }
       }
-
-      p++;
 
       if ( num_indices > 0 )
         num_indices -= 1;

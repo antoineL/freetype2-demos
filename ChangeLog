@@ -1,3 +1,10 @@
+2009-03-03  David Turner  <david@freetype.org>
+
+	Add utf-8 support to ftview. Fixes Savannah BUG #18225
+
+	* src/common.h, src/common.c: add utf8_next() function
+	* src/ftview.c, src/ftstring.c: modify to use utf8_next()
+
 2009-01-14  Werner Lemberg  <wl@gnu.org>
 
 

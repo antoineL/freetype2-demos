@@ -48,6 +48,15 @@
 #endif
   );
 
+  /* read the next UTF-8 code from '*pcursor' and
+   * returns its value. 'end' is the limit of the
+   * input string.
+   *
+   * returns -1 if the end of the input string is
+   * reached, or in case of malformed data
+   */
+  extern int  utf8_next( const char** pcursor,
+                         const char*  end );
 
 #ifdef __cplusplus
   }

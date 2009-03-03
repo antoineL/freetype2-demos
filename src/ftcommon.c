@@ -1022,8 +1022,10 @@
                      const unsigned char*  string )
   {
     const unsigned char*  p = string;
+    const unsigned char*  end = p + strlen(string);
     unsigned long         codepoint;
     unsigned char         in_code;
+    int                   ch;
     int                   expect;
     PGlyph                glyph = handle->string;
 
@@ -1031,45 +1033,13 @@
     handle->string_length = 0;
     codepoint = expect = 0;
 
-    while ( *p )
+    for (;;)
     {
-      in_code = *p++ ;
+      ch = utf8_next(&p, end);
+      if (ch < 0)
+        break;
 
-      if ( in_code >= 0xC0 )
-      {
-        if ( in_code < 0xE0 )           /*  U+0080 - U+07FF   */
-        {
-          expect = 1;
-          codepoint = in_code & 0x1F;
-        }
-        else if ( in_code < 0xF0 )      /*  U+0800 - U+FFFF   */
-        {
-          expect = 2;
-          codepoint = in_code & 0x0F;
-        }
-        else if ( in_code < 0xF8 )      /* U+10000 - U+10FFFF */
-        {
-          expect = 3;
-          codepoint = in_code & 0x07;
-        }
-        continue;
-      }
-      else if ( in_code >= 0x80 )
-      {
-        --expect;
-
-        if ( expect >= 0 )
-        {
-          codepoint <<= 6;
-          codepoint  += in_code & 0x3F;
-        }
-        if ( expect >  0 )
-          continue;
-
-        expect = 0;
-      }
-      else                              /* ASCII, U+0000 - U+007F */
-        codepoint = in_code;
+      codepoint = ch;
 
       if ( handle->encoding != FT_ENCODING_NONE )
         glyph->glyph_index = FTDemo_Get_Index( handle, codepoint );

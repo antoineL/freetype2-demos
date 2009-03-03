@@ -221,10 +221,11 @@
   }
 
 
+  void
 #ifdef __STDC__
-  void Panic( const char*  fmt, ... )
+  Panic( const char*  fmt, ... )
 #else
-  void Panic( fmt )
+  Panic( fmt )
     const char* fmt;
 #endif
   {
@@ -238,49 +239,59 @@
     exit( 1 );
   }
 
-  extern int  utf8_next( const char** pcursor,
-                         const char*  end )
+
+  extern int
+#ifdef __STDC__
+  utf8_next( const char** pcursor,
+             const char*  end )
+#else
+  utf8_next( pcursor, end )
+    const char** pcursor,
+    const char*  end;
+#endif
   {
     const unsigned char*  p = (const unsigned char*)*pcursor;
     int                   ch;
 
-    if ((const char*)p >= end) /* end of stream */
-        return -1;
+
+    if ( (const char*)p >= end ) /* end of stream */
+      return -1;
 
     ch = *p++;
-    if (ch >= 0x80)
+    if ( ch >= 0x80 )
     {
-        int  len;
+      int  len;
 
-        if (ch < 0xc0)  /* malformed data */
-        {
-            goto BAD_DATA;
-        }
-        else if (ch < 0xe0)
-        {
-          len = 1;
-          ch &= 0x1f;
-        }
-        else if (ch < 0xf0)
-        {
-          len = 2;
-          ch &= 0x0f;
-        }
-        else
-        {
-          len = 3;
-          ch &= 0x07;
-        }
-        while (len > 0)
-        {
-          if ((const char*)p >= end || (p[0] & 0xc0) != 0x80)
-            goto BAD_DATA;
 
-          ch   = (ch << 6) | (p[0] & 0x3f);
-          p   += 1;
-          len -= 1;
-        }
+      if ( ch < 0xc0 )  /* malformed data */
+        goto BAD_DATA;
+      else if ( ch < 0xe0 )
+      {
+        len = 1;
+        ch &= 0x1f;
+      }
+      else if ( ch < 0xf0 )
+      {
+        len = 2;
+        ch &= 0x0f;
+      }
+      else
+      {
+        len = 3;
+        ch &= 0x07;
+      }
+
+      while ( len > 0 )
+      {
+        if ( (const char*)p >= end || ( p[0] & 0xc0 ) != 0x80 )
+          goto BAD_DATA;
+
+        ch   = ( ch << 6 ) | ( p[0] & 0x3f );
+        p   += 1;
+        len -= 1;
+      }
     }
+
     *pcursor = (const char*) p;
     return ch;
 

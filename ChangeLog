@@ -1,9 +1,22 @@
+2009-03-03  Werner Lemberg  <wl@gnu.org>
+
+	Fix signedness issues.
+
+	* src/ftcommon.c (FTDemo_String_Set): Fix signedness.
+	Update callers.
+	Include `common.h'.
+	Use __STDC__ macro.
+	* src/ftcommon.h (FTDemo_String_Set): Fix signedness.
+
+	* src/common.h, src/common.c: Use __STDC__ macro.
+
 2009-03-03  David Turner  <david@freetype.org>
 
-	Add utf-8 support to ftview. Fixes Savannah BUG #18225
+	Add utf-8 support to ftview.  Fixes Savannah BUG #18225.
 
-	* src/common.h, src/common.c: add utf8_next() function
-	* src/ftview.c, src/ftstring.c: modify to use utf8_next()
+	* src/common.h, src/common.c: Add `utf8_next' function.
+	* src/ftcommon.c (FTDemo_String_Set), src/ftview.c (Render_Text):
+	Use `utf8_next'.
 
 2009-01-14  Werner Lemberg  <wl@gnu.org>
 

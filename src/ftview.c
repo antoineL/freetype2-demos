@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007 by                    */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009 by              */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -427,11 +427,11 @@ Next:
     i = first_index;
 
     p    = (const char*)Text;
-    pEnd = p + strlen((const char*)Text);
+    pEnd = p + strlen( (const char*)Text );
 
     while ( i > 0 )
     {
-      utf8_next(&p, pEnd);
+      utf8_next( &p, pEnd );
       i--;
     }
 
@@ -440,8 +440,8 @@ Next:
       FT_UInt  gindex;
       int      ch;
 
-      ch = utf8_next(&p, pEnd);
-      if (ch < 0)
+      ch = utf8_next( &p, pEnd );
+      if ( ch < 0 )
         break;
 
       gindex = FTDemo_Get_Index( handle, ch );

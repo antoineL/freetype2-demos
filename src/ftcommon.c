@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006, 2007, 2008 by                                     */
+/*  Copyright 2005, 2006, 2007, 2008, 2009 by                               */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -19,6 +19,7 @@
 
 #include FT_BITMAP_H
 
+#include "common.h"
 #include "ftcommon.h"
 
 #include <stdio.h>
@@ -1018,16 +1019,15 @@
 
 
   void
-  FTDemo_String_Set( FTDemo_Handle*        handle,
-                     const unsigned char*  string )
+  FTDemo_String_Set( FTDemo_Handle*  handle,
+                     const char*     string )
   {
-    const unsigned char*  p = string;
-    const unsigned char*  end = p + strlen(string);
-    unsigned long         codepoint;
-    unsigned char         in_code;
-    int                   ch;
-    int                   expect;
-    PGlyph                glyph = handle->string;
+    const char*     p = string;
+    const char*     end = p + strlen( string );
+    unsigned long   codepoint;
+    int             ch;
+    int             expect;
+    PGlyph          glyph = handle->string;
 
 
     handle->string_length = 0;
@@ -1035,8 +1035,8 @@
 
     for (;;)
     {
-      ch = utf8_next(&p, end);
-      if (ch < 0)
+      ch = utf8_next( &p, end );
+      if ( ch < 0 )
         break;
 
       codepoint = ch;

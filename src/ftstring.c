@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2002, 2003, 2004, 2005, 2006, 2007 by                    */
+/*  Copyright 1996-2002, 2003, 2004, 2005, 2006, 2007, 2009 by              */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -135,7 +135,7 @@
     FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 
-    FTDemo_String_Set( handle, (unsigned char*)Text );
+    FTDemo_String_Set( handle, Text );
   }
 
 

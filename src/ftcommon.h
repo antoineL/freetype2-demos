@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006 by                                                 */
+/*  Copyright 2005, 2006, 2009 by                                           */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -309,8 +309,8 @@
 
   /* set the string to be drawn */
   void
-  FTDemo_String_Set( FTDemo_Handle*        handle,
-                     const unsigned char*  string );
+  FTDemo_String_Set( FTDemo_Handle*  handle,
+                     const char*     string );
 
 
   /* draw a string centered at (center_x, center_y) --  */

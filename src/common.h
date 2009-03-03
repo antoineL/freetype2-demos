@@ -42,21 +42,25 @@
   );
 
   /* print a message and exit */
-  extern  void  Panic  (
+  extern void  Panic(
 #ifdef __STDC__
     const char*  fmt, ...
 #endif
   );
 
-  /* read the next UTF-8 code from '*pcursor' and
-   * returns its value. 'end' is the limit of the
+  /* read the next UTF-8 code from `*pcursor' and
+   * returns its value. `end' is the limit of the
    * input string.
    *
-   * returns -1 if the end of the input string is
+   * return -1 if the end of the input string is
    * reached, or in case of malformed data
    */
-  extern int  utf8_next( const char** pcursor,
-                         const char*  end );
+  extern int  utf8_next(
+#ifdef __STDC__
+    const char** pcursor,
+    const char*  end
+#endif
+  );
 
 #ifdef __cplusplus
   }

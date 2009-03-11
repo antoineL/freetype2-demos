@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2002, 2003, 2004, 2005, 2006 by                               */
+/*  Copyright 2002, 2003, 2004, 2005, 2006, 2009 by                         */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -235,7 +235,7 @@ test_load_advances( btimer_t*  timer,
   FT_ULong   flags = *((FT_ULong*)user_data);
 
 
-  advances = calloc( sizeof ( FT_Fixed ), face->num_glyphs );
+  advances = (FT_Fixed *)calloc( sizeof ( FT_Fixed ), face->num_glyphs );
 
   TIMER_START( timer );
 

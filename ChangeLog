@@ -1,3 +1,10 @@
+2009-03-10  Werner Lemberg  <wl@gnu.org>
+
+	Fix C++ compilation.
+
+	* src/ftbench.c (test_load_advances): Use cast.
+	* src/ftgrid.c: Protect `extern' declarations with `extern "C"'.
+
 2009-03-03  Werner Lemberg  <wl@gnu.org>
 
 	Fix signedness issues.

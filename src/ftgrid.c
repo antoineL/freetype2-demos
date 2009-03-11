@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007 by                    */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009 by              */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -52,9 +52,15 @@ int            _af_debug_disable_vert_hints;
 int            _af_debug_disable_blue_hints;
 AF_GlyphHints  _af_debug_hints;
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
 extern void af_glyph_hints_dump_segments( AF_GlyphHints  hints );
 extern void af_glyph_hints_dump_points( AF_GlyphHints  hints );
 extern void af_glyph_hints_dump_edges( AF_GlyphHints  hints );
+#ifdef __cplusplus
+  }
+#endif
 
 typedef struct  status_
 {

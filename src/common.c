@@ -237,7 +237,7 @@
              const char*  end )
 #else
   utf8_next( pcursor, end )
-    char** pcursor,
+    char** pcursor;
     char*  end;
 #endif
   {

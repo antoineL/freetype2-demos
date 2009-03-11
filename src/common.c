@@ -8,7 +8,7 @@
  *  mleisher@crl.nmsu.edu (Mark Leisher)
  *  10 October 1997
  *
- *  Last update 2005-11-30.
+ *  Last update 2009-03-11.
  */
 
 #include "common.h"
@@ -17,6 +17,12 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef __STDC__
+#define CONST  const
+#else
+#define CONST
+#endif
 
   /*
    *  Externals visible to programs.
@@ -32,13 +38,8 @@
    */
 
   static int  cmdac;
-#ifdef __STDC__
-  static const char*   cmdname;
-  static char* const*  cmdav;
-#else
-  static char*   cmdname;
-  static char**  cmdav;
-#endif
+  static CONST char*   cmdname;
+  static char* CONST*  cmdav;
 
   int
 #ifdef __STDC__
@@ -51,13 +52,8 @@
 #endif
   {
     int  opt;
-#ifdef __STDC__
-    const char*  p;
-    const char*  pp;
-#else
-    char*  p;
-    char*  pp;
-#endif
+    CONST char*  p;
+    CONST char*  pp;
 
     /*
      *  If there is no pattern, indicate the parsing is done.
@@ -190,13 +186,8 @@
     char* name;
 #endif
   {
-#ifdef __STDC__
-    const char*  base;
-    const char*  current;
-#else
-    char*        base;
-    char*        current;
-#endif
+    CONST char*  base;
+    CONST char*  current;
     char         c;
 
     base    = name;
@@ -226,7 +217,7 @@
   Panic( const char*  fmt, ... )
 #else
   Panic( fmt )
-    const char* fmt;
+    char* fmt;
 #endif
   {
     va_list  ap;
@@ -246,15 +237,15 @@
              const char*  end )
 #else
   utf8_next( pcursor, end )
-    const char** pcursor,
-    const char*  end;
+    char** pcursor,
+    char*  end;
 #endif
   {
-    const unsigned char*  p = (const unsigned char*)*pcursor;
+    CONST unsigned char*  p = (CONST unsigned char*)*pcursor;
     int                   ch;
 
 
-    if ( (const char*)p >= end ) /* end of stream */
+    if ( (CONST char*)p >= end ) /* end of stream */
       return -1;
 
     ch = *p++;
@@ -283,7 +274,7 @@
 
       while ( len > 0 )
       {
-        if ( (const char*)p >= end || ( p[0] & 0xc0 ) != 0x80 )
+        if ( (CONST char*)p >= end || ( p[0] & 0xc0 ) != 0x80 )
           goto BAD_DATA;
 
         ch   = ( ch << 6 ) | ( p[0] & 0x3f );
@@ -292,7 +283,7 @@
       }
     }
 
-    *pcursor = (const char*) p;
+    *pcursor = (CONST char*) p;
     return ch;
 
   BAD_DATA:

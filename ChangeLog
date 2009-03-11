@@ -1,5 +1,10 @@
 2009-03-10  Werner Lemberg  <wl@gnu.org>
 
+	* src/common.c (CONST): New macro, defined depending on __STDC__.
+	Use it where necessary.
+
+2009-03-10  Werner Lemberg  <wl@gnu.org>
+
 	Fix C++ compilation.
 
 	* src/ftbench.c (test_load_advances): Use cast.

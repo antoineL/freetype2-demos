@@ -1,3 +1,13 @@
+2009-03-12  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.3.9 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-9'.
+
+	* README: Updated.
+
 2009-03-10  Werner Lemberg  <wl@gnu.org>
 
 	* src/common.c (CONST): New macro, defined depending on __STDC__.

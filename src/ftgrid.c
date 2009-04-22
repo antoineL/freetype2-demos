@@ -400,8 +400,9 @@ grid_status_draw_outline( GridStatus       st,
   _af_debug_disable_horz_hints = !st->do_horz_hints;
   _af_debug_disable_vert_hints = !st->do_vert_hints;
 
-  FT_Load_Glyph( size->face, st->Num,
-                 handle->load_flags | FT_LOAD_NO_BITMAP );
+  if ( FT_Load_Glyph( size->face, st->Num,
+                      handle->load_flags | FT_LOAD_NO_BITMAP ) )
+    return;
 
   slot = size->face->glyph;
   if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )

@@ -1,3 +1,10 @@
+2009-04-22  Werner Lemberg  <wl@gnu.org>
+
+	Fix crash in ftgrid.
+
+	* src/ftgrid.c (grid_status_draw_outline): Handle return value of
+	FT_Load_Glyph.
+
 2009-03-12  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.3.9 released.

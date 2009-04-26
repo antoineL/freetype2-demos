@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-1999, 2000, 2001, 2002 by                                */
+/*  Copyright 1996-1999, 2000, 2001, 2002, 2009 by                          */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  grblit.c: Support for blitting of bitmaps with various depth.           */
@@ -1395,7 +1395,7 @@
             dg  = _write[1];
             dg += (sg-dg)*val1 >> 8;
 
-            db  = _write[1];
+            db  = _write[2];
             db += (sb-db)*val2 >> 8;
 
             _write[0] = dr;

@@ -1,3 +1,8 @@
+2009-04-26  Werner Lemberg  <wl@gnu.org>
+
+	* graph/grblit.c (blit_lcd8_to_24): Fix typo.
+	Reported by suyu@cooee.cn.
+
 2009-04-22  Werner Lemberg  <wl@gnu.org>
 
 	Fix crash in ftgrid.

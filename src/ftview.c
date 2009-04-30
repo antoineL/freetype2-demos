@@ -33,23 +33,24 @@
 #ifdef CEIL
 #undef CEIL
 #endif
-#define CEIL( x )   ( ( (x) + 63 ) >> 6 )
+#define CEIL( x )  ( ( (x) + 63 ) >> 6 )
 
-#define INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y )        \
-          do {                                                           \
-            start_x = 4;                                                 \
-            start_y = CEIL( size->metrics.height ) + 2 * HEADER_HEIGHT;  \
-            step_x  = CEIL( size->metrics.max_advance );                 \
-            step_y  = CEIL( size->metrics.height ) + 4;                  \
-                                                                         \
-            x = start_x;                                                 \
-            y = start_y;                                                 \
+#define INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y )       \
+          do {                                                          \
+            start_x = 4;                                                \
+            start_y = CEIL( size->metrics.height ) + 2 * HEADER_HEIGHT; \
+            step_x  = CEIL( size->metrics.max_advance );                \
+            step_y  = CEIL( size->metrics.height ) + 4;                 \
+                                                                        \
+            x = start_x;                                                \
+            y = start_y;                                                \
           } while ( 0 )
 
-#define X_TOO_LONG( x, size, display) \
-          ( ( x ) + ( ( size )->metrics.max_advance >> 6 ) > ( display )->bitmap->width )
-#define Y_TOO_LONG( y, size, display) \
-          ( ( y ) >= ( display )->bitmap->rows )
+#define X_TOO_LONG( x, size, display )                   \
+          ( (x) + ( (size)->metrics.max_advance >> 6 ) > \
+            (display)->bitmap->width )
+#define Y_TOO_LONG( y, size, display )       \
+          ( (y) >= (display)->bitmap->rows )
 
 #ifdef _WIN32
 #define snprintf  _snprintf
@@ -86,7 +87,8 @@
     int          Fail;
     int          preload;
 
-  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0, 0, 0, 0, 0, 0, NULL, { 0 }, 0, 0 };
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0,
+               0, 0, 0, 0, 0, NULL, { 0 }, 0, 0 };
 
 
   static FTDemo_Display*  display;
@@ -94,15 +96,15 @@
 
 
   static const unsigned char*  Text = (unsigned char*)
-    "The quick brown fox jumps over the lazy dog 0123456789 "
-    "\342\352\356\373\364\344\353\357\366\374\377\340\371\351\350\347 "
-    "&#~\"\'(-`_^@)=+\260 ABCDEFGHIJKLMNOPQRSTUVWXYZ "
-    "$\243^\250*\265\371%!\247:/;.,?<>";
+    "The quick brown fox jumps over the lazy dog 0123456789"
+    " \342\352\356\373\364\344\353\357\366\374\377\340\371\351\350\347"
+    " &#~\"\'(-`_^@)=+\260 ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    " $\243^\250*\265\371%!\247:/;.,?<>";
 
 
 
   static void
-  Fatal( const char* message )
+  Fatal( const char*  message )
   {
     FTDemo_Display_Done( display );
     FTDemo_Done( handle );
@@ -160,6 +162,7 @@
       {
         FT_Glyph  glyph;
 
+
         error = FT_Get_Glyph( slot, &glyph );
         if ( error )
           goto Next;
@@ -187,7 +190,7 @@
       }
       else
       {
-Next:
+    Next:
         status.Fail++;
       }
 
@@ -295,9 +298,9 @@ Next:
   Render_Embolden( int  num_indices,
                    int  first_index )
   {
-    int       start_x, start_y, step_x, step_y, x, y;
-    int       i;
-    FT_Size   size;
+    int      start_x, start_y, step_x, step_y, x, y;
+    int      i;
+    FT_Size  size;
 
 
     error = FTDemo_Get_Size( handle, &size );
@@ -314,8 +317,8 @@ Next:
 
     while ( i < num_indices )
     {
-      int           gindex;
-      FT_Face       face = size->face;
+      int      gindex;
+      FT_Face  face = size->face;
 
 
       if ( handle->encoding == FT_ENCODING_NONE )
@@ -355,9 +358,9 @@ Next:
   Render_All( int  num_indices,
               int  first_index )
   {
-    int         start_x, start_y, step_x, step_y, x, y;
-    int         i;
-    FT_Size     size;
+    int      start_x, start_y, step_x, step_y, x, y;
+    int      i;
+    FT_Size  size;
 
 
     error = FTDemo_Get_Size( handle, &size );
@@ -440,6 +443,7 @@ Next:
       FT_UInt  gindex;
       int      ch;
 
+
       ch = utf8_next( &p, pEnd );
       if ( ch < 0 )
         break;
@@ -475,35 +479,34 @@ Next:
   static FT_Error
   Render_Waterfall( int  first_size )
   {
-    int         start_x, start_y, step_x, step_y, x, y;
-    int         pt_size, max_size = 100000;
-    FT_Size     size;
-    FT_Face     face;
+    int      start_x, start_y, step_x, step_y, x, y;
+    int      pt_size, max_size = 100000;
+    FT_Size  size;
+    FT_Face  face;
 
     unsigned char         text[256];
     const unsigned char*  p;
 
 
+    error = FTC_Manager_LookupFace( handle->cache_manager,
+                                    handle->scaler.face_id, &face );
+    if ( error )
     {
-      error = FTC_Manager_LookupFace( handle->cache_manager,
-                                      handle->scaler.face_id, &face );
-      if ( error )
-      {
-        /* can't access the font file. do not render anything */
-        fprintf( stderr, "can't access font file %p\n", (void*)handle->scaler.face_id );
-        return 0;
-      }
+      /* can't access the font file: do not render anything */
+      fprintf( stderr, "can't access font file %p\n",
+               (void*)handle->scaler.face_id );
+      return 0;
+    }
 
-      if ( !FT_IS_SCALABLE( face ) )
-      {
-        int  i;
+    if ( !FT_IS_SCALABLE( face ) )
+    {
+      int  i;
 
 
-        max_size = 0;
-        for ( i = 0; i < face->num_fixed_sizes; i++ )
-          if ( face->available_sizes[i].height >= max_size/64 )
-            max_size = face->available_sizes[i].height*64;
-      }
+      max_size = 0;
+      for ( i = 0; i < face->num_fixed_sizes; i++ )
+        if ( face->available_sizes[i].height >= max_size / 64 )
+          max_size = face->available_sizes[i].height * 64;
     }
 
     start_x = 4;
@@ -512,8 +515,8 @@ Next:
     for ( pt_size = first_size; pt_size < max_size; pt_size += 64 )
     {
       sprintf( (char*)text,
-                "%g: the quick brown fox jumps over the lazy dog "
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size/64.0 );
+               "%g: the quick brown fox jumps over the lazy dog"
+               " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", pt_size / 64.0 );
 
       p = text;
 
@@ -637,8 +640,8 @@ Next:
     int      xside  = 10;
     int      levels = 17;
     int      gammas = 30;
-    int      x_0    = (display->bitmap->width - levels*xside)/2;
-    int      y_0    = (display->bitmap->rows  - gammas*(yside+1))/2;
+    int      x_0    = ( display->bitmap->width - levels * xside ) / 2;
+    int      y_0    = ( display->bitmap->rows - gammas * ( yside + 1 ) ) / 2;
     int      pitch  = display->bitmap->pitch;
 
 
@@ -648,18 +651,21 @@ Next:
     if ( pitch < 0 )
       pitch = -pitch;
 
-    memset( display->bitmap->buffer, 100, pitch*display->bitmap->rows );
+    memset( display->bitmap->buffer, 100, pitch * display->bitmap->rows );
 
-    grWriteCellString( display->bitmap, 0, 0, "Gamma grid", display->fore_color );
+    grWriteCellString( display->bitmap, 0, 0, "Gamma grid",
+                       display->fore_color );
 
     for ( g = 1; g <= gammas; g += 1 )
     {
-      double ggamma = g / 10.0;
-      char   temp[6];
-      int    y = y_0 + ( yside + 1 ) * ( g - 1 );
-      int    nx, ny;
+      double  ggamma = g / 10.0;
+      char    temp[6];
+      int     y = y_0 + ( yside + 1 ) * ( g - 1 );
+      int     nx, ny;
 
-      unsigned char*  line = display->bitmap->buffer + y * display->bitmap->pitch;
+      unsigned char*  line = display->bitmap->buffer +
+                             y * display->bitmap->pitch;
+
 
       if ( display->bitmap->pitch < 0 )
         line -= display->bitmap->pitch * ( display->bitmap->rows - 1 );
@@ -676,16 +682,17 @@ Next:
       {
         unsigned char*  dst = line;
 
+
         for ( nx = 0; nx < levels; nx++, dst += 3 * xside )
         {
-          double  p   = nx/(double)(levels - 1);
+          double  p   = nx / (double)( levels - 1 );
           int     gm  = (int)( 255.0 * pow( p, ggamma ) );
+
 
           memset( dst, gm, xside * 3 );
         }
       }
     }
-
 
     grRefreshSurface( display->surface );
     grListenSurface( display->surface, gr_event_key, &dummy_event );
@@ -693,7 +700,7 @@ Next:
 
 
   static void
-  event_gamma_change( double delta )
+  event_gamma_change( double  delta )
   {
     status.gamma += delta;
 
@@ -712,23 +719,23 @@ Next:
 
 
   static void
-  event_size_change( int delta )
+  event_size_change( int  delta )
   {
     status.ptsize += delta;
 
-    if ( status.ptsize < 64*1 )
-      status.ptsize = 1*64;
-    else if ( status.ptsize > MAXPTSIZE*64 )
-      status.ptsize = MAXPTSIZE*64;
+    if ( status.ptsize < 64 * 1 )
+      status.ptsize = 1 * 64;
+    else if ( status.ptsize > MAXPTSIZE * 64 )
+      status.ptsize = MAXPTSIZE * 64;
 
     FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
   }
 
 
   static void
-  event_index_change( int delta )
+  event_index_change( int  delta )
   {
-    int num_indices = handle->current_font->num_indices;
+    int  num_indices = handle->current_font->num_indices;
 
 
     status.Num += delta;
@@ -741,7 +748,7 @@ Next:
 
 
   static void
-  event_render_mode_change( int delta )
+  event_render_mode_change( int  delta )
   {
 
     if ( delta )
@@ -779,11 +786,11 @@ Next:
   static void
   event_font_change( int  delta )
   {
-    int      num_indices;
+    int  num_indices;
 
 
     if ( status.font_index + delta >= handle->num_fonts ||
-         status.font_index + delta < 0 )
+         status.font_index + delta < 0                  )
       return;
 
     status.font_index += delta;
@@ -803,6 +810,7 @@ Next:
   Process_Event( grEvent*  event )
   {
     int  ret = 0;
+
 
     if ( event->key >= '1' && event->key < '1' + N_RENDER_MODES )
     {
@@ -836,8 +844,8 @@ Next:
     case grKEY( 'b' ):
       handle->use_sbits = !handle->use_sbits;
       status.header     = handle->use_sbits
-                           ? (char *)"embedded bitmaps are now used when available"
-                           : (char *)"embedded bitmaps are now ignored";
+                           ? (char *)"now using embedded bitmaps (if available)"
+                           : (char *)"now ignoring embedded bitmaps";
 
       FTDemo_Update_Current_Flags( handle );
       break;
@@ -882,22 +890,22 @@ Next:
       switch ( handle->lcd_mode )
       {
       case LCD_MODE_AA:
-        status.header = (char *)"normal anti-aliased rendering on";
+        status.header = (char *)"use normal anti-aliased rendering";
         break;
       case LCD_MODE_LIGHT:
-        status.header = (char *)"light anti-aliased rendering on";
+        status.header = (char *)"use light anti-aliased rendering";
         break;
       case LCD_MODE_RGB:
-        status.header = (char *)"horizontal LCD-optimized rendering on (RGB)";
+        status.header = (char *)"use horizontal LCD-optimized rendering (RGB)";
         break;
       case LCD_MODE_BGR:
-        status.header = (char *)"horizontal LCD-optimized rendering on (BGR)";
+        status.header = (char *)"use horizontal LCD-optimized rendering (BGR)";
         break;
       case LCD_MODE_VRGB:
-        status.header = (char *)"vertical LCD-optimized rendering on (RGB)";
+        status.header = (char *)"use vertical LCD-optimized rendering (RGB)";
         break;
       case LCD_MODE_VBGR:
-        status.header = (char *)"vertical LCD-optimized rendering on (BGR)";
+        status.header = (char *)"use vertical LCD-optimized rendering (BGR)";
         break;
       }
 
@@ -951,7 +959,7 @@ Next:
 
 
   static void
-  write_header( FT_Error error_code )
+  write_header( FT_Error  error_code )
   {
     FT_Face      face;
     const char*  basename;
@@ -970,31 +978,35 @@ Next:
       switch ( error_code )
       {
       case FT_Err_Ok:
-        sprintf( status.header_buffer, "%s %s (file `%s')", face->family_name,
-                 face->style_name, basename );
+        sprintf( status.header_buffer, "%s %s (file `%s')",
+                 face->family_name, face->style_name, basename );
         break;
       case FT_Err_Invalid_Pixel_Size:
-        sprintf( status.header_buffer, "Invalid pixel size (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid pixel size (file `%s')",
+                 basename );
         break;
       case FT_Err_Invalid_PPem:
-        sprintf( status.header_buffer, "Invalid ppem value (file `%s')", basename );
+        sprintf( status.header_buffer, "Invalid ppem value (file `%s')",
+                 basename );
         break;
       default:
-        sprintf( status.header_buffer, "File `%s': error 0x%04x", basename,
-                 (FT_UShort)error_code );
+        sprintf( status.header_buffer, "File `%s': error 0x%04x",
+                 basename, (FT_UShort)error_code );
         break;
       }
 
       status.header = status.header_buffer;
     }
 
-    grWriteCellString( display->bitmap, 0, 0, status.header, display->fore_color );
+    grWriteCellString( display->bitmap, 0, 0,
+                       status.header, display->fore_color );
 
-    format = ( status.encoding != FT_ENCODING_NONE )
+    format = status.encoding != FT_ENCODING_NONE
              ? "at %g points, first char code = 0x%x"
              : "at %g points, first glyph index = %d";
 
-    snprintf( status.header_buffer, 256, format, status.ptsize/64.0, status.Num );
+    snprintf( status.header_buffer, 256, format,
+              status.ptsize / 64.0, status.Num );
 
     if ( FT_HAS_GLYPH_NAMES( face ) )
     {
@@ -1016,14 +1028,15 @@ Next:
           gindex = FTDemo_Get_Index( handle, status.Num );
 
         strcpy( p, format );
-        if ( FT_Get_Glyph_Name( face, gindex, p + format_len, size - format_len ) )
+        if ( FT_Get_Glyph_Name( face, gindex,
+                                p + format_len, size - format_len ) )
           *p = '\0';
       }
     }
 
     status.header = status.header_buffer;
-    grWriteCellString( display->bitmap, 0, HEADER_HEIGHT, status.header_buffer,
-                       display->fore_color );
+    grWriteCellString( display->bitmap, 0, HEADER_HEIGHT,
+                       status.header_buffer, display->fore_color );
 
     grRefreshSurface( display->surface );
   }
@@ -1162,15 +1175,15 @@ Next:
 #if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0 && FREETYPE_PATCH <= 8
     if ( status.debug )
     {
-#  ifdef FT_DEBUG_LEVEL_TRACE
+#ifdef FT_DEBUG_LEVEL_TRACE
       FT_SetTraceLevel( trace_any, (FT_Byte)status.trace_level );
-#  else
+#else
       status.trace_level = 0;
-#  endif
+#endif
     }
 #elif 0
-       /* "setenv/putenv" is not ANSI and I don't want to mess */
-       /* with this portability issue right now..              */
+       /* `setenv' and `putenv' is not ANSI and I don't want to mess */
+       /* with this portability issue right now...                   */
     if ( status.debug )
     {
       char  temp[32];
@@ -1200,7 +1213,8 @@ Next:
 
     memset( display->fore_color.chroma, 0, 4 );
     memset( display->back_color.chroma, 0xff, 4 );
-    grSetTitle( display->surface, "FreeType Glyph Viewer - press F1 for help" );
+    grSetTitle( display->surface,
+                "FreeType Glyph Viewer - press F1 for help" );
 
     status.Fail = 0;
 
@@ -1218,19 +1232,23 @@ Next:
       switch ( status.render_mode )
       {
       case RENDER_MODE_ALL:
-        error = Render_All( handle->current_font->num_indices, status.Num );
+        error = Render_All( handle->current_font->num_indices,
+                            status.Num );
         break;
 
       case RENDER_MODE_EMBOLDEN:
-        error = Render_Embolden( handle->current_font->num_indices, status.Num );
+        error = Render_Embolden( handle->current_font->num_indices,
+                                 status.Num );
         break;
 
       case RENDER_MODE_SLANTED:
-        error = Render_Slanted( handle->current_font->num_indices, status.Num );
+        error = Render_Slanted( handle->current_font->num_indices,
+                                status.Num );
         break;
 
       case RENDER_MODE_STROKE:
-        error = Render_Stroke( handle->current_font->num_indices, status.Num );
+        error = Render_Stroke( handle->current_font->num_indices,
+                               status.Num );
         break;
 
       case RENDER_MODE_TEXT:

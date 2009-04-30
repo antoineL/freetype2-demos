@@ -76,6 +76,8 @@
     int          ptsize;            /* current point size, 26.6 format */
     int          lcd_mode;
     double       gamma;
+    double       bold_factor;
+    double       slant;
 
     int          debug;
     int          trace_level;
@@ -87,7 +89,8 @@
     int          Fail;
     int          preload;
 
-  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1, 1.0,
+  } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1,
+               1.0, 0.04, 0.22,
                0, 0, 0, 0, 0, NULL, { 0 }, 0, 0 };
 
 
@@ -256,14 +259,10 @@
         /*                                                             */
         /*        outline'     shear    outline                        */
         /*                                                             */
-        /*  Shear angle is 12 degrees, so:                             */
-        /*                                                             */
-        /*         k = tan(12) = 0.2126                                */
-        /*                                                             */
         /***************************************************************/
 
         shear.xx = 1 << 16;
-        shear.xy = (FT_Fixed)( 0.2126f * ( 1 << 16 ) );
+        shear.xy = (FT_Fixed)( status.slant * ( 1 << 16 ) );
         shear.yx = 0;
         shear.yy = 1 << 16;
 
@@ -329,12 +328,67 @@
       error = FT_Load_Glyph( face, gindex, handle->load_flags );
       if ( !error )
       {
-        FT_GlyphSlot_Embolden( face->glyph );
+        /* this is essentially the code of function */
+        /* `FT_GlyphSlot_Embolden'                  */
 
-        error = FTDemo_Draw_Slot( handle, display, face->glyph, &x, &y );
+        FT_GlyphSlot  slot    = face->glyph;
+        FT_Library    library = slot->library;
+        FT_Pos        xstr, ystr;
+
+
+        if ( slot->format != FT_GLYPH_FORMAT_OUTLINE &&
+             slot->format != FT_GLYPH_FORMAT_BITMAP )
+          goto Next;
+
+        xstr = FT_MulFix( face->units_per_EM,
+                          face->size->metrics.y_scale );
+        xstr = (FT_Fixed)( xstr * status.bold_factor );
+        ystr = xstr;
+
+        if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )
+        {
+          error = FT_Outline_Embolden( &slot->outline, xstr );
+          /* ignore error */
+
+          xstr = xstr * 2;
+          ystr = xstr;
+        }
+        else if ( slot->format == FT_GLYPH_FORMAT_BITMAP )
+        {
+          /* round to full pixels */
+          xstr &= ~63;
+          ystr &= ~63;
+
+          error = FT_GlyphSlot_Own_Bitmap( slot );
+          if ( error )
+            goto Next;
+
+          error = FT_Bitmap_Embolden( library, &slot->bitmap, xstr, ystr );
+          if ( error )
+            goto Next;
+        }
+
+        if ( slot->advance.x )
+          slot->advance.x += xstr;
+
+        if ( slot->advance.y )
+          slot->advance.y += ystr;
+
+        slot->metrics.width        += xstr;
+        slot->metrics.height       += ystr;
+        slot->metrics.horiBearingY += ystr;
+        slot->metrics.horiAdvance  += xstr;
+        slot->metrics.vertBearingX -= xstr / 2;
+        slot->metrics.vertBearingY += ystr;
+        slot->metrics.vertAdvance  += ystr;
+
+        if ( slot->format == FT_GLYPH_FORMAT_BITMAP )
+          slot->bitmap_top += ystr >> 6;
+
+        error = FTDemo_Draw_Slot( handle, display, slot, &x, &y );
 
         if ( error )
-          status.Fail++;
+          goto Next;
         else if ( X_TOO_LONG( x, size, display ) )
         {
           x  = start_x;
@@ -345,6 +399,7 @@
         }
       }
       else
+    Next:
         status.Fail++;
 
       i++;
@@ -602,6 +657,9 @@
     grWriteln( "  space      : toggle rendering mode" );
     grWriteln( "  1-6        : select rendering mode" );
     grLn();
+    grWriteln( "  e, E       : adjust emboldening" );
+    grWriteln( "  s, S       : adjust slanting" );
+    grLn();
     grWriteln( "  G          : show gamma ramp" );
     grWriteln( "  g          : increase gamma by 0.1" );
     grWriteln( "  v          : decrease gamma by 0.1" );
@@ -713,6 +771,40 @@
 
     sprintf( status.header_buffer, "gamma changed to %.1f%s",
              status.gamma, status.gamma == 0.0 ? " (sRGB mode)" : "" );
+
+    status.header = status.header_buffer;
+  }
+
+
+  static void
+  event_bold_change( double  delta )
+  {
+    status.bold_factor += delta;
+
+    if ( status.bold_factor > 0.1 )
+      status.bold_factor = 0.1;
+    else if ( status.bold_factor < -0.1 )
+      status.bold_factor = -0.1;
+
+    sprintf( status.header_buffer, "embolding factor changed to %.3f",
+             status.bold_factor );
+
+    status.header = status.header_buffer;
+  }
+
+
+  static void
+  event_slant_change( double  delta )
+  {
+    status.slant += delta;
+
+    if ( status.slant > 1.0 )
+      status.slant = 1.0;
+    else if ( status.slant < -1.0 )
+      status.slant = -1.0;
+
+    sprintf( status.header_buffer, "slanting changed to %.3f",
+             status.slant );
 
     status.header = status.header_buffer;
   }
@@ -918,6 +1010,22 @@
 
     case grKEY( 'G' ):
       event_gamma_grid();
+      break;
+
+    case grKEY( 's' ):
+      event_slant_change( 0.02 );
+      break;
+
+    case grKEY( 'S' ):
+      event_slant_change( -0.02 );
+      break;
+
+    case grKEY( 'e' ):
+      event_bold_change( 0.002 );
+      break;
+
+    case grKEY( 'E' ):
+      event_bold_change( -0.002 );
       break;
 
     case grKEY( 'g' ):

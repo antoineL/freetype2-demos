@@ -1,3 +1,17 @@
+2009-04-30  Werner Lemberg  <wl@gnu.org>
+
+	ftview: Make slant and boldness controllable.
+
+	Keys `e' and `E' adjust emboldening, keys `s' and `S' the slant.
+
+	* src/ftview.c (status): Add `bold_factor' and `slant' members.
+	(Render_Slanted): Use `status.slant'.
+	(Render_Embolden): Copy code from `FT_GlyphSlot_Embolden' and use
+	`status.bold_factor'.
+	(event_bold_change, event_slant_change): New functions.
+	(Process_Event): Handle keys `s', `S', `e', and `E'.
+	(event_help): Updated.
+
 2009-04-26  Werner Lemberg  <wl@gnu.org>
 
 	* graph/grblit.c (blit_lcd8_to_24): Fix typo.

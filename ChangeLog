@@ -1,5 +1,16 @@
 2009-06-17  Werner Lemberg  <wl@gnu.org>
 
+	Reduce number of automatically compiled programs.
+	Many GNU/Linux distributions install those programs, and most of
+	them are completely useless or very specialized.
+
+	* Makefile (LINK): Define.
+	(EXES): Reduce list to retain only generally useful programs.
+	(ftsbit): Comment out.  Program doesn't compile (but may be useful).
+	(ttdebug.o): Make it compile again.
+
+2009-06-17  Werner Lemberg  <wl@gnu.org>
+
 	* Makefile: Handle `EXTRAFLAGS' for platform `unixdev' also.
 
 2009-04-30  Werner Lemberg  <wl@gnu.org>

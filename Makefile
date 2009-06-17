@@ -161,6 +161,9 @@ else
     endif
   endif
 
+  LINK        = $(LINK_CMD) \
+                $(LINK_ITEMS) \
+                $(LINK_LIBS)
   LINK_COMMON = $(LINK_CMD) \
                 $(LINK_ITEMS) $(subst /,$(COMPILER_SEP),$(COMMON_OBJ)) \
                 $(LINK_LIBS)
@@ -242,14 +245,34 @@ else
   endif
 
 
+  ####################################################################
+  #
+  # POSIX TERMIOS: Do not define if you use OLD U*ix like 4.2BSD.
+  #
+  ifeq ($(PLATFORM),unix)
+    EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
+  endif
+
+  ifeq ($(PLATFORM),unixdev)
+    EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
+  endif
+
+
   ###################################################################
   #
   # The list of demonstration programs to build.
   #
-  EXES := ftlint ftmemchk ftdump testname fttimer ftbench ftchkwd ftpatchk
+  EXES := ftbench \
+          ftdump  \
+          ftlint
 
   # Comment out the next line if you don't have a graphics subsystem.
-  EXES += ftview ftmulti ftstring ftgamma ftgrid ftdiff
+  EXES += ftdiff   \
+          ftgamma  \
+          ftgrid   \
+          ftmulti  \
+          ftstring \
+          ftview
 
   # ftvalid requires ftgxval.c and ftotval.c
   #
@@ -259,12 +282,18 @@ else
     endif
   endif
 
-  # Only uncomment the following lines if the truetype driver was
-  # compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined.
+  # The following programs are not compiled automatically; either comment
+  # out the affected line or use the program name as a Makefile target.
   #
-  #  ifneq ($(findstring $(PLATFORM),os2 unix win32),)
-  #    EXES += ttdebug
-  #  endif
+  # Note that ttdebug only works if the FreeType's `truetype' driver has
+  # been compiled with TT_CONFIG_OPTION_BYTECODE_INTERPRETER defined.
+  #
+  # EXES += ftchkwd
+  # EXES += ftmemchk
+  # EXES += ftpatchk
+  # EXES += fttimer
+  # EXES += testname
+  # EXES += ttdebug
 
   exes: $(EXES:%=$(BIN_DIR_2)/%$E)
 
@@ -320,6 +349,9 @@ else
   $(OBJ_DIR_2)/testname.$(SO): $(SRC_DIR)/testname.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
+#  $(OBJ_DIR_2)/ftsbit.$(SO): $(SRC_DIR)/ftsbit.c
+#	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
+
 
   # We simplify the dependencies on the graphics library by using
   # $(GRAPH_LIB) directly.
@@ -343,10 +375,6 @@ else
                                $(GRAPH_LIB)
 	  $(COMPILE) $(GRAPH_INCLUDES:%=$I%) \
                      $T$(subst /,$(COMPILER_SEP),$@ $<)
-
-
-# $(OBJ_DIR_2)/ftsbit.$(SO): $(SRC_DIR)/ftsbit.c $(GRAPH_LIB)
-#	 $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
   ####################################################################
@@ -403,22 +431,10 @@ else
   # the TrueType source path and needs extra flags for correct keyboard
   # handling on Unix.
 
-  # POSIX TERMIOS: Do not define if you use OLD U*ix like 4.2BSD.
-  #
-  # detect a Unix system
-  #
-  ifeq ($(PLATFORM),unix)
-    EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
-  endif
-
-  ifeq ($(PLATFORM),unixdev)
-    EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
-  endif
-
   $(OBJ_DIR_2)/ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) \
                      $I$(subst /,$(COMPILER_SEP),$(TOP_DIR)/src/truetype) \
-                     $(EXTRAFLAGS)
+                     $(EXTRAFLAGS) $DFT2_BUILD_LIBRARY
 
 
   ####################################################################
@@ -456,8 +472,8 @@ else
   $(BIN_DIR_2)/fttry$E: $(OBJ_DIR_2)/fttry.$(SO) $(FTLIB)
 	  $(LINK)
 
-  $(BIN_DIR_2)/ftsbit$E: $(OBJ_DIR_2)/ftsbit.$(SO) $(FTLIB)
-	  $(LINK)
+#  $(BIN_DIR_2)/ftsbit$E: $(OBJ_DIR_2)/ftsbit.$(SO) $(FTLIB)
+#	  $(LINK)
 
   $(BIN_DIR_2)/t1dump$E: $(OBJ_DIR_2)/t1dump.$(SO) $(FTLIB)
 	  $(LINK)

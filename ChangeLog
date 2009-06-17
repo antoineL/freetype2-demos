@@ -1,3 +1,7 @@
+2009-06-17  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile: Handle `EXTRAFLAGS' for platform `unixdev' also.
+
 2009-04-30  Werner Lemberg  <wl@gnu.org>
 
 	ftview: Make slant and boldness controllable.

@@ -411,6 +411,10 @@ else
     EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
   endif
 
+  ifeq ($(PLATFORM),unixdev)
+    EXTRAFLAGS = $DUNIX $DHAVE_POSIX_TERMIOS
+  endif
+
   $(OBJ_DIR_2)/ttdebug.$(SO): $(SRC_DIR)/ttdebug.c
 	  $(COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<) \
                      $I$(subst /,$(COMPILER_SEP),$(TOP_DIR)/src/truetype) \

@@ -191,10 +191,11 @@ gr_win32_surface_refresh_rectangle(
 
   /* now, perform the blit */
   row_bytes = surface->root.bitmap.pitch;
-  if (row_bytes < 0) row_bytes = -row_bytes;
+  if ( row_bytes < 0 )
+    row_bytes = -row_bytes;
 
-  if ( row_bytes*8 != pbmi->bmiHeader.biWidth * pbmi->bmiHeader.biBitCount )
-    pbmi->bmiHeader.biWidth  = row_bytes * 8 / pbmi->bmiHeader.biBitCount;
+  if ( row_bytes * 8 != pbmi->bmiHeader.biWidth * pbmi->bmiHeader.biBitCount )
+    pbmi->bmiHeader.biWidth = row_bytes * 8 / pbmi->bmiHeader.biBitCount;
 
 #ifdef SWIZZLE
   {
@@ -219,27 +220,45 @@ gr_win32_surface_refresh_rectangle(
     int             height      = bitmap->rows;
     int             width       = bitmap->width;
 
-    if (read_pitch < 0)
-      read_line -= (height-1)*read_pitch;
+    if ( read_pitch < 0 )
+      read_line -= ( height - 1 ) * read_pitch;
 
-    if (write_pitch < 0)
-      write_line -= (height-1)*write_pitch;
+    if ( write_pitch < 0 )
+      write_line -= ( height - 1 ) * write_pitch;
 
-    for ( ; height > 0; height-- )
+    if ( bitmap->mode == gr_pixel_mode_gray )
     {
-      unsigned char*  read       = read_line;
-      unsigned char*  read_limit = read + 3*width;
-      unsigned char*  write      = write_line;
-
-      for ( ; read < read_limit; read += 3, write += 3 )
+      for ( ; height > 0; height-- )
       {
-        write[0] = read[2];
-        write[1] = read[1];
-        write[2] = read[0];
-      }
+        unsigned char*  read       = read_line;
+        unsigned char*  read_limit = read + width;
+        unsigned char*  write      = write_line;
 
-      read_line  += read_pitch;
-      write_line += write_pitch;
+        for ( ; read < read_limit; read++, write++ )
+          *write = *read;
+
+        read_line  += read_pitch;
+        write_line += write_pitch;
+      }
+    }
+    else
+    {
+      for ( ; height > 0; height-- )
+      {
+        unsigned char*  read       = read_line;
+        unsigned char*  read_limit = read + 3 * width;
+        unsigned char*  write      = write_line;
+
+        for ( ; read < read_limit; read += 3, write += 3 )
+        {
+          write[0] = read[2];
+          write[1] = read[1];
+          write[2] = read[0];
+        }
+
+        read_line  += read_pitch;
+        write_line += write_pitch;
+      }
     }
   }
 

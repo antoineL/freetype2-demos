@@ -1,3 +1,13 @@
+2009-10-10  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.3.11 released.
+	==========================
+
+
+	Tag sources with `VER-2-3-11'.
+
+	* README: Updated.
+
 2009-10-06  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.3.10 released.

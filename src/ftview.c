@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009 by              */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009, 2010 by        */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -38,7 +38,7 @@
 #define INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y )       \
           do {                                                          \
             start_x = 4;                                                \
-            start_y = CEIL( size->metrics.height ) + 2 * HEADER_HEIGHT; \
+            start_y = CEIL( size->metrics.height ) + 3 * HEADER_HEIGHT; \
             step_x  = CEIL( size->metrics.max_advance );                \
             step_y  = CEIL( size->metrics.height ) + 4;                 \
                                                                         \
@@ -70,28 +70,33 @@
 
   static struct  status_
   {
-    int          render_mode;
-    FT_Encoding  encoding;
-    int          res;
-    int          ptsize;            /* current point size, 26.6 format */
-    int          lcd_mode;
-    double       gamma;
-    double       bold_factor;
-    double       slant;
+    int            render_mode;
+    FT_Encoding    encoding;
+    int            res;
+    int            ptsize;            /* current point size, 26.6 format */
+    int            lcd_mode;
+    double         gamma;
+    double         bold_factor;
+    double         slant;
 
-    int          debug;
-    int          trace_level;
-    int          font_index;
-    int          dump_cache_stats;  /* do we need to dump cache statistics? */
-    int          Num;               /* current first index */
-    char*        header;
-    char         header_buffer[256];
-    int          Fail;
-    int          preload;
+    int            debug;
+    int            trace_level;
+    int            font_index;
+    int            dump_cache_stats;  /* do we need to dump cache statistics? */
+    int            Num;               /* current first index */
+    char*          header;
+    char           header_buffer[256];
+    int            Fail;
+    int            preload;
+
+    int            use_custom_lcd_filter;
+    unsigned char  filter_weights[5];
+    int            fw_index;
 
   } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1,
                1.0, 0.04, 0.22,
-               0, 0, 0, 0, 0, NULL, { 0 }, 0, 0 };
+               0, 0, 0, 0, 0, NULL, { 0 }, 0, 0,
+               0, "\x10\x40\x70\x40\x10", 2 };
 
 
   static FTDemo_Display*  display;
@@ -445,7 +450,7 @@
         status.Fail++;
       else if ( X_TOO_LONG( x, size, display ) )
       {
-        x  = start_x;
+        x = start_x;
         y += step_y;
 
         if ( Y_TOO_LONG( y, size, display ) )
@@ -565,7 +570,7 @@
     }
 
     start_x = 4;
-    start_y = 2 * HEADER_HEIGHT;
+    start_y = 3 * HEADER_HEIGHT;
 
     for ( pt_size = first_size; pt_size < max_size; pt_size += 64 )
     {
@@ -644,43 +649,38 @@
     grLn();
     grWriteln( "Use the following keys:" );
     grLn();
-    grWriteln( "  F1 or ?    : display this help screen" );
+    grWriteln( "  F1, ?       display this help screen" );
     grLn();
-    grWriteln( "  a          : toggle anti-aliasing" );
-    grWriteln( "  b          : toggle embedded bitmaps" );
-    grWriteln( "  c          : toggle between cache modes" );
-    grWriteln( "  f          : toggle forced auto-hinting" );
-    grWriteln( "  h          : toggle outline hinting" );
-    grWriteln( "  l          : toggle low precision rendering" );
+    grWriteln( "  a           toggle anti-aliasing" );
+    grWriteln( "  b           toggle embedded bitmaps" );
+    grWriteln( "  c           toggle between cache modes" );
+    grWriteln( "  f           toggle forced auto-hinting" );
+    grWriteln( "  h           toggle outline hinting" );
+    grWriteln( "  l           toggle low precision rendering" );
     grLn();
-    grWriteln( "  L          : cycle through LCD modes" );
-    grWriteln( "  space      : toggle rendering mode" );
-    grWriteln( "  1-6        : select rendering mode" );
+    grWriteln( "  L           cycle through LCD modes" );
+    grWriteln( "  space       cycle through rendering modes" );
+    grWriteln( "  1-6         select rendering mode" );
     grLn();
-    grWriteln( "  e, E       : adjust emboldening" );
-    grWriteln( "  s, S       : adjust slanting" );
+    grWriteln( "  e, E        adjust emboldening" );
+    grWriteln( "  s, S        adjust slanting" );
     grLn();
-    grWriteln( "  G          : show gamma ramp" );
-    grWriteln( "  g          : increase gamma by 0.1" );
-    grWriteln( "  v          : decrease gamma by 0.1" );
+    grWriteln( "  F           toggle custom LCD filter mode" );
+    grWriteln( "  [, ]        select custom LCD filter weight" );
+    grWriteln( "  -, +(=)     adjust selected custom LCD filter weight" );
     grLn();
-    grWriteln( "  n          : next font" );
-    grWriteln( "  p          : previous font" );
+    grWriteln( "  G           show gamma ramp" );
+    grWriteln( "  g, v        adjust gamma value" );
     grLn();
-    grWriteln( "  Up         : increase pointsize by 1 unit" );
-    grWriteln( "  Down       : decrease pointsize by 1 unit" );
-    grWriteln( "  Page Up    : increase pointsize by 10 units" );
-    grWriteln( "  Page Down  : decrease pointsize by 10 units" );
+    grWriteln( "  p, n        select previous/next font" );
     grLn();
-    grWriteln( "  Right      : increment index" );
-    grWriteln( "  Left       : decrement index" );
+    grWriteln( "  Up, Down    adjust pointsize by 1 unit" );
+    grWriteln( "  PgUp, PgDn  adjust pointsize by 10 units" );
     grLn();
-    grWriteln( "  F7         : decrement index by 10" );
-    grWriteln( "  F8         : increment index by 10" );
-    grWriteln( "  F9         : decrement index by 100" );
-    grWriteln( "  F10        : increment index by 100" );
-    grWriteln( "  F11        : decrement index by 1000" );
-    grWriteln( "  F12        : increment index by 1000" );
+    grWriteln( "  Left, Right adjust index by 1" );
+    grWriteln( "  F7, F8      adjust index by 10" );
+    grWriteln( "  F9, F10     adjust index by 100" );
+    grWriteln( "  F11, F12    adjust index by 1000" );
     grLn();
     grWriteln( "press any key to exit this help screen" );
 
@@ -1058,8 +1058,67 @@
     case grKeyF11:   event_index_change( -1000 ); break;
     case grKeyF12:   event_index_change(  1000 ); break;
 
+    case grKEY( 'F' ):
+      FTC_Manager_RemoveFaceID( handle->cache_manager,
+                                handle->scaler.face_id );
+
+      status.use_custom_lcd_filter = !status.use_custom_lcd_filter;
+      if ( status.use_custom_lcd_filter )
+        FT_Library_SetLcdFilterWeights( handle->library,
+                                        status.filter_weights );
+      else
+        FT_Library_SetLcdFilterWeights( handle->library,
+                                        (unsigned char*)"\x10\x40\x70\x40\x10" );
+      status.header = status.use_custom_lcd_filter
+                      ? (char *)"using custom LCD filter weights"
+                      : (char *)"using default LCD filter";
+      break;
+
+    case grKEY( '[' ):
+      if ( !status.use_custom_lcd_filter )
+        break;
+
+      status.fw_index--;
+      if ( status.fw_index < 0 )
+        status.fw_index = 4;
+      break;
+
+    case grKEY( ']' ):
+      if ( !status.use_custom_lcd_filter )
+        break;
+
+      status.fw_index++;
+      if ( status.fw_index > 4 )
+        status.fw_index = 0;
+      break;
+
+    case grKEY( '-' ):
+      if ( !status.use_custom_lcd_filter )
+        break;
+
+      FTC_Manager_RemoveFaceID( handle->cache_manager,
+                                handle->scaler.face_id );
+
+      status.filter_weights[status.fw_index]--;
+      FT_Library_SetLcdFilterWeights( handle->library,
+                                      status.filter_weights );
+      break;
+
+    case grKEY( '+' ):
+    case grKEY( '=' ):
+      if ( !status.use_custom_lcd_filter )
+        break;
+
+      FTC_Manager_RemoveFaceID( handle->cache_manager,
+                                handle->scaler.face_id );
+
+      status.filter_weights[status.fw_index]++;
+      FT_Library_SetLcdFilterWeights( handle->library,
+                                      status.filter_weights );
+      break;
+
     default:
-      ;
+      break;
     }
 
     return ret;
@@ -1145,6 +1204,23 @@
     status.header = status.header_buffer;
     grWriteCellString( display->bitmap, 0, HEADER_HEIGHT,
                        status.header_buffer, display->fore_color );
+
+    if ( status.use_custom_lcd_filter )
+    {
+      int             fwi = status.fw_index;
+      unsigned char  *fw  = status.filter_weights;
+
+
+      sprintf( status.header_buffer,
+               "%s0x%02X%s%s0x%02X%s%s0x%02X%s%s0x%02X%s%s0x%02X%s",
+               fwi == 0 ? "[" : " ", fw[0], fwi == 0 ? "]" : " ",
+               fwi == 1 ? "[" : " ", fw[1], fwi == 1 ? "]" : " ",
+               fwi == 2 ? "[" : " ", fw[2], fwi == 2 ? "]" : " ",
+               fwi == 3 ? "[" : " ", fw[3], fwi == 3 ? "]" : " ",
+               fwi == 4 ? "[" : " ", fw[4], fwi == 4 ? "]" : " " );
+      grWriteCellString( display->bitmap, 0, 2 * HEADER_HEIGHT,
+                         status.header_buffer, display->fore_color );
+    }
 
     grRefreshSurface( display->surface );
   }

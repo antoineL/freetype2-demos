@@ -1,3 +1,24 @@
+2010-04-14  Werner Lemberg  <wl@gnu.org>
+
+	ftview: Add support for LCD filter control.
+
+	Key `F' toggles custom LCD filter mode, `[' and `]' select the
+	custom filter weight, `-' and `+' (or `=') adjust the selected
+	filter weight.
+
+	This is based on code written by Lifter
+	<http://unixforum.org/index.php?showuser=11691>.
+
+	* src/ftview.c (INIT_SIZE, Render_Waterfall): Add space for a third
+	header line.
+	(status_): Add members for LCD filter control.
+	(event_help): Document new keys.
+	Make help screen more compact.
+	(Process_Event): Handle new keys.  Use FTC_Manager_RemoveFaceID to
+	flush the bitmap caches, forcing a redraw.  I'm not sure whether
+	this is the right thing, but it seems to work...
+	(write_header): Display custom filter weights.
+
 2010-02-11  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.3.12 released.

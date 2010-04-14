@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2007, 2008, 2009 by                                           */
+/*  Copyright 2007, 2008, 2009, 2010 by                                     */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -142,13 +142,17 @@
 
   typedef struct  _ColumnStateRec
   {
-    int           use_kerning;
-    int           use_deltas;
-    int           use_lcd_filter;
-    int           use_global_advance_width;
-    FT_LcdFilter  lcd_filter;
-    HintMode      hint_mode;
-    DisplayMode   disp_mode;
+    int            use_kerning;
+    int            use_deltas;
+    int            use_lcd_filter;
+    int            use_global_advance_width;
+    FT_LcdFilter   lcd_filter;
+    HintMode       hint_mode;
+    DisplayMode    disp_mode;
+
+    int            use_custom_lcd_filter;
+    unsigned char  filter_weights[5];
+    int            fw_index;
 
   } ColumnStateRec, *ColumnState;
 
@@ -204,14 +208,19 @@
     state->columns[0].use_global_advance_width = 1;
     state->columns[0].lcd_filter               = FT_LCD_FILTER_DEFAULT;
     state->columns[0].hint_mode                = HINT_MODE_BYTECODE;
+    state->columns[0].use_custom_lcd_filter    = 0;
+    state->columns[0].fw_index                 = 2;
+    /* freetype default filter weights */
+    memcpy( state->columns[0].filter_weights, "\x10\x40\x70\x40\x10", 5);
 
-    state->columns[1]           = state->columns[0];
-    state->columns[1].hint_mode = HINT_MODE_AUTOHINT;
+    state->columns[1]                       = state->columns[0];
+    state->columns[1].hint_mode             = HINT_MODE_AUTOHINT;
+    state->columns[1].use_custom_lcd_filter = 1;
 
     state->columns[2]           = state->columns[0];
     state->columns[2].hint_mode = HINT_MODE_UNHINTED;
 
-    state->col = 2;
+    state->col = 1;
 
     if ( FT_Init_FreeType( &state->library ) != 0 )
       panic( "could not initialize FreeType library. Check your code\n" );
@@ -430,6 +439,10 @@
     if ( column->use_lcd_filter )
       FT_Library_SetLcdFilter( face->glyph->library, column->lcd_filter );
 
+    if ( column->use_custom_lcd_filter )
+      FT_Library_SetLcdFilterWeights( face->glyph->library,
+                                      column->filter_weights );
+
     y          += state->size->metrics.ascender / 64;
     line_height = state->size->metrics.height / 64;
 
@@ -578,19 +591,42 @@
 
       if ( !column->use_lcd_filter )
         msg = "gray rendering";
+      else if ( column->use_custom_lcd_filter )
+      {
+        int             fwi = column->fw_index;
+        unsigned char  *fw  = column->filter_weights;
+
+
+        msg = "";
+
+        sprintf( temp,
+                 "%s0x%02X%s0x%02X%s0x%02X%s0x%02X%s0x%02X%s",
+                 fwi == 0 ? "[" : " ",
+                   fw[0],
+                 fwi == 0 ? "]" : ( fwi == 1 ? "[" : " " ),
+                   fw[1],
+                 fwi == 1 ? "]" : ( fwi == 2 ? "[" : " " ),
+                   fw[2],
+                 fwi == 2 ? "]" : ( fwi == 3 ? "[" : " " ),
+                   fw[3],
+                 fwi == 3 ? "]" : ( fwi == 4 ? "[" : " " ),
+                   fw[4],
+                 fwi == 4 ? "]" : " " );
+        state->display.disp_text( disp, left, bottom + 15, temp );
+      }
       else switch ( column->lcd_filter )
       {
       case FT_LCD_FILTER_NONE:
-        msg = "lcd without filtering";
+        msg = "LCD without filtering";
         break;
       case FT_LCD_FILTER_DEFAULT:
-        msg = "default lcd filter";
+        msg = "default LCD filter";
         break;
       case FT_LCD_FILTER_LIGHT:
-        msg = "light lcd filter";
+        msg = "light LCD filter";
         break;
       default:
-        msg = "legacy lcd filter";
+        msg = "legacy LCD filter";
       }
       state->display.disp_text( disp, left, bottom + 15, msg );
 
@@ -794,25 +830,24 @@
     grLn();
     grWriteln( "Use the following keys:" );
     grLn();
-    grWriteln( "  F1 or ?    : display this help screen" );
+    grWriteln( "  F1, ?       display this help screen" );
     grLn();
-    grWriteln( "  n          : jump to next font file in arguments list" );
-    grWriteln( "  p          : jump to previous font file in arguments list" );
+    grWriteln( "  n, p        select previous/next font" );
     grLn();
-    grWriteln( "  g          : increase gamma by 0.1" );
-    grWriteln( "  v          : decrease gamma by 0.1" );
+    grWriteln( "  1, 2, 3     select left, middle, or right column" );
+    grWriteln( "  a           toggle `ignore global advance width flag'" );
+    grWriteln( "  d           toggle lsb/rsb deltas" );
+    grWriteln( "  h           toggle hinting mode" );
+    grWriteln( "  k           toggle kerning" );
+    grWriteln( "  g, v        adjust gamma value" );
+    grWriteln( "  r           toggle rendering mode" );
     grLn();
-    grWriteln( "  1-3        : change currently selected column" );
-    grWriteln( "  a          : toggle `ignore global advance width flag" );
-    grWriteln( "  d          : toggle lsb/rsb deltas" );
-    grWriteln( "  h          : toggle hinting mode" );
-    grWriteln( "  k          : toggle kerning" );
-    grWriteln( "  l          : change LCD filter type" );
-    grWriteln( "  r          : toggle rendering mode" );
-    grWriteln( "  Up         : increase pointsize by 0.5 unit" );
-    grWriteln( "  Down       : decrease pointsize by 0.5 unit" );
-    grWriteln( "  Page Up    : increase pointsize by 5 units" );
-    grWriteln( "  Page Down  : decrease pointsize by 5 units" );
+    grWriteln( "  l           change LCD filter type" );
+    grWriteln( "  [, ]        select custom LCD filter weight" );
+    grWriteln( "  -, +(=)     adjust selected custom LCD filter weight");
+    grLn();
+    grWriteln( "  Up, Down    adjust pointsize by 0.5 unit" );
+    grWriteln( "  PgUp, PgDn  adjust pointsize by 5 units" );
     grLn();
     grWriteln( "press any key to exit this help screen" );
 
@@ -963,8 +998,17 @@
         break;
 
       case FT_LCD_FILTER_DEFAULT:
-        column->lcd_filter = FT_LCD_FILTER_LIGHT;
-        state->message     = (char *)"using light LCD filter";
+        if ( !column->use_custom_lcd_filter )
+        {
+          column->use_custom_lcd_filter = 1;
+          state->message                = (char*)"using custom LCD filter";
+        }
+        else
+        {
+          column->use_custom_lcd_filter = 0;
+          column->lcd_filter            = FT_LCD_FILTER_LIGHT;
+          state->message                = (char *)"using light LCD filter";
+        }
         break;
 
       case FT_LCD_FILTER_LIGHT:
@@ -994,12 +1038,45 @@
       column->use_lcd_filter = !column->use_lcd_filter;
       state->message         = state->message0;
       sprintf( state->message0, "column %d is using %s",
-               state->col + 1, column->use_lcd_filter ? "lcd filtering"
+               state->col + 1, column->use_lcd_filter ? "LCD filtering"
                                                       : "gray rendering" );
       break;
 
     case grKEY( 'v' ):
       event_change_gamma( state, -0.1 );
+      break;
+
+    case grKEY( '[' ):
+      if ( !column->use_custom_lcd_filter )
+        break;
+
+      column->fw_index--;
+      if ( column->fw_index < 0 )
+        column->fw_index = 4;
+      break;
+
+    case grKEY( ']' ):
+      if ( !column->use_custom_lcd_filter )
+        break;
+
+      column->fw_index++;
+      if ( column->fw_index > 4 )
+        column->fw_index = 0;
+      break;
+
+    case grKEY( '-' ):
+      if ( !column->use_custom_lcd_filter )
+        break;
+
+      column->filter_weights[column->fw_index]--;
+      break;
+
+    case grKEY( '+' ):
+    case grKEY( '=' ):
+      if ( !column->use_custom_lcd_filter )
+        break;
+
+      column->filter_weights[column->fw_index]++;
       break;
 
     default:

@@ -1,5 +1,23 @@
 2010-04-14  Werner Lemberg  <wl@gnu.org>
 
+	ftdiff: Add support for LCD filter control.
+
+	Key `l' cycles through the filter modes, `[' and `]' select the
+	custom filter weight, `-' and `+' (or `=') adjust the selected
+	filter weight.
+
+	This is based on code written by Lifter
+	<http://unixforum.org/index.php?showuser=11691>.
+
+	* src/ftdiff.c (ColumnStateRec): Add members for LCD filter control.
+	(render_state_init): Updated.
+	(render_state_draw): Add support for custom LCD filter.
+	(event_help): Document new keys.
+	Make help screen more compact.
+	(process_event): Handle new keys.
+
+2010-04-14  Werner Lemberg  <wl@gnu.org>
+
 	ftview: Add support for LCD filter control.
 
 	Key `F' toggles custom LCD filter mode, `[' and `]' select the

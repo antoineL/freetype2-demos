@@ -1131,11 +1131,11 @@
 
       state->message = state->message0;
       if ( total > 1 )
-        sprintf( state->message0, "%s %d/%d @ %5.1fpt",
+        sprintf( state->message0, "%.100s %d/%d @ %5.1fpt",
                  state->filename, idx + 1, total,
                  state->char_size );
       else
-        sprintf( state->message0, "%s @ %5.1fpt",
+        sprintf( state->message0, "%.100s @ %5.1fpt",
                  state->filename,
                  state->char_size );
     }

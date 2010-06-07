@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005 by                                */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2010 by                          */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -34,7 +34,7 @@
 
 #define  MAXPTSIZE  500                 /* dtp */
 
-  char  Header[128];
+  char  Header[256];
   char* new_header = 0;
 
   const unsigned char*  Text = (unsigned char*)
@@ -795,7 +795,7 @@
           Render_All( Num, ptsize );
         }
 
-        sprintf( Header, "%s %s (file %s)",
+        sprintf( Header, "%.50s %.50s (file %.100s)",
                          face->family_name,
                          face->style_name,
                          ft_basename( argv[file] ) );
@@ -830,7 +830,7 @@
       }
       else
       {
-        sprintf( Header, "%s: not an MM font file, or could not be opened",
+        sprintf( Header, "%.100s: not an MM font file, or could not be opened",
                          ft_basename( argv[file] ) );
       }
 

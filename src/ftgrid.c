@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009 by              */
+/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009, 2010 by        */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -787,22 +787,22 @@ grid_status_draw_outline( GridStatus       st,
       switch ( error_code )
       {
       case FT_Err_Ok:
-        sprintf( status.header_buffer, "%s %s (file `%s')",
+        sprintf( status.header_buffer, "%.50s %.50s (file `%.100s')",
                  face->family_name, face->style_name, basename );
         break;
 
       case FT_Err_Invalid_Pixel_Size:
-        sprintf( status.header_buffer, "Invalid pixel size (file `%s')",
+        sprintf( status.header_buffer, "Invalid pixel size (file `%.100s')",
                  basename );
         break;
 
       case FT_Err_Invalid_PPem:
-        sprintf( status.header_buffer, "Invalid ppem value (file `%s')",
+        sprintf( status.header_buffer, "Invalid ppem value (file `%.100s')",
                  basename );
         break;
 
       default:
-        sprintf( status.header_buffer, "File `%s': error 0x%04x",
+        sprintf( status.header_buffer, "File `%.100s': error 0x%04x",
                  basename, (FT_UShort)error_code );
         break;
       }

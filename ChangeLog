@@ -1,3 +1,11 @@
+2010-06-07  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #30054.
+
+	* src/ftdiff.c, src/ftgrid.c, src/ftmulti.c, src/ftstring.c,
+	src/ftview.c: Use precision for `%s' where appropriate to avoid
+	buffer overflows.
+
 2010-04-14  Werner Lemberg  <wl@gnu.org>
 
 	ftdiff: Add support for LCD filter control.

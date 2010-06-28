@@ -1,3 +1,10 @@
+2010-06-28  Werner Lemberg  <wl@gnu.org>
+
+	ftbench: Fix suboptions of `-b'.
+
+	* src/ftbench.c (bench_desc): Add missing description for
+	FT_BENCH_LOAD_ADVANCES.
+
 2010-06-07  Werner Lemberg  <wl@gnu.org>
 
 	Fix Savannah bug #30054.

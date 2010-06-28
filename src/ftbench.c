@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2002, 2003, 2004, 2005, 2006, 2009 by                         */
+/*  Copyright 2002, 2003, 2004, 2005, 2006, 2009, 2010 by                   */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftbench: bench some common FreeType call paths                          */
@@ -87,6 +87,7 @@ enum {
 
 const char* bench_desc[] = {
   "Load a glyph",
+  "Load advance widths",
   "Render a glyph",
   "Get FT_Glyph",
   "Get glyph cbox",

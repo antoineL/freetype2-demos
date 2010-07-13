@@ -1,3 +1,12 @@
+2010-07-13  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	ftdump: Show language ID for each cmap subtables.
+
+	* src/ftdump.c (Print_Charmaps): Print the language IDs
+	obtained by FT_Get_CMap_Language_ID().  The language IDs
+	is casted to FT_UInt, so broken IDs (> 0xFFFF) will not
+	be shown correctly.
+
 2010-07-12  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.0 released.

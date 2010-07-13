@@ -12,6 +12,7 @@
 #include FT_FREETYPE_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
+#include FT_TRUETYPE_TABLES_H
 
   /* the following header shouldn't be used in normal programs */
 #include FT_INTERNAL_DEBUG_H
@@ -508,10 +509,11 @@
 
     for( i = 0; i < face->num_charmaps; i++ )
     {
-      printf( "   %d: platform %d, encoding %d",
+      printf( "   %d: platform %d, encoding %d, language %d",
               i,
               face->charmaps[i]->platform_id,
-              face->charmaps[i]->encoding_id );
+              face->charmaps[i]->encoding_id,
+              (FT_UInt)FT_Get_CMap_Language_ID( face->charmaps[i] ) );
       if ( i == active )
         printf( " (active)" );
       printf ( "\n" );

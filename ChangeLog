@@ -1,3 +1,10 @@
+2010-07-17  Werner Lemberg  <wl@gnu.org>
+
+	ftmulti: Fix possible buffer overflow.
+	Based on a patch from Marek Kašík <mkasik@redhat.com>.
+
+	* src/ftmulti.c (main): Limit axis name length in `Header'.
+
 2010-07-13  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	ftdump: Show language ID for all cmap subtables.

@@ -816,10 +816,10 @@
             char  temp[32];
 
 
-            sprintf( temp, "  %s:%g",
+            sprintf( temp, "  %50s:%g",
                            multimaster->axis[n].name,
-                           design_pos[n]/65536. );
-            strcat( Header, temp );
+                           design_pos[n] / 65536.0 );
+            strncat( Header, temp, sizeof( Header ) - 1 );
           }
         }
         grWriteCellString( &bit, 0, 16, Header, fore_color );

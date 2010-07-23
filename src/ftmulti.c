@@ -819,7 +819,8 @@
             sprintf( temp, "  %.50s:%g",
                            multimaster->axis[n].name,
                            design_pos[n] / 65536.0 );
-            strncat( Header, temp, sizeof( Header ) - 1 );
+            strncat( Header, temp,
+                     sizeof ( Header ) - strlen( Header ) - 1 );
           }
         }
         grWriteCellString( &bit, 0, 16, Header, fore_color );

@@ -813,10 +813,10 @@
 
           for ( n = 0; n < (int)multimaster->num_axis; n++ )
           {
-            char  temp[32];
+            char  temp[100];
 
 
-            sprintf( temp, "  %50s:%g",
+            sprintf( temp, "  %.50s:%g",
                            multimaster->axis[n].name,
                            design_pos[n] / 65536.0 );
             strncat( Header, temp, sizeof( Header ) - 1 );

@@ -1,3 +1,9 @@
+2010-07-23  Werner Lemberg  <wl@gnu.org>
+
+	ftmulti: Oops!  Patch has been applied incorrectly.
+
+	* src/ftmulti.c (main): Really limit axis name length.
+
 2010-07-19  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.1 released.

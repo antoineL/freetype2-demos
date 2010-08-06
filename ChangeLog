@@ -1,3 +1,13 @@
+2010-08-06  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.4.2 released.
+	==========================
+
+
+	Tag sources with `VER-2-4-2'.
+
+	* README: Updated.
+
 2010-07-23  Werner Lemberg  <wl@gnu.org>
 
 	ftmulti: Oops!  Patch has been applied incorrectly.

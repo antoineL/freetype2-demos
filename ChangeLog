@@ -1,3 +1,14 @@
+2010-08-17  Werner Lemberg  <wl@gnu.org>
+
+	[ftbench] Add option `-i' to specify first used glyph index.
+
+	* src/ftbench.c (first_index): New global variable.
+	(test_load, test_load_advances, test_render, test_embolden,
+	test_get_cbox, test_get_glyph, test_image_cache, test_sbit_cache,
+	get_charset): Use it.
+	(usage): Updated.
+	(main): Handle `-i'.
+
 2010-08-06  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.2 released.

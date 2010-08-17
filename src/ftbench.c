@@ -101,6 +101,8 @@ const char* bench_desc[] = {
 int             preload;
 char*           filename;
 
+unsigned int    first_index;
+
 FT_Render_Mode  render_mode = FT_RENDER_MODE_NORMAL;
 FT_Int32        load_flags  = FT_LOAD_DEFAULT;
 
@@ -214,7 +216,7 @@ test_load( btimer_t*  timer,
 
   TIMER_START( timer );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( !FT_Load_Glyph( face, i, load_flags ) )
       done++;
@@ -240,8 +242,10 @@ test_load_advances( btimer_t*  timer,
 
   TIMER_START( timer );
 
-  FT_Get_Advances( face, 0, face->num_glyphs, flags, advances );
-  done += face->num_glyphs;
+  FT_Get_Advances( face,
+                   first_index, face->num_glyphs - first_index,
+                   flags, advances );
+  done += face->num_glyphs - first_index;
 
   TIMER_STOP( timer );
 
@@ -261,7 +265,7 @@ test_render( btimer_t*  timer,
 
   FT_UNUSED( user_data );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( FT_Load_Glyph( face, i, load_flags ) )
       continue;
@@ -285,7 +289,7 @@ test_embolden( btimer_t*  timer,
 
   FT_UNUSED( user_data );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( FT_Load_Glyph( face, i, load_flags ) )
       continue;
@@ -311,7 +315,7 @@ test_get_glyph( btimer_t*  timer,
 
   FT_UNUSED( user_data );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( FT_Load_Glyph( face, i, load_flags ) )
       continue;
@@ -341,7 +345,7 @@ test_get_cbox( btimer_t*  timer,
 
   FT_UNUSED( user_data );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( FT_Load_Glyph( face, i, load_flags ) )
       continue;
@@ -434,7 +438,7 @@ test_image_cache( btimer_t*  timer,
 
   TIMER_START( timer );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( !FTC_ImageCache_Lookup(image_cache, &font_type, i, &glyph, NULL) )
       done++;
@@ -465,7 +469,7 @@ test_sbit_cache( btimer_t*  timer,
 
   TIMER_START( timer );
 
-  for ( i = 0; i < face->num_glyphs; i++ )
+  for ( i = first_index; i < face->num_glyphs; i++ )
   {
     if ( !FTC_SBitCache_Lookup(sbit_cache, &font_type, i, &glyph, NULL) )
       done++;
@@ -545,20 +549,24 @@ get_charset( FT_Face      face,
     charcode = FT_Get_First_Char(face, &gindex);
 
     /* certain fonts contain a broken charmap that will map character codes */
-    /* to out-of-bounds glyph indices. Take care of that here !!            */
+    /* to out-of-bounds glyph indices.  Take care of that here.             */
     /*                                                                      */
     while ( gindex && i < face->num_glyphs )
     {
-      charset->code[i++] = charcode;
+      if ( gindex >= first_index )
+        charset->code[i++] = charcode;
       charcode = FT_Get_Next_Char(face, charcode, &gindex);
     }
 
   }
   else
   {
+    int  j;
+
+
     /* no charmap, do an identity mapping */
-    for ( i = 0; i < face->num_glyphs; i++ )
-      charset->code[i] = i;
+    for ( i = 0, j = first_index; j < face->num_glyphs; i++, j++ )
+      charset->code[i] = j;
   }
 
   charset->size = i;
@@ -635,6 +643,7 @@ void usage(void)
     "   -C : compare with cached version if available\n"
     "   -c : max iteration count for each test (0 means time limited)\n"
     "   -f : load flags (hexadecimal)\n"
+    "   -i : first index to start with (default is 0)\n"
     "   -m : max cache size in KByte (default is %d)\n"
     "   -p : preload font file in memory\n"
     "   -r : render mode (default is FT_RENDER_MODE_NORMAL)\n"
@@ -675,7 +684,7 @@ main(int argc,
     int  opt;
 
 
-    opt = getopt( argc, argv, "Cc:f:m:pr:s:t:b:" );
+    opt = getopt( argc, argv, "Cc:f:i:m:pr:s:t:b:" );
 
     if ( opt == -1 )
       break;
@@ -690,6 +699,9 @@ main(int argc,
       break;
     case 'f':
       load_flags = strtol( optarg, NULL, 16 );
+      break;
+    case 'i':
+      first_index = atoi( optarg );
       break;
     case 'm':
       max_bytes = atoi( optarg );

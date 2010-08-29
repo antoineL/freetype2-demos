@@ -1,3 +1,13 @@
+2010-08-29  Steve Langasek  <steve.langasek@linaro.org>
+
+	Make `grKey' enum comprehensive for gcc 4.5 compatibility.
+
+	* graph/grevents.h (grKey): Avoid the situation of trying to compare
+	an enum variable with a value not included in that enum in a case
+	statement.  An enum needs to be declared to include the list of all
+	possible values (which in the case of keypresses is quite a few),
+	not just the most convenient ones.
+
 2010-08-17  Werner Lemberg  <wl@gnu.org>
 
 	[ftbench] Add option `-i' to specify first used glyph index.

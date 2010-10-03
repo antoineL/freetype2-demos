@@ -1,3 +1,13 @@
+2010-10-03  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.4.3 released.
+	=========================
+
+
+	Tag sources with `VER-2-4-3'.
+
+	* README: Updated.
+
 2010-08-29  Steve Langasek  <steve.langasek@linaro.org>
 
 	Make `grKey' enum comprehensive for gcc 4.5 compatibility.
@@ -22,7 +32,7 @@
 2010-08-06  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.2 released.
-	==========================
+	=========================
 
 
 	Tag sources with `VER-2-4-2'.

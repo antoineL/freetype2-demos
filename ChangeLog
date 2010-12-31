@@ -1,3 +1,7 @@
+2010-12-31  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile: Add -lbz2 for development builds.
+
 2010-11-28  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.4 released.

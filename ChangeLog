@@ -1,3 +1,15 @@
+2011-01-30  Werner Lemberg  <wl@gnu.org>
+
+	Add flag `A' to ftview for toggling the global advance width flag.
+
+	* src/ftcommon.h (FTDemo_Handle): New field
+	`use_global_advance_width'.
+	* src/ftcommon.c (FTDemo_New): Set it.
+	(FTDemo_Update_Current_Flags): Handle it.
+
+	* src/ftview.c (Process_Event): Handle key `A'.
+	(event_help): Updated.
+
 2010-12-31  Werner Lemberg  <wl@gnu.org>
 
 	* Makefile: Add -lbz2 for development builds.

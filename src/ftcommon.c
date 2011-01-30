@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006, 2007, 2008, 2009 by                               */
+/*  Copyright 2005-2009, 2011 by                                            */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -285,16 +285,17 @@
 
     FT_Bitmap_New( &handle->bitmap );
 
-    handle->encoding = encoding;
+    handle->encoding                 = encoding;
 
-    handle->hinted    = 1;
-    handle->antialias = 1;
-    handle->use_sbits = 1;
-    handle->low_prec  = 0;
-    handle->autohint  = 0;
-    handle->lcd_mode  = 0;
+    handle->hinted                   = 1;
+    handle->antialias                = 1;
+    handle->use_sbits                = 1;
+    handle->low_prec                 = 0;
+    handle->autohint                 = 0;
+    handle->lcd_mode                 = 0;
+    handle->use_global_advance_width = 0;
 
-    handle->use_sbits_cache  = 1;
+    handle->use_sbits_cache          = 1;
 
     /* string_init */
     memset( handle->string, 0, sizeof( TGlyph ) * MAX_GLYPHS );
@@ -583,17 +584,19 @@
   void
   FTDemo_Update_Current_Flags( FTDemo_Handle*  handle )
   {
-    FT_UInt32   flags, target;
+    FT_UInt32  flags, target;
+
 
     flags = FT_LOAD_DEFAULT;  /* really 0 */
-
-    flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if ( handle->autohint )
       flags |= FT_LOAD_FORCE_AUTOHINT;
 
     if ( !handle->use_sbits )
       flags |= FT_LOAD_NO_BITMAP;
+
+    if ( !handle->use_global_advance_width )
+      flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if ( handle->hinted )
     {

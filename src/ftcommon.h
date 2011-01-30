@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2005, 2006, 2009 by                                           */
+/*  Copyright 2005, 2006, 2009, 2011 by                                     */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -182,6 +182,7 @@
     int               autohint;          /* force auto-hinting          */
     int               lcd_mode;
     int               preload;           /* force font file preloading */
+    int               use_global_advance_width;
 
     /* don't touch the following fields! */
 

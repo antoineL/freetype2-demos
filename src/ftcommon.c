@@ -226,7 +226,7 @@
       char   orig[4];
 
 
-      suffix = strrchr( font->filepathname, '.' );
+      suffix = (char*)strrchr( font->filepathname, '.' );
       if ( suffix && ( strcasecmp( suffix, ".pfa" ) == 0 ||
                        strcasecmp( suffix, ".pfb" ) == 0 ) )
       {

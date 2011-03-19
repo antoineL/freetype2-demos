@@ -96,7 +96,7 @@
   } status = { RENDER_MODE_ALL, FT_ENCODING_NONE, 72, 48, -1,
                1.0, 0.04, 0.22,
                0, 0, 0, 0, 0, NULL, { 0 }, 0, 0,
-               0, "\x10\x40\x70\x40\x10", 2 };
+               0, { 0x10, 0x40, 0x70, 0x40, 0x10 }, 2 };
 
 
   static FTDemo_Display*  display;

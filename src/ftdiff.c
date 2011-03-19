@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 2007, 2008, 2009, 2010 by                                     */
+/*  Copyright 2007-2011 by                                                  */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -391,9 +391,9 @@
           }
         }
         memcpy( (char*)state->filepath, filepath, len + 1 );
-        p = strrchr( state->filepath, '\\' );
+        p = (char*)strrchr( state->filepath, '\\' );
         if ( p == NULL )
-          p = strrchr( state->filepath, '/' );
+          p = (char*)strrchr( state->filepath, '/' );
 
         state->filename = p ? p + 1 : state->filepath;
       }

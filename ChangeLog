@@ -1,3 +1,11 @@
+2011-03-19  Werner Lemberg  <wl@gnu.org>
+
+	C++ compilation fixes.
+
+	* src/ftcommon.c, src/ftdiff.c: `strrchr' returns `const char *'.
+
+	* src/ftview.c (status): Fix initialization.
+
 2011-01-30  Werner Lemberg  <wl@gnu.org>
 
 	Add flag `A' to ftview for toggling the global advance width flag.

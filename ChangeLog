@@ -1,5 +1,13 @@
 2011-04-18  Werner Lemberg  <wl@gnu.org>
 
+	[ftgrid]: Limit autofit control even more.
+
+	* src/ftgrid.c (Process_Event) <'H', 'V', 'B'> [FT_DEBUG_AUTOFIT]:
+	Limit visibility and improve status messages.
+	(event_help): Updated.
+
+2011-04-18  Werner Lemberg  <wl@gnu.org>
+
 	[ftgrid] Add forced autohinting and limit autofit dumping.
 
 	* src/ftgrid.c (_af_debug): Remove, unused.

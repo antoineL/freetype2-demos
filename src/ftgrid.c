@@ -518,9 +518,11 @@ grid_status_draw_outline( GridStatus       st,
     grWriteln( "  Page up/dn : zoom in/out grid" );
     grWriteln( "  RETURN     : reset zoom and position" );
     grLn();
+#ifdef FT_DEBUG_AUTOFIT
     grWriteln( "  H          : toggle horizontal hinting" );
     grWriteln( "  V          : toggle vertical hinting" );
     grWriteln( "  B          : toggle blue zone hinting" );
+#endif
     grWriteln( "  d          : toggle dots display" );
     grWriteln( "  o          : toggle outline display" );
     grWriteln( "  g          : increase gamma by 0.1" );
@@ -672,9 +674,8 @@ grid_status_draw_outline( GridStatus       st,
 
     case grKEY( 'f' ):
       handle->autohint = !handle->autohint;
-      status.header    = handle->autohint
-                          ? (char *)"forced auto-hinting is now on"
-                          : (char *)"forced auto-hinting is now off";
+      status.header    = handle->autohint ? "forced auto-hinting is now on"
+                                          : "forced auto-hinting is now off";
 
       FTDemo_Update_Current_Flags( handle );
       break;
@@ -684,34 +685,31 @@ grid_status_draw_outline( GridStatus       st,
     case grKEY( '1' ):
       if (handle->autohint)
       {
-        status.header = (char *)"dumping glyph edges to stdout";
+        status.header = "dumping glyph edges to stdout";
         af_glyph_hints_dump_edges( _af_debug_hints );
       }
       else
-        status.header = (char *)"need autofit mode for edge dumping";
-      FTDemo_Update_Current_Flags( handle );
+        status.header = "need autofit mode for edge dumping";
       break;
 
     case grKEY( '2' ):
       if (handle->autohint)
       {
-        status.header = (char *)"dumping glyph segments to stdout";
+        status.header = "dumping glyph segments to stdout";
         af_glyph_hints_dump_segments( _af_debug_hints );
       }
       else
-        status.header = (char *)"need autofit mode for segment dumping";
-      FTDemo_Update_Current_Flags( handle );
+        status.header = "need autofit mode for segment dumping";
       break;
 
     case grKEY( '3' ):
       if (handle->autohint)
       {
-        status.header = (char *)"dumping glyph points to stdout";
+        status.header = "dumping glyph points to stdout";
         af_glyph_hints_dump_points( _af_debug_hints );
       }
       else
-        status.header = (char *)"need autofit mode for point dumping";
-      FTDemo_Update_Current_Flags( handle );
+        status.header = "need autofit mode for point dumping";
       break;
 #endif /* FT_DEBUG_AUTOFIT */
 
@@ -748,25 +746,41 @@ grid_status_draw_outline( GridStatus       st,
       event_font_change( -1 );
       break;
 
+
+#ifdef FT_DEBUG_AUTOFIT
     case grKEY('H'):
-      status.do_horz_hints = !status.do_horz_hints;
-      status.header = status.do_horz_hints ? "horizontal hinting enabled"
-                                           : "horizontal hinting disabled";
+      if (handle->autohint)
+      {
+        status.do_horz_hints = !status.do_horz_hints;
+        status.header = status.do_horz_hints ? "horizontal hinting enabled"
+                                             : "horizontal hinting disabled";
+      }
+      else
+        status.header = "need autofit mode to toggle horizontal hinting";
       break;
 
     case grKEY('V'):
-      status.do_vert_hints = !status.do_vert_hints;
-      status.header        = status.do_vert_hints
-                             ? "vertical hinting enabled"
-                             : "vertical hinting disabled";
+      if (handle->autohint)
+      {
+        status.do_vert_hints = !status.do_vert_hints;
+        status.header = status.do_vert_hints ? "vertical hinting enabled"
+                                             : "vertical hinting disabled";
+      }
+      else
+        status.header = "need autofit mode to toggle vertical hinting";
       break;
 
     case grKEY('B'):
-      status.do_blue_hints = !status.do_blue_hints;
-      status.header        = status.do_blue_hints
-                             ? "blue zone hinting enabled"
-                             : "blue zone hinting disabled";
+      if (handle->autohint)
+      {
+        status.do_blue_hints = !status.do_blue_hints;
+        status.header = status.do_blue_hints ? "blue zone hinting enabled"
+                                             : "blue zone hinting disabled";
+      }
+      else
+        status.header = "need autofit mode to toggle blue zone hinting";
       break;
+#endif /* FT_DEBUG_AUTOFIT */
 
 
     case grKeyLeft:     event_index_change( -1 ); break;

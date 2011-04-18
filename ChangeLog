@@ -1,3 +1,9 @@
+2011-04-18  Werner Lemberg  <wl@gnu.org>
+
+	Honor DEVEL_DIR.
+
+	* Makefile (FT_INCLUDES) [DEVEL_DIR]: Add $DEVEL_DIR.
+
 2011-03-19  Werner Lemberg  <wl@gnu.org>
 
 	C++ compilation fixes.

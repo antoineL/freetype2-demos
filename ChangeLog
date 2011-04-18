@@ -1,5 +1,16 @@
 2011-04-18  Werner Lemberg  <wl@gnu.org>
 
+	[ftgrid] Add forced autohinting and limit autofit dumping.
+
+	* src/ftgrid.c (_af_debug): Remove, unused.
+	(Process_Event) <'f'>: Toggle autohinting.
+	[FT_DEBUG_AUTOFIT] <'1', '2', '3'>: Limit visibility and improve
+	status messages.
+	(event_help): Updated.
+	(main): Updated.
+
+2011-04-18  Werner Lemberg  <wl@gnu.org>
+
 	Honor DEVEL_DIR.
 
 	* Makefile (FT_INCLUDES) [DEVEL_DIR]: Add $DEVEL_DIR.

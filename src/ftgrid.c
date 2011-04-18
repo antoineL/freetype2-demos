@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2006, 2007, 2009, 2010 by        */
+/*  Copyright 1996-2000, 2003-2007, 2009-2011 by                            */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -40,24 +40,23 @@
 #endif
 
 
-/* these variables, structures and declarations  are for  */
-/* communication with the debugger in the autofit module; */
-/* normal programs don't need this                        */
-struct  AF_GlyphHintsRec_;
-typedef struct AF_GlyphHintsRec_*  AF_GlyphHints;
+  /* these variables, structures and declarations  are for  */
+  /* communication with the debugger in the autofit module; */
+  /* normal programs don't need this                        */
+  struct  AF_GlyphHintsRec_;
+  typedef struct AF_GlyphHintsRec_*  AF_GlyphHints;
 
-int            _af_debug;
-int            _af_debug_disable_horz_hints;
-int            _af_debug_disable_vert_hints;
-int            _af_debug_disable_blue_hints;
-AF_GlyphHints  _af_debug_hints;
+  int            _af_debug_disable_horz_hints;
+  int            _af_debug_disable_vert_hints;
+  int            _af_debug_disable_blue_hints;
+  AF_GlyphHints  _af_debug_hints;
 
 #ifdef __cplusplus
   extern "C" {
 #endif
-extern void af_glyph_hints_dump_segments( AF_GlyphHints  hints );
-extern void af_glyph_hints_dump_points( AF_GlyphHints  hints );
-extern void af_glyph_hints_dump_edges( AF_GlyphHints  hints );
+  extern void af_glyph_hints_dump_segments( AF_GlyphHints  hints );
+  extern void af_glyph_hints_dump_points( AF_GlyphHints  hints );
+  extern void af_glyph_hints_dump_edges( AF_GlyphHints  hints );
 #ifdef __cplusplus
   }
 #endif
@@ -501,6 +500,7 @@ grid_status_draw_outline( GridStatus       st,
     grWriteln( "  F1 or ?    : display this help screen" );
     grLn();
     grWriteln( "  a          : toggle anti-aliasing" );
+    grWriteln( "  f          : toggle forced autofit mode" );
     grWriteln( "  left/right : decrement/increment glyph index" );
     grWriteln( "  up/down    : change character size" );
     grLn();
@@ -530,10 +530,12 @@ grid_status_draw_outline( GridStatus       st,
     grWriteln( "  p          : previous font" );
     grWriteln( "  q / ESC    : exit program" );
     grLn();
+#ifdef FT_DEBUG_AUTOFIT
     grWriteln( "  1          : dump edge hints" );
     grWriteln( "  2          : dump segment hints" );
     grWriteln( "  3          : dump point hints" );
     grLn();
+#endif
     grWriteln( "press any key to exit this help screen" );
 
     grRefreshSurface( display->surface );
@@ -668,17 +670,50 @@ grid_status_draw_outline( GridStatus       st,
       FTDemo_Update_Current_Flags( handle );
       break;
 
+    case grKEY( 'f' ):
+      handle->autohint = !handle->autohint;
+      status.header    = handle->autohint
+                          ? (char *)"forced auto-hinting is now on"
+                          : (char *)"forced auto-hinting is now off";
+
+      FTDemo_Update_Current_Flags( handle );
+      break;
+
+
+#ifdef FT_DEBUG_AUTOFIT
     case grKEY( '1' ):
-      af_glyph_hints_dump_edges( _af_debug_hints );
+      if (handle->autohint)
+      {
+        status.header = (char *)"dumping glyph edges to stdout";
+        af_glyph_hints_dump_edges( _af_debug_hints );
+      }
+      else
+        status.header = (char *)"need autofit mode for edge dumping";
+      FTDemo_Update_Current_Flags( handle );
       break;
 
     case grKEY( '2' ):
-      af_glyph_hints_dump_segments( _af_debug_hints );
+      if (handle->autohint)
+      {
+        status.header = (char *)"dumping glyph segments to stdout";
+        af_glyph_hints_dump_segments( _af_debug_hints );
+      }
+      else
+        status.header = (char *)"need autofit mode for segment dumping";
+      FTDemo_Update_Current_Flags( handle );
       break;
 
     case grKEY( '3' ):
-      af_glyph_hints_dump_points( _af_debug_hints );
+      if (handle->autohint)
+      {
+        status.header = (char *)"dumping glyph points to stdout";
+        af_glyph_hints_dump_points( _af_debug_hints );
+      }
+      else
+        status.header = (char *)"need autofit mode for point dumping";
+      FTDemo_Update_Current_Flags( handle );
       break;
+#endif /* FT_DEBUG_AUTOFIT */
 
 
     case grKEY( 'g' ):
@@ -953,8 +988,6 @@ grid_status_draw_outline( GridStatus       st,
     event_font_change( 0 );
 
     grid_status_rescale_initial( &status, handle );
-
-    _af_debug = 1;
 
     for ( ;; )
     {

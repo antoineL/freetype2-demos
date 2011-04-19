@@ -1,3 +1,7 @@
+2011-04-19  Werner Lemberg  <wl@gnu.org>
+
+	* Makefile (FT_INCLUDES): Simplify.
+
 2011-04-18  Werner Lemberg  <wl@gnu.org>
 
 	[ftgrid]: Limit autofit control even more.

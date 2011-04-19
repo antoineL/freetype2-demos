@@ -121,18 +121,11 @@ else
     SRC_DIR := $(TOP_DIR_2)/src
   endif
 
-  ifdef DEVEL_DIR
-    FT_INCLUDES := $(OBJ_BUILD) \
-                   $(BUILD_DIR) \
-                   $(DEVEL_DIR) \
-                   $(TOP_DIR)/include \
-                   $(SRC_DIR)
-  else
-    FT_INCLUDES := $(OBJ_BUILD) \
-                   $(BUILD_DIR) \
-                   $(TOP_DIR)/include \
-                   $(SRC_DIR)
-  endif
+  FT_INCLUDES := $(OBJ_BUILD) \
+                 $(BUILD_DIR) \
+                 $(DEVEL_DIR) \
+                 $(TOP_DIR)/include \
+                 $(SRC_DIR)
 
   COMPILE = $(CC) $(CFLAGS) \
                   $(INCLUDES:%=$I%) \

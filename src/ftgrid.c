@@ -683,7 +683,7 @@ grid_status_draw_outline( GridStatus       st,
 
 #ifdef FT_DEBUG_AUTOFIT
     case grKEY( '1' ):
-      if (handle->autohint)
+      if (handle->hinted && handle->autohint)
       {
         status.header = "dumping glyph edges to stdout";
         af_glyph_hints_dump_edges( _af_debug_hints );
@@ -693,7 +693,7 @@ grid_status_draw_outline( GridStatus       st,
       break;
 
     case grKEY( '2' ):
-      if (handle->autohint)
+      if (handle->hinted && handle->autohint)
       {
         status.header = "dumping glyph segments to stdout";
         af_glyph_hints_dump_segments( _af_debug_hints );
@@ -703,7 +703,7 @@ grid_status_draw_outline( GridStatus       st,
       break;
 
     case grKEY( '3' ):
-      if (handle->autohint)
+      if (handle->hinted && handle->autohint)
       {
         status.header = "dumping glyph points to stdout";
         af_glyph_hints_dump_points( _af_debug_hints );

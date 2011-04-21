@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2000, 2003, 2004, 2005, 2010 by                          */
+/*  Copyright 1996-2000, 2003-2005, 2010-2011 by                            */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -245,7 +245,7 @@
     int  flags;
 
 
-    flags = FT_LOAD_DEFAULT | FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
+    flags = FT_LOAD_DEFAULT;
 
     if ( !hint )
       flags |= FT_LOAD_NO_HINTING;

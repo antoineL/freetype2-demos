@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality font engine         */
 /*                                                                          */
-/*  Copyright 2003 by                                                       */
+/*  Copyright 2003, 2011 by                                                 */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftchkwd                                                                 */
@@ -83,8 +83,7 @@
     for ( n = 0; n < face->num_glyphs; n++ )
     {
       /* load the glyph outline */
-      error = FT_Load_Glyph( face, n, FT_LOAD_NO_SCALE |
-                                      FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH );
+      error = FT_Load_Glyph( face, n, FT_LOAD_NO_SCALE );
       if ( error )
         continue;
 

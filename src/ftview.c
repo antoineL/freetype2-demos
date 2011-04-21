@@ -652,7 +652,6 @@
     grWriteln( "  F1, ?       display this help screen" );
     grLn();
     grWriteln( "  a           toggle anti-aliasing" );
-    grWriteln( "  A           toggle use of global advance width" );
     grWriteln( "  b           toggle embedded bitmaps" );
     grWriteln( "  c           toggle between cache modes" );
     grWriteln( "  f           toggle forced auto-hinting" );
@@ -930,16 +929,6 @@
       status.header     = handle->antialias
                            ? (char *)"anti-aliasing is now on"
                            : (char *)"anti-aliasing is now off";
-
-      FTDemo_Update_Current_Flags( handle );
-      break;
-
-    case grKEY( 'A' ):
-      handle->use_global_advance_width
-                        = !handle->use_global_advance_width;
-      status.header     = handle->use_global_advance_width
-                           ? (char *)"using global advance width"
-                           : (char *)"ignoring global advance width";
 
       FTDemo_Update_Current_Flags( handle );
       break;

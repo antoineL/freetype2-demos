@@ -157,42 +157,41 @@
 
   typedef struct
   {
-    FT_Library        library;           /* the FreeType library            */
-    FTC_Manager       cache_manager;     /* the cache manager               */
-    FTC_ImageCache    image_cache;       /* the glyph image cache           */
-    FTC_SBitCache     sbits_cache;       /* the glyph small bitmaps cache   */
-    FTC_CMapCache     cmap_cache;        /* the charmap cache..             */
+    FT_Library      library;           /* the FreeType library          */
+    FTC_Manager     cache_manager;     /* the cache manager             */
+    FTC_ImageCache  image_cache;       /* the glyph image cache         */
+    FTC_SBitCache   sbits_cache;       /* the glyph small bitmaps cache */
+    FTC_CMapCache   cmap_cache;        /* the charmap cache             */
 
-    PFont*            fonts;             /* installed fonts */
-    int               num_fonts;
-    int               max_fonts;
+    PFont*          fonts;             /* installed fonts */
+    int             num_fonts;
+    int             max_fonts;
 
-    int               use_sbits_cache;   /* toggle sbits cache */
+    int             use_sbits_cache;   /* toggle sbits cache */
 
     /* use FTDemo_Set_Current_XXX to set the following two fields */
-    PFont             current_font;      /* selected font */
-    FTC_ScalerRec     scaler;
-    FT_ULong          load_flags;
+    PFont           current_font;      /* selected font */
+    FTC_ScalerRec   scaler;
+    FT_ULong        load_flags;
 
     /* call FTDemo_Update_Current_Flags after setting any of the following fields */
-    int               hinted;            /* is glyph hinting active?    */
-    int               antialias;         /* is anti-aliasing active?    */
-    int               use_sbits;         /* do we use embedded bitmaps? */
-    int               low_prec;          /* force low precision         */
-    int               autohint;          /* force auto-hinting          */
-    int               lcd_mode;
-    int               preload;           /* force font file preloading */
-    int               use_global_advance_width;
+    int             hinted;            /* is glyph hinting active?    */
+    int             antialias;         /* is anti-aliasing active?    */
+    int             use_sbits;         /* do we use embedded bitmaps? */
+    int             low_prec;          /* force low precision         */
+    int             autohint;          /* force auto-hinting          */
+    int             lcd_mode;
+    int             preload;           /* force font file preloading  */
 
     /* don't touch the following fields! */
 
     /* used for string rendering */
-    TGlyph            string[MAX_GLYPHS];
-    int               string_length;
-    int               string_reload;
+    TGlyph          string[MAX_GLYPHS];
+    int             string_length;
+    int             string_reload;
 
-    FT_Encoding       encoding;
-    FT_Bitmap         bitmap;            /* used as bitmap conversion buffer */
+    FT_Encoding     encoding;
+    FT_Bitmap       bitmap;            /* used as bitmap conversion buffer */
 
   } FTDemo_Handle;
 

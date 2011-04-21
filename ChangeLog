@@ -1,3 +1,20 @@
+2011-04-21  Werner Lemberg  <wl@gnu.org>
+
+	FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH is deprecated and ignored.
+
+	* src/ftchkwd.c (check_face): Update load flags.
+	* src/ftcommon.h (FTDemo_Handle): Remove `use_global_advance_width'.
+	* src/ftcommon.c (FTDemo_New, FTDemo_Update_Current_Flags): Updated.
+	* src/ftmulti.c (LoadChar): Update load flags.
+
+	* src/ftdiff.c (ColumnStateRec): Remove `use_global_advance_width'.
+	(render_state_init, render_state_draw): Udpated.
+	(process_event): No longer handle key `a'.
+	(event_help): Updated.
+
+	* src/ftview.c (Process_Event): No longer handle key `A'.
+	(event_help): Updated.
+
 2011-04-20  Werner Lemberg  <wl@gnu.org>
 
 	[ftgrid]: Prevent incorrect output of `1', `2', and `3' keys.

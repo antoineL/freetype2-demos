@@ -285,17 +285,16 @@
 
     FT_Bitmap_New( &handle->bitmap );
 
-    handle->encoding                 = encoding;
+    handle->encoding        = encoding;
 
-    handle->hinted                   = 1;
-    handle->antialias                = 1;
-    handle->use_sbits                = 1;
-    handle->low_prec                 = 0;
-    handle->autohint                 = 0;
-    handle->lcd_mode                 = 0;
-    handle->use_global_advance_width = 0;
+    handle->hinted          = 1;
+    handle->antialias       = 1;
+    handle->use_sbits       = 1;
+    handle->low_prec        = 0;
+    handle->autohint        = 0;
+    handle->lcd_mode        = 0;
 
-    handle->use_sbits_cache          = 1;
+    handle->use_sbits_cache = 1;
 
     /* string_init */
     memset( handle->string, 0, sizeof( TGlyph ) * MAX_GLYPHS );
@@ -594,9 +593,6 @@
 
     if ( !handle->use_sbits )
       flags |= FT_LOAD_NO_BITMAP;
-
-    if ( !handle->use_global_advance_width )
-      flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if ( handle->hinted )
     {

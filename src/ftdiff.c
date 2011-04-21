@@ -145,7 +145,6 @@
     int            use_kerning;
     int            use_deltas;
     int            use_lcd_filter;
-    int            use_global_advance_width;
     FT_LcdFilter   lcd_filter;
     HintMode       hint_mode;
     DisplayMode    disp_mode;
@@ -202,14 +201,13 @@
     state->char_size    = 16;
     state->display      = display[0];
 
-    state->columns[0].use_kerning              = 1;
-    state->columns[0].use_deltas               = 1;
-    state->columns[0].use_lcd_filter           = 1;
-    state->columns[0].use_global_advance_width = 1;
-    state->columns[0].lcd_filter               = FT_LCD_FILTER_DEFAULT;
-    state->columns[0].hint_mode                = HINT_MODE_BYTECODE;
-    state->columns[0].use_custom_lcd_filter    = 0;
-    state->columns[0].fw_index                 = 2;
+    state->columns[0].use_kerning           = 1;
+    state->columns[0].use_deltas            = 1;
+    state->columns[0].use_lcd_filter        = 1;
+    state->columns[0].lcd_filter            = FT_LCD_FILTER_DEFAULT;
+    state->columns[0].hint_mode             = HINT_MODE_BYTECODE;
+    state->columns[0].use_custom_lcd_filter = 0;
+    state->columns[0].fw_index              = 2;
     /* freetype default filter weights */
     memcpy( state->columns[0].filter_weights, "\x10\x40\x70\x40\x10", 5);
 
@@ -455,9 +453,6 @@
     if ( rmode == HINT_MODE_UNHINTED )
       load_flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP;
 
-    if ( !column->use_global_advance_width )
-      load_flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
-
     for ( ; *p; p++ )
     {
       FT_UInt       gindex;
@@ -630,13 +625,11 @@
       }
       state->display.disp_text( disp, left, bottom + 15, msg );
 
-      sprintf(temp, "%s %s %s",
+      sprintf(temp, "%s %s",
               column->use_kerning ? "+kern"
                                   : "-kern",
               column->use_deltas ? "+delta"
-                                 : "-delta",
-              column->use_global_advance_width ? "+advance"
-                                               : "-advance" );
+                                 : "-delta" );
       state->display.disp_text( disp, left, bottom + 25, temp );
 
       if ( state->col == idx )
@@ -835,7 +828,6 @@
     grWriteln( "  n, p        select previous/next font" );
     grLn();
     grWriteln( "  1, 2, 3     select left, middle, or right column" );
-    grWriteln( "  a           toggle `ignore global advance width flag'" );
     grWriteln( "  d           toggle lsb/rsb deltas" );
     grWriteln( "  h           toggle hinting mode" );
     grWriteln( "  k           toggle kerning" );
@@ -953,14 +945,6 @@
     case grKEY( '3' ):
       state->col     = 2;
       state->message = (char *)"column 3 selected";
-      break;
-
-    case grKEY( 'a' ):
-      column->use_global_advance_width
-                     = !column->use_global_advance_width;
-      state->message = column->use_global_advance_width
-                         ? (char *)"using global advance width"
-                         : (char *)"ignoring global advance width";
       break;
 
     case grKEY( 'd' ):

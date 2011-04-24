@@ -585,8 +585,8 @@ grid_status_draw_outline( GridStatus       st,
   {
     status.scale *= zoom;
 
-    sprintf( status.header_buffer, "zoom level %.2f %%\n",
-             status.scale / status.scale_0 );
+    sprintf( status.header_buffer, "zoom level %.0f%%",
+             status.scale * 100.0 / status.scale_0 );
 
     status.header = (const char *)status.header_buffer;
   }
@@ -995,7 +995,7 @@ grid_status_draw_outline( GridStatus       st,
     if ( handle->num_fonts == 0 )
       Fatal( "could not find/open any font file" );
 
-    printf( "ptsize =%g \n", status.ptsize/64.0 );
+    printf( "ptsize =%g\n", status.ptsize / 64.0 );
     FTDemo_Set_Current_Charsize( handle, status.ptsize, status.res );
     FTDemo_Update_Current_Flags( handle );
 

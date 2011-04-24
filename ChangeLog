@@ -1,3 +1,7 @@
+2011-04-24  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftgrid.c (event_grid_zoom): Fix status message.
+
 2011-04-21  Werner Lemberg  <wl@gnu.org>
 
 	FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH is deprecated and ignored.

@@ -1,3 +1,18 @@
+2011-05-01  Just Fill Bugs  <mozbugbox@yahoo.com.au>
+            Werner Lemberg  <wl@gnu.org>
+
+	[ftgrid] Show autohinter segments.  Toggle with key `s'.
+
+	* src/ftgrid.c: Add declarations for
+	`af_glyph_hints_get_num_segments' and
+	`af_glyph_hints_get_segments_offset'.
+	(GridStatus): Add `segment_color' and `do_segment'.
+	(grid_status_init): Updated.
+	(grid_hint_draw_segment): New function.
+	(grid_status_draw_outline): Call it.
+	(Process_Event) <'s'>: Toggle display of segment lines.
+	(event_help): Udpated.
+
 2011-04-24  Werner Lemberg  <wl@gnu.org>
 
 	* src/ftgrid.c (event_grid_zoom): Fix status message.

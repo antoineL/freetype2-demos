@@ -54,9 +54,21 @@
 #ifdef __cplusplus
   extern "C" {
 #endif
-  extern void af_glyph_hints_dump_segments( AF_GlyphHints  hints );
-  extern void af_glyph_hints_dump_points( AF_GlyphHints  hints );
-  extern void af_glyph_hints_dump_edges( AF_GlyphHints  hints );
+  extern void
+  af_glyph_hints_dump_segments( AF_GlyphHints  hints );
+  extern void
+  af_glyph_hints_dump_points( AF_GlyphHints  hints );
+  extern void
+  af_glyph_hints_dump_edges( AF_GlyphHints  hints );
+  extern FT_Error
+  af_glyph_hints_get_num_segments( AF_GlyphHints  hints,
+                                   FT_Int         dimension,
+                                   FT_Int*        num_segments );
+  extern FT_Error
+  af_glyph_hints_get_segment_offset( AF_GlyphHints  hints,
+                                     FT_Int         dimension,
+                                     FT_Int         idx,
+                                     FT_Pos*        offset );
 #ifdef __cplusplus
   }
 #endif
@@ -87,12 +99,14 @@ typedef struct  status_
   grColor      on_color;
   grColor      conic_color;
   grColor      cubic_color;
+  grColor      segment_color;
 
   int          do_horz_hints;
   int          do_vert_hints;
   int          do_blue_hints;
   int          do_outline;
   int          do_dots;
+  int          do_segment;
 
   double       gamma;
   const char*  header;
@@ -116,6 +130,7 @@ grid_status_init( GridStatus       st,
   st->on_color      = grFindColor( display->bitmap,  64,  64, 255, 255 );
   st->conic_color   = grFindColor( display->bitmap,   0, 128,   0, 255 );
   st->cubic_color   = grFindColor( display->bitmap, 255,  64, 255, 255 );
+  st->segment_color = grFindColor( display->bitmap,  64, 255, 128,  64 );
   st->disp_width    = display->bitmap->width;
   st->disp_height   = display->bitmap->rows;
   st->disp_bitmap   = display->bitmap;
@@ -125,6 +140,7 @@ grid_status_init( GridStatus       st,
   st->do_blue_hints = 1;
   st->do_dots       = 1;
   st->do_outline    = 1;
+  st->do_segment    = 0;
 
   st->Num    = 0;
   st->gamma  = 1.0;
@@ -216,6 +232,48 @@ grid_status_draw_grid( GridStatus  st )
 
   grFillVLine( st->disp_bitmap, x_org, 0, st->disp_height, st->axis_color );
   grFillHLine( st->disp_bitmap, 0, y_org, st->disp_width,  st->axis_color );
+}
+
+
+static void
+grid_hint_draw_segment( GridStatus     st,
+                        AF_GlyphHints  hints )
+{
+  FT_Int  dimension;
+  int     x_org = (int)st->x_origin;
+  int     y_org = (int)st->y_origin;
+
+
+  for ( dimension = 1; dimension >= 0; dimension-- )
+  {
+    FT_Int  num_seg;
+    FT_Int  count;
+
+
+    af_glyph_hints_get_num_segments( hints, dimension, &num_seg );
+
+    for ( count = 0; count < num_seg; count++ )
+    {
+      int     pos;
+      FT_Pos  offset;
+
+
+      af_glyph_hints_get_segment_offset( hints, dimension, count, &offset );
+
+      if ( dimension == 0 ) /* AF_DIMENSION_HORZ is 0 */
+      {
+        pos = x_org + (int)offset * st->scale;
+        grFillVLine( st->disp_bitmap, pos, 0,
+                     st->disp_height, st->segment_color );
+      }
+      else
+      {
+        pos = y_org - (int)offset * st->scale;
+        grFillHLine( st->disp_bitmap, 0, pos,
+                     st->disp_width, st->segment_color );
+      }
+    }
+  }
 }
 
 
@@ -396,6 +454,21 @@ grid_status_draw_outline( GridStatus       st,
 
   FTDemo_Get_Size( handle, &size );
 
+  /* Draw segment before drawing glyph. */
+  if ( status.do_segment )
+  {
+    /* Force hinting first in order to collect segment info. */
+    _af_debug_disable_horz_hints = 0;
+    _af_debug_disable_vert_hints = 0;
+
+    if ( !FT_Load_Glyph( size->face, st->Num,
+                         FT_LOAD_DEFAULT        |
+                         FT_LOAD_NO_BITMAP      |
+                         FT_LOAD_FORCE_AUTOHINT |
+                         FT_LOAD_TARGET_NORMAL ) )
+      grid_hint_draw_segment( &status, _af_debug_hints );
+  }
+
   _af_debug_disable_horz_hints = !st->do_horz_hints;
   _af_debug_disable_vert_hints = !st->do_vert_hints;
 
@@ -501,6 +574,7 @@ grid_status_draw_outline( GridStatus       st,
     grLn();
     grWriteln( "  a          : toggle anti-aliasing" );
     grWriteln( "  f          : toggle forced autofit mode" );
+    grWriteln( "  h          : toggle ignore hinting mode" );
     grWriteln( "  left/right : decrement/increment glyph index" );
     grWriteln( "  up/down    : change character size" );
     grLn();
@@ -522,6 +596,7 @@ grid_status_draw_outline( GridStatus       st,
     grWriteln( "  H          : toggle horizontal hinting" );
     grWriteln( "  V          : toggle vertical hinting" );
     grWriteln( "  B          : toggle blue zone hinting" );
+    grWriteln( "  s          : toggle segment drawing" );
 #endif
     grWriteln( "  d          : toggle dots display" );
     grWriteln( "  o          : toggle outline display" );
@@ -748,7 +823,7 @@ grid_status_draw_outline( GridStatus       st,
 
 
 #ifdef FT_DEBUG_AUTOFIT
-    case grKEY('H'):
+    case grKEY( 'H' ):
       if (handle->autohint)
       {
         status.do_horz_hints = !status.do_horz_hints;
@@ -759,7 +834,7 @@ grid_status_draw_outline( GridStatus       st,
         status.header = "need autofit mode to toggle horizontal hinting";
       break;
 
-    case grKEY('V'):
+    case grKEY( 'V' ):
       if (handle->autohint)
       {
         status.do_vert_hints = !status.do_vert_hints;
@@ -770,7 +845,7 @@ grid_status_draw_outline( GridStatus       st,
         status.header = "need autofit mode to toggle vertical hinting";
       break;
 
-    case grKEY('B'):
+    case grKEY( 'B' ):
       if (handle->autohint)
       {
         status.do_blue_hints = !status.do_blue_hints;
@@ -779,6 +854,12 @@ grid_status_draw_outline( GridStatus       st,
       }
       else
         status.header = "need autofit mode to toggle blue zone hinting";
+      break;
+
+    case grKEY( 's' ):
+      status.do_segment = !status.do_segment;
+      status.header = status.do_segment ? "segment drawing enabled"
+                                        : "segment drawing disabled";
       break;
 #endif /* FT_DEBUG_AUTOFIT */
 
@@ -800,10 +881,10 @@ grid_status_draw_outline( GridStatus       st,
                         status.do_vert_hints = 1;
                         break;
 
-    case grKEY('i'):    event_grid_translate( 0, +1 ); break;
-    case grKEY('k'):    event_grid_translate( 0, -1 ); break;
-    case grKEY('l'):    event_grid_translate( +1, 0 ); break;
-    case grKEY('j'):    event_grid_translate( -1, 0 ); break;
+    case grKEY( 'i' ):  event_grid_translate( 0, +1 ); break;
+    case grKEY( 'k' ):  event_grid_translate( 0, -1 ); break;
+    case grKEY( 'l' ):  event_grid_translate( +1, 0 ); break;
+    case grKEY( 'j' ):  event_grid_translate( -1, 0 ); break;
 
     case grKeyPageUp:   event_grid_zoom( 1.25 ); break;
     case grKeyPageDown: event_grid_zoom( 1/1.25 ); break;

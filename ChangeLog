@@ -1,3 +1,15 @@
+2011-06-01  Werner Lemberg  <wl@gnu.org>
+
+	Fix gcc 2.6 warnings.
+
+	* graph/grblit.c (blit_gray_to_gray): Remove unused variables.
+	(blit_gray_to_gray_simple): Declare and set `max' conditionally.
+
+	* src/ftcommon.c (FTDemo_Index_To_Bitmap): Remove unused variable.
+	* src/ftmulti.c (Render_All, Render_Text): Ditto.
+	* src/ftview.c (INIT_SIZE, Render_Stroke, Render_Slanted,
+	Render_Embolden, Render_All, Render_Text, Render_Waterfall): Ditto.
+
 2011-05-01  Just Fill Bugs  <mozbugbox@yahoo.com.au>
             Werner Lemberg  <wl@gnu.org>
 

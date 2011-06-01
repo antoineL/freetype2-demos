@@ -261,14 +261,13 @@
   Render_All( int  first_glyph,
               int  pt_size )
   {
-    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
+    FT_F26Dot6  start_x, start_y, step_y, x, y;
     int         i;
 
 
     start_x = 4;
     start_y = 36 + pt_size;
 
-    step_x = size->metrics.x_ppem + 4;
     step_y = size->metrics.y_ppem + 10;
 
     x = start_x;
@@ -323,7 +322,7 @@
   static FT_Error
   Render_Text( int  first_glyph )
   {
-    FT_F26Dot6  start_x, start_y, step_x, step_y, x, y;
+    FT_F26Dot6  start_x, start_y, step_y, x, y;
     int         i;
 
     const unsigned char*  p;
@@ -332,7 +331,6 @@
     start_x = 4;
     start_y = 32 + size->metrics.y_ppem;
 
-    step_x = size->metrics.x_ppem + 4;
     step_y = size->metrics.y_ppem + 10;
 
     x = start_x;

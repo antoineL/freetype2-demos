@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-1999, 2000, 2001, 2002, 2009 by                          */
+/*  Copyright 1996-2002, 2009, 2011 by                                      */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  grblit.c: Support for blitting of bitmaps with various depth.           */
@@ -702,11 +702,7 @@
     int             y;
     unsigned char*  read;
     unsigned char*  write;
-    unsigned char   max1;
-    unsigned char   max2;
 
-    max1  = (unsigned char)(blit->source.grays-1);
-    max2  = (unsigned char)(blit->target.grays-1);
 
     read  = blit->read  + blit->xread;
     write = blit->write + blit->xwrite;
@@ -759,9 +755,12 @@
     int             y;
     unsigned char*  read;
     unsigned char*  write;
+#ifdef GR_CONFIG_GRAY_SKIP_WHITE
     unsigned char   max;
 
-    max   = (unsigned char)(blit->source.grays-1);
+
+    max = (unsigned char)( blit->source.grays - 1 );
+#endif
 
     read  = blit->read  + blit->xread;
     write = blit->write + blit->xwrite;

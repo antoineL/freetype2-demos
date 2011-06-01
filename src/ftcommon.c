@@ -773,7 +773,6 @@
                           int*            y_advance,
                           FT_Glyph*       aglyf )
   {
-    int  cached_bitmap = 1;
     int  width, height;
 
 
@@ -840,8 +839,6 @@
           target->buffer = handle->bitmap.buffer;
           target->mode   = gr_pixel_mode_gray;
           target->grays  = handle->bitmap.num_grays;
-
-          cached_bitmap = 0;
           break;
 
         case FT_PIXEL_MODE_LCD:

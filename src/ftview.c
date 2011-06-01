@@ -35,11 +35,10 @@
 #endif
 #define CEIL( x )  ( ( (x) + 63 ) >> 6 )
 
-#define INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y )       \
+#define INIT_SIZE( size, start_x, start_y, step_y, x, y )               \
           do {                                                          \
             start_x = 4;                                                \
             start_y = CEIL( size->metrics.height ) + 3 * HEADER_HEIGHT; \
-            step_x  = CEIL( size->metrics.max_advance );                \
             step_y  = CEIL( size->metrics.height ) + 4;                 \
                                                                         \
             x = start_x;                                                \
@@ -124,7 +123,7 @@
   Render_Stroke( int  num_indices,
                  int  first_index )
   {
-    int         start_x, start_y, step_x, step_y, x, y;
+    int         start_x, start_y, step_y, x, y;
     int         i;
     FT_Size     size;
     FT_Stroker  stroker = NULL;
@@ -138,7 +137,7 @@
       return error;
     }
 
-    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+    INIT_SIZE( size, start_x, start_y, step_y, x, y );
 
     i = first_index;
 
@@ -217,7 +216,7 @@
   Render_Slanted( int  num_indices,
                   int  first_index )
   {
-    int      start_x, start_y, step_x, step_y, x, y;
+    int      start_x, start_y, step_y, x, y;
     int      i;
     FT_Size  size;
 
@@ -230,7 +229,7 @@
       return error;
     }
 
-    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+    INIT_SIZE( size, start_x, start_y, step_y, x, y );
 
     i = first_index;
 
@@ -302,7 +301,7 @@
   Render_Embolden( int  num_indices,
                    int  first_index )
   {
-    int      start_x, start_y, step_x, step_y, x, y;
+    int      start_x, start_y, step_y, x, y;
     int      i;
     FT_Size  size;
 
@@ -315,7 +314,7 @@
       return error;
     }
 
-    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+    INIT_SIZE( size, start_x, start_y, step_y, x, y );
 
     i = first_index;
 
@@ -418,7 +417,7 @@
   Render_All( int  num_indices,
               int  first_index )
   {
-    int      start_x, start_y, step_x, step_y, x, y;
+    int      start_x, start_y, step_y, x, y;
     int      i;
     FT_Size  size;
 
@@ -431,7 +430,7 @@
       return error;
     }
 
-    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+    INIT_SIZE( size, start_x, start_y, step_y, x, y );
 
     i = first_index;
 
@@ -468,7 +467,7 @@
   Render_Text( int  num_indices,
                int  first_index )
   {
-    int      start_x, start_y, step_x, step_y, x, y;
+    int      start_x, start_y, step_y, x, y;
     int      i;
     FT_Size  size;
 
@@ -485,7 +484,7 @@
       return error;
     }
 
-    INIT_SIZE( size, start_x, start_y, step_x, step_y, x, y );
+    INIT_SIZE( size, start_x, start_y, step_y, x, y );
 
     i = first_index;
 
@@ -539,7 +538,7 @@
   static FT_Error
   Render_Waterfall( int  first_size )
   {
-    int      start_x, start_y, step_x, step_y, x, y;
+    int      start_x, start_y, step_y, x, y;
     int      pt_size, max_size = 100000;
     FT_Size  size;
     FT_Face  face;
@@ -589,7 +588,6 @@
         continue;
       }
 
-      step_x = ( size->metrics.max_advance >> 6 ) + 4;
       step_y = ( size->metrics.height >> 6 ) + 1;
 
       x = start_x;

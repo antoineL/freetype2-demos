@@ -1,6 +1,6 @@
 2011-06-01  Werner Lemberg  <wl@gnu.org>
 
-	Fix gcc 2.6 warnings.
+	Fix gcc 4.6 warnings.
 
 	* graph/grblit.c (blit_gray_to_gray): Remove unused variables.
 	(blit_gray_to_gray_simple): Declare and set `max' conditionally.

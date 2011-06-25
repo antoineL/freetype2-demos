@@ -1,3 +1,13 @@
+2011-06-24  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.4.5 released.
+	=========================
+
+
+	Tag sources with `VER-2-4-5'.
+
+	* README: Updated.
+
 2011-06-01  Werner Lemberg  <wl@gnu.org>
 
 	Fix gcc 4.6 warnings.

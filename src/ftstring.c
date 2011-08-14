@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010 by        */
+/*  Copyright 1996-2007, 2009-2011 by                                       */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*                                                                          */
@@ -449,17 +449,33 @@
   static void
   usage( char*  execname )
   {
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "ftstring: string viewer -- part of the FreeType project\n" );
-    fprintf( stderr,  "-------------------------------------------------------\n" );
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "Usage: %s [options below] ppem fontname[.ttf|.ttc] ...\n",
-             execname );
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "  -e enc      specify encoding tag (default: unic)\n" );
-    fprintf( stderr,  "  -r R        use resolution R dpi (default: 72 dpi)\n" );
-    fprintf( stderr,  "  -m message  message to display\n" );
-    fprintf( stderr,  "\n" );
+    fprintf( stderr,
+      "\n"
+      "ftstring: string viewer -- part of the FreeType project\n"
+      "-------------------------------------------------------\n"
+      "\n" );
+    fprintf( stderr,
+      "Usage: %s [options] pt font ...\n"
+      "\n", execname );
+    fprintf( stderr,
+      "  pt        The point size for the given resolution.\n"
+      "            If resolution is 72dpi, this directly gives the\n"
+      "            ppem value (pixels per EM).\n" );
+    fprintf( stderr,
+      "  font      The font file(s) to display; if the extension is omitted,\n"
+      "            ftview tries to append one of the following suffixes:\n"
+      "            `.ttf', `.ttc', `.otf', `.pfa', `.pfb'.\n"
+      "            For `.pfa' or `.pfb' files, ftview also tries to attach\n"
+      "            the corresponding metrics file (with extension\n"
+      "            `.afm' or `.pfm').\n"
+      "\n" );
+    fprintf( stderr,
+      "  -r R      Use resolution R dpi (default: 72dpi).\n"
+      "  -e enc    Specify encoding tag (default: no encoding).\n"
+      "            Common values: `unic' (Unicode), `symb' (symbol),\n"
+      "            `ADOB' (Adobe standard), `ADBC' (Adobe custom).\n"
+      "  -m text   Use `text' for rendering.\n"
+      "\n" );
 
     exit( 1 );
   }

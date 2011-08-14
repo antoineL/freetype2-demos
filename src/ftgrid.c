@@ -981,16 +981,30 @@ grid_status_draw_outline( GridStatus       st,
   static void
   usage( char*  execname )
   {
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "ftgrid: simple glyph grid viewer -- part of the FreeType project\n" );
-    fprintf( stderr,  "-----------------------------------------------------------\n" );
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "Usage: %s [status below] ppem fontname[.ttf|.ttc] ...\n",
-             execname );
-    fprintf( stderr,  "\n" );
-    fprintf( stderr,  "  -r R      use resolution R dpi (default: 72 dpi)\n" );
-    fprintf( stderr,  "  -f index  specify first index to display\n" );
-    fprintf( stderr,  "\n" );
+    fprintf( stderr,
+      "\n"
+      "ftgrid: simple glyph grid viewer -- part of the FreeType project\n"
+      "----------------------------------------------------------------\n"
+      "\n" );
+    fprintf( stderr,
+      "Usage: %s [options] pt font ...\n"
+      "\n", execname );
+    fprintf( stderr,
+      "  pt        The point size for the given resolution.\n"
+      "            If resolution is 72dpi, this directly gives the\n"
+      "            ppem value (pixels per EM).\n" );
+    fprintf( stderr,
+      "  font      The font file(s) to display; if the extension is omitted,\n"
+      "            ftview tries to append one of the following suffixes:\n"
+      "            `.ttf', `.ttc', `.otf', `.pfa', `.pfb'.\n"
+      "            For `.pfa' or `.pfb' files, ftview also tries to attach\n"
+      "            the corresponding metrics file (with extension\n"
+      "            `.afm' or `.pfm').\n"
+      "\n" );
+    fprintf( stderr,
+      "  -r R      Use resolution R dpi (default: 72dpi).\n"
+      "  -f index  Specify first index to display (default: 0).\n"
+      "\n" );
 
     exit( 1 );
   }

@@ -1,3 +1,12 @@
+2011-08-14  Werner Lemberg  <wl@gnu.org>
+
+	Improve usage messages.
+
+	This should fix Savannah bug #33660.
+
+	* src/ftgrid.c, src/ftstring.c, src/ftview.c (usage): Reword and
+	extend.
+
 2011-07-29  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.6 released.

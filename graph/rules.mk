@@ -43,7 +43,8 @@ GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(O)    \
 # this value can be modified by the system-specific graphics drivers.
 #
 ifneq ($(LIBTOOL),)
-  COMPILE_GRAPH_LIB = $(LIBTOOL) --mode=link $(CCraw) -static -o $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
+  COMPILE_GRAPH_LIB = $(LIBTOOL) --mode=link $(CCraw) -static \
+                                 -o $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
 else
   COMPILE_GRAPH_LIB = ar -r $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
 endif
@@ -72,7 +73,8 @@ $(GRAPH_LIB): $(GRAPH_OBJS)
 #
 $(OBJ_DIR_2)/%.$(O): $(GRAPH)/%.c $(GRAPH_H)
 ifneq ($(LIBTOOL),)
-	$(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
+	$(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) \
+                   $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 else
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
 endif
@@ -83,8 +85,9 @@ endif
 #
 $(OBJ_DIR_2)/grinit.$(O): $(GRAPH)/grinit.c $(GRAPH_H)
 ifneq ($(LIBTOOL),)
-	$(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
-              $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)
+	$(LIBTOOL) --mode=compile $(CC) -static \
+                   $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
+                   $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)
 else
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
               $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)

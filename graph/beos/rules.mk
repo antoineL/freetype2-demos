@@ -22,10 +22,11 @@ ifeq ($(PLATFORM),beos)
   #
   $(OBJ_DIR_2)/grbeos.$(O): $(GR_BEOS)/grbeos.cpp $(GR_BEOS)/grbeos.h
   ifneq ($(LIBTOOL),)
-	  $(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
-                $I$(subst /,$(COMPILER_SEP),$(GR_BEOS)) \
-                $(X11_INCLUDE:%=$I%) \
-                $T$(subst /,$(COMPILER_SEP),$@ $<)
+	  $(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) \
+                     $(GRAPH_INCLUDES:%=$I%) \
+                     $I$(subst /,$(COMPILER_SEP),$(GR_BEOS)) \
+                     $(X11_INCLUDE:%=$I%) \
+                     $T$(subst /,$(COMPILER_SEP),$@ $<)
   else
 	  $(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
                 $I$(subst /,$(COMPILER_SEP),$(GR_BEOS)) \

@@ -219,7 +219,9 @@ else
   else
 
     clean_demo:
-	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR_2)/*.$(SO))
+	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR_2)/*.$(SO) $(OBJ_DIR_2)/*.$(O))
+	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR_2)/*.$(SA) $(OBJ_DIR_2)/*.$(A))
+	    -$(DELETE) $(subst /,$(SEP),$(OBJ_DIR_2)/.libs/*)
 	    -$(DELETE) $(subst /,$(SEP),$(SRC_DIR)/*.bak graph/*.bak)
 	    -$(DELETE) $(subst /,$(SEP),$(SRC_DIR)/*~ graph/*~)
 

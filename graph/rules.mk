@@ -27,22 +27,26 @@ GRAPH_H := $(GRAPH)/graph.h    \
            $(GRAPH)/gblblit.h
 
 
-GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(SO)    \
-              $(OBJ_DIR_2)/grobjs.$(SO)    \
-              $(OBJ_DIR_2)/grfont.$(SO)    \
-              $(OBJ_DIR_2)/grfill.$(SO)    \
-              $(OBJ_DIR_2)/grswizzle.$(SO) \
-              $(OBJ_DIR_2)/grdevice.$(SO)  \
-              $(OBJ_DIR_2)/grinit.$(SO)    \
-              $(OBJ_DIR_2)/gblender.$(SO)  \
-              $(OBJ_DIR_2)/gblblit.$(SO)
+GRAPH_OBJS := $(OBJ_DIR_2)/grblit.$(O)    \
+              $(OBJ_DIR_2)/grobjs.$(O)    \
+              $(OBJ_DIR_2)/grfont.$(O)    \
+              $(OBJ_DIR_2)/grfill.$(O)    \
+              $(OBJ_DIR_2)/grswizzle.$(O) \
+              $(OBJ_DIR_2)/grdevice.$(O)  \
+              $(OBJ_DIR_2)/grinit.$(O)    \
+              $(OBJ_DIR_2)/gblender.$(O)  \
+              $(OBJ_DIR_2)/gblblit.$(O)
 
 
 
 # Default value for COMPILE_GRAPH_LIB;
 # this value can be modified by the system-specific graphics drivers.
 #
-COMPILE_GRAPH_LIB = ar -r $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
+ifneq ($(LIBTOOL),)
+  COMPILE_GRAPH_LIB = $(LIBTOOL) --mode=link $(CCraw) -static -o $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
+else
+  COMPILE_GRAPH_LIB = ar -r $(subst /,$(COMPILER_SEP),$@ $(GRAPH_OBJS))
+endif
 
 
 # Add the rules used to detect and compile graphics driver depending
@@ -66,16 +70,25 @@ $(GRAPH_LIB): $(GRAPH_OBJS)
 
 # pattern rule for normal sources
 #
-$(OBJ_DIR_2)/%.$(SO): $(GRAPH)/%.c $(GRAPH_H)
+$(OBJ_DIR_2)/%.$(O): $(GRAPH)/%.c $(GRAPH_H)
+ifneq ($(LIBTOOL),)
+	$(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
+else
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) $T$@ $<
+endif
 
 
 # a special rule is used for 'grinit.o' as it needs the definition
 # of some macros like "-DDEVICE_X11" or "-DDEVICE_OS2_PM"
 #
-$(OBJ_DIR_2)/grinit.$(SO): $(GRAPH)/grinit.c $(GRAPH_H)
+$(OBJ_DIR_2)/grinit.$(O): $(GRAPH)/grinit.c $(GRAPH_H)
+ifneq ($(LIBTOOL),)
+	$(LIBTOOL) --mode=compile $(CC) -static $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
+              $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)
+else
 	$(CC) $(CFLAGS) $(GRAPH_INCLUDES:%=$I%) \
               $(DEVICES:%=$DDEVICE_%) $T$(subst /,$(COMPILER_SEP),$@ $<)
+endif
 
 
 # EOF

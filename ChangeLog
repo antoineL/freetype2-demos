@@ -1,3 +1,22 @@
+2011-12-02  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	Use $(LIBTOOL) to make graph.a, if it is defined.
+
+	If configure script in FreeType2 library directory creates GNU
+	Libtool, using it is better than using raw `ar'.  For example,
+	Mac OS X archive library is required to be processed by ranlib.
+	See discussion in
+	http://lists.gnu.org/archive/html/freetype-devel/2011-10/msg00034.html
+
+	* graph/rules.mk: Change the object suffix $(SO) to $(O) for
+	the sake of GNU Libtool.  If $(LIBTOOL) is defined, use it to
+	compile the objects and make the library.
+	* graph/x11/rules.mk: Ditto.
+	* graph/beos/rules.mk: Ditto.
+
+	* Makefile: `clean' target erases the object, the library and
+	GNU Libtool related files in .libs/ directory.
+
 2011-11-15  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.4.8 released.

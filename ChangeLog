@@ -1,3 +1,12 @@
+2011-12-07  Antoine Leca  <Antoine-Freetype@Leca-Marti.org>
+
+	Fix printf specifications and parameters.
+
+	* src/ttdebug.c (Cur_U_Line, RunIns): Use "%hu" for FT_UShort,
+	"&ld" for FT_Pos; drop the "h" in "%hx" for FT_Byte parameters
+	and cast the parameters to (unsigned) ("%hhx" is C99 only, and
+	often unimplemented). Noticed by clang.
+
 2011-12-02  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
 
 	Use $(LIBTOOL) to make graph.a, if it is defined.

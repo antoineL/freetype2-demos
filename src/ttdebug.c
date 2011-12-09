@@ -764,7 +764,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
       for ( i = 0; i < n; i++ )
       {
-        sprintf( s, " $%02hx", exec->code[ exec->IP+i+2 ] );
+        sprintf( s, " $%02x", (unsigned) exec->code[ exec->IP+i+2 ] );
         strncat( tempStr, s, 8 );
       }
     }
@@ -778,8 +778,8 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
       for ( i = 0; i < n; i++ )
       {
-        sprintf( s, " $%02hx%02hx", exec->code[ exec->IP+i*2+2 ],
-                                    exec->code[ exec->IP+i*2+3 ] );
+        sprintf( s, " $%02x%02x", (unsigned) exec->code[ exec->IP+i*2+2 ],
+                                  (unsigned) exec->code[ exec->IP+i*2+3 ] );
         strncat( tempStr, s, 8 );
       }
     }
@@ -789,7 +789,7 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
       for ( i=0; i <= n; i++ )
       {
-        sprintf( s, " $%02hx", exec->code[ exec->IP+i+1 ] );
+        sprintf( s, " $%02x", (unsigned) exec->code[ exec->IP+i+1 ] );
         strncat( tempStr, s, 8 );
       }
     }
@@ -799,8 +799,8 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
       for ( i = 0; i <= n; i++ )
       {
-        sprintf( s, " $%02hx%02hx", exec->code[ exec->IP+i*2+1 ],
-                                  exec->code[ exec->IP+i*2+2 ] );
+        sprintf( s, " $%02x%02x", (unsigned) exec->code[ exec->IP+i*2+1 ],
+                                  (unsigned) exec->code[ exec->IP+i*2+2 ] );
         strncat( tempStr, s, 8 );
       }
     }
@@ -1010,8 +1010,8 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
         case 'p':
           for ( A = 0; A < exc->pts.n_points; A++ )
           {
-            printf( "%3hd  ", A );
-            printf( "(%6d,%6d) - ", pts.orus[A].x, pts.orus[A].y );
+            printf( "%3d  ", A );
+            printf( "(%6ld,%6ld) - ", pts.orus[A].x, pts.orus[A].y );
             printf( "(%8ld,%8ld) - ", pts.org[A].x, pts.org[A].y );
             printf( "(%8ld,%8ld)\n",  pts.cur[A].x, pts.cur[A].y );
           }
@@ -1083,8 +1083,8 @@ TT_CodeRange_Tag  debug_coderange = tt_coderange_glyph;
 
         if ( diff )
         {
-          printf( "%3hd  ", A );
-          printf( "%6d,%6d  ", pts.orus[A].x, pts.orus[A].y );
+          printf( "%3d  ", A );
+          printf( "%6ld,%6ld  ", pts.orus[A].x, pts.orus[A].y );
 
           if ( diff & 16 ) temp = "(%01hx)"; else temp = " %01hx ";
           printf( temp, old_tag_to_new(save.tags[A]) );
